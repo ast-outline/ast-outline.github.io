@@ -122,7 +122,7 @@ See [LLM agents](agents.md) for the full snippet and integration notes.
 
 ```bash
 ast-outline --version
-# ast-outline 0.6.1
+# ast-outline X.Y.Z
 # homepage: https://github.com/ast-outline/ast-outline
 ```
 

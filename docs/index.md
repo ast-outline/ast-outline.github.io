@@ -23,14 +23,6 @@ before reading the whole thing.
 
 </div>
 
-<div class="ast-hero__stats">
-<span><strong>12</strong> languages</span>
-<span><strong>0</strong> runtime deps you write</span>
-<span><strong>0</strong> indexes / caches</span>
-<span><strong>5–10×</strong> token savings vs full reads</span>
-<span><strong>~0.5s</strong> for 800+ tests</span>
-</div>
-
 </div>
 
 [![Code: Apache 2.0](https://img.shields.io/badge/code-Apache%202.0-blue.svg)](https://github.com/ast-outline/ast-outline/blob/main/LICENSE)
@@ -427,7 +419,7 @@ code structurally, **`ast-outline` overviews** it. They compose well
 After install:
 
 ```bash
-ast-outline --version          # 0.6.3
+ast-outline --version          # latest from PyPI
 ast-outline path/to/Player.cs  # outline one file
 ast-outline digest src/        # whole-folder map
 ast-outline help               # full reference
