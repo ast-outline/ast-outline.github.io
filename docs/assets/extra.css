@@ -283,6 +283,132 @@ pre.ast-console__out code {
   transform: translateY(-2px);
 }
 
+/* ─── Header: terminal title-bar style ───────────────────── */
+
+.md-header {
+  background: linear-gradient(180deg, #1c2128 0%, #0d1117 100%);
+  border-bottom: 1px solid #30363d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* macOS-style traffic-light dots on the far left of the header */
+.md-header__inner::before {
+  content: "";
+  display: inline-block;
+  width: 56px;
+  height: 12px;
+  flex-shrink: 0;
+  margin: 0 0.65rem 0 1rem;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="56" height="12" viewBox="0 0 56 12"><circle cx="6" cy="6" r="5" fill="%23ff5f57"/><circle cx="26" cy="6" r="5" fill="%23febc2e"/><circle cx="46" cy="6" r="5" fill="%2328c840"/></svg>');
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+/* Hide the default tiny tree logo — wordmark already says "ast-outline" */
+.md-header .md-logo {
+  display: none;
+}
+
+/* Breadcrumb-style site title */
+.md-header__title {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #c9d1d9;
+}
+
+.md-header__topic:first-child .md-ellipsis {
+  color: #c9d1d9;
+}
+
+.md-header__topic:first-child .md-ellipsis::before {
+  content: "~/";
+  color: #6e7681;
+  margin-right: 0.05em;
+}
+
+.md-header__topic:first-child .md-ellipsis::after {
+  content: " — main";
+  color: #6e7681;
+  font-weight: 400;
+}
+
+/* Source repo card on the right — keep it tidy, terminal-toned */
+.md-header__source {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.md-source__repository {
+  font-size: 0.72rem;
+}
+
+.md-source__fact {
+  font-size: 0.65rem;
+  opacity: 0.75;
+}
+
+/* ─── Tabs nav: render as a shell prompt with commands ──── */
+
+.md-tabs {
+  background: #0d1117;
+  border-bottom: 1px solid #30363d;
+  color: #c9d1d9;
+}
+
+.md-tabs__list {
+  position: relative;
+}
+
+/* `$` prompt prefix before the nav items */
+.md-tabs__list::before {
+  content: "$";
+  display: inline-flex;
+  align-items: center;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #7ee787;
+  margin: 0 0.85rem 0 1.1rem;
+  user-select: none;
+}
+
+.md-tabs__link {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0.78;
+  margin: 0.6rem 0.6rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  transition: opacity 150ms ease, color 150ms ease, background 150ms ease;
+}
+
+.md-tabs__link:hover {
+  opacity: 1;
+  background: rgba(126, 231, 135, 0.07);
+  color: #c9d1d9;
+}
+
+.md-tabs__link--active {
+  opacity: 1;
+  color: #7ee787;
+  font-weight: 600;
+  background: rgba(126, 231, 135, 0.1);
+}
+
+/* Subtle separator chips between commands */
+.md-tabs__item + .md-tabs__item::before {
+  content: "·";
+  color: #30363d;
+  margin-right: 0.2rem;
+  align-self: center;
+}
+
 /* ─── Inline code refinements ─────────────────────────────── */
 
 .md-typeset code {
