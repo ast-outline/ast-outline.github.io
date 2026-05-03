@@ -266,17 +266,14 @@ the same way it does in your editor.
         ## License  L49-51
     ```
 
-!!! info "+ 5 more languages with the same digest format"
+!!! info "+ 4 more languages with the same digest format"
     `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs` — parsed by
     the TypeScript grammar, so React/Node/ES-module files all flow through),
     **Kotlin** (`.kt`/`.kts` — Android, Compose, Spring; `data class`, `sealed`,
     `suspend`, KDoc), **Scala** (`.scala`/`.sc` — Scala 2 + Scala 3 with
-    `enum`/`given`/`extension`, Scaladoc), **PHP** (`.php`/`.phtml` — modern
-    PHP 8.x and the still-deployed 7.4 LTS line: namespaces, traits, enums,
-    ctor property promotion, `#[Attr]` attributes, plus top-level
-    `include`/`require` for legacy WordPress / Drupal-7 codebases), and
-    **YAML** (`.yaml`/`.yml` — Kubernetes / OpenAPI / GitHub Actions, with
-    dotted key paths and sequence indices).
+    `enum`/`given`/`extension`, Scaladoc), and **YAML** (`.yaml`/`.yml` —
+    Kubernetes / OpenAPI / GitHub Actions, with dotted key paths and
+    sequence indices).
 
     Same digest format, same legend, same `[broken]` recovery semantics. Adding
     another language is a single new adapter file —
@@ -321,10 +318,10 @@ answer *"what methods exist here?"*.
     No index, no cache, no embeddings, no network. Always fresh,
     invisible to the repo.
 
-- :material-format-list-checks: **One tool, ten languages**
+- :material-format-list-checks: **One tool, twelve languages**
 
-    C#, Python, TypeScript/JS, Java, Kotlin, Scala, Go, Rust,
-    Markdown, YAML — same digest format, same legend.
+    C#, Python, TypeScript, JavaScript, Java, Kotlin, Scala, Go, Rust,
+    PHP, Markdown, YAML — same digest format, same legend.
 
 </div>
 
