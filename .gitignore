@@ -1,0 +1,18 @@
+# MkDocs build output
+site/
+
+# Tooling caches
+.pytest_cache/
+.cache/
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local agent guidance — kept on disk, not tracked
+AGENTS.md
+CLAUDE.md
+.claude/
