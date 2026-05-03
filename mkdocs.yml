@@ -20,36 +20,47 @@ docs_dir: docs
 theme:
   name: material
   language: en
+  logo: assets/logo.svg
+  favicon: assets/favicon.svg
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: indigo
+      primary: black
+      accent: green
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: black
+      accent: light green
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
     - navigation.instant
+    - navigation.instant.progress
     - navigation.tracking
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
     - navigation.indexes
     - navigation.top
+    - navigation.footer
+    - toc.follow
     - search.suggest
     - search.highlight
     - search.share
     - content.code.copy
-    - toc.follow
+    - content.code.annotate
+    - content.tabs.link
+    - announce.dismiss
   icon:
     repo: fontawesome/brands/github
+    annotation: material/arrow-right-circle
 
 markdown_extensions:
   - abbr
@@ -85,6 +96,12 @@ extra:
       link: https://pypi.org/project/ast-outline/
       name: ast-outline on PyPI
   generator: false
+
+extra_css:
+  - assets/extra.css
+
+plugins:
+  - search
 
 nav:
   - Home: index.md

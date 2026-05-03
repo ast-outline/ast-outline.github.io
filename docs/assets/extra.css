@@ -1,0 +1,222 @@
+/* ast-outline — custom theme tweaks */
+
+:root {
+  --md-primary-fg-color:        #0d1117;
+  --md-primary-fg-color--light:  #161b22;
+  --md-primary-fg-color--dark:   #010409;
+  --md-accent-fg-color:          #2ea043;
+  --md-accent-fg-color--transparent: rgba(46, 160, 67, 0.1);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:         #010409;
+  --md-primary-fg-color--light:  #0d1117;
+  --md-default-bg-color:         #0d1117;
+  --md-accent-fg-color:          #7ee787;
+  --md-typeset-a-color:          #7ee787;
+}
+
+/* ─── Hero (landing page) ─────────────────────────────────── */
+
+.ast-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 1rem 1rem;
+  background: linear-gradient(180deg,
+    var(--md-default-bg-color) 0%,
+    var(--md-code-bg-color) 100%);
+  border-radius: 12px;
+  margin: 1rem 0 2.5rem;
+}
+
+.ast-hero__title {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--md-default-fg-color);
+}
+
+.ast-hero__title .ast-hero__bracket {
+  color: var(--md-accent-fg-color);
+  opacity: 0.85;
+}
+
+.ast-hero__tagline {
+  font-size: 1.15rem;
+  max-width: 42rem;
+  margin: 0.75rem auto 1.5rem;
+  color: var(--md-default-fg-color--light);
+  line-height: 1.55;
+}
+
+.ast-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.ast-hero__cta a.md-button {
+  font-weight: 600;
+}
+
+/* ─── Console blocks (terminal-style code) ───────────────── */
+
+.ast-console {
+  background: #0d1117;
+  color: #c9d1d9;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid #30363d;
+  position: relative;
+}
+
+.ast-console::before {
+  content: "● ● ●";
+  display: block;
+  color: #ff5f57;
+  letter-spacing: 0.25em;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.ast-console .ast-prompt {
+  color: #7ee787;
+  user-select: none;
+}
+
+.ast-console .ast-comment {
+  color: #8b949e;
+  font-style: italic;
+}
+
+.ast-console .ast-keyword {
+  color: #ff7b72;
+}
+
+.ast-console .ast-type {
+  color: #d2a8ff;
+}
+
+.ast-console .ast-method {
+  color: #79c0ff;
+}
+
+.ast-console .ast-marker {
+  color: #ffa657;
+}
+
+.ast-console .ast-line {
+  color: #8b949e;
+  font-size: 0.78rem;
+}
+
+/* ─── Cards grid (next-steps section) ─────────────────────── */
+
+.grid.cards > ul > li {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: border-color 200ms, transform 200ms;
+}
+
+.grid.cards > ul > li:hover {
+  border-color: var(--md-accent-fg-color);
+  transform: translateY(-2px);
+}
+
+/* ─── Inline code refinements ─────────────────────────────── */
+
+.md-typeset code {
+  font-feature-settings: "calt" 1, "liga" 1;
+  font-size: 0.85em;
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+}
+
+/* ─── Tables ──────────────────────────────────────────────── */
+
+.md-typeset table:not([class]) th {
+  background: var(--md-code-bg-color);
+}
+
+/* ─── Footer attribution ──────────────────────────────────── */
+
+.md-copyright {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  max-width: 56rem;
+}
+
+.md-copyright__highlight {
+  display: block;
+  padding-block: 0.5rem;
+}
+
+/* ─── Marker tag pills (for [async]/[deprecated]/etc.) ───── */
+
+.ast-tag {
+  display: inline-block;
+  padding: 0.05em 0.5em;
+  margin: 0 0.15em;
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78em;
+  font-weight: 500;
+  background: var(--md-accent-fg-color--transparent);
+  color: var(--md-accent-fg-color);
+  border: 1px solid var(--md-accent-fg-color);
+}
+
+.ast-tag--warn {
+  background: rgba(255, 166, 87, 0.1);
+  color: #d2691e;
+  border-color: #d2691e;
+}
+
+[data-md-color-scheme="slate"] .ast-tag--warn {
+  color: #ffa657;
+  border-color: #ffa657;
+}
+
+/* ─── Comparison table ────────────────────────────────────── */
+
+.ast-compare {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+.ast-compare th,
+.ast-compare td {
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.ast-compare th {
+  background: var(--md-code-bg-color);
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+}
+
+.ast-compare td:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+
+.ast-compare .yes { color: #2ea043; font-weight: 700; }
+.ast-compare .no  { color: #cf222e; }
+.ast-compare .meh { color: #8b949e; }
