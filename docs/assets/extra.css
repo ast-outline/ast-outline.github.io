@@ -292,6 +292,30 @@ pre.ast-console__out code {
   padding: 0.1em 0.4em;
 }
 
+/* Compact code blocks inside the "See it live" tab set + terminal-style title */
+.tabbed-set .highlight pre,
+.tabbed-set .highlight code {
+  font-size: 0.74rem !important;
+  line-height: 1.45 !important;
+}
+
+.tabbed-set .highlight .filename,
+.tabbed-set .highlighttable .filename {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+  color: #7ee787;
+  border-bottom: 1px solid #30363d;
+}
+
+[data-md-color-scheme="default"] .tabbed-set .highlight .filename,
+[data-md-color-scheme="default"] .tabbed-set .highlighttable .filename {
+  background: linear-gradient(180deg, #f6f8fa 0%, #ebeef2 100%);
+  color: #2ea043;
+  border-bottom: 1px solid #d0d7de;
+}
+
 /* ─── Tables ──────────────────────────────────────────────── */
 
 .md-typeset table:not([class]) th {

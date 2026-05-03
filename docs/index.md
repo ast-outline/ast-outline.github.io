@@ -44,156 +44,207 @@ before reading the whole thing.
 
 Real `ast-outline` output — including extracted **doc-comments**,
 **type annotations**, **decorators / attributes**, and per-file stats
-in the header. No method bodies, no fluff.
+in the header. No method bodies, no fluff. Each tab below is the
+actual textual output of running `ast-outline` against a file in the
+language; syntax-highlighted by **Pygments** so the structure reads
+the same way it does in your editor.
 
 === ":material-language-python: Python"
 
-    <div class="ast-console" markdown="0">
-    <div class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">cli.py — ast-outline</span></div>
-    <div class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/ast_outline/cli.py</div>
-    <pre class="ast-console__out"><span class="ast-comment"># src/ast_outline/cli.py (563 lines, ~5,326 tokens, 2 types, 12 methods, 6 fields)</span>
-    <span class="ast-keyword">class</span> <span class="ast-type">_LLMArgumentParser</span>(argparse.ArgumentParser)  <span class="ast-line">L33-51</span>
-        <span class="ast-doc">"""ArgumentParser that doesn't sys.exit on bad args.</span>
-    <span class="ast-doc">    Default argparse behavior on bad arguments is to print to stderr</span>
-    <span class="ast-doc">    and call sys.exit(2). For an LLM-facing CLI that breaks parallel</span>
-    <span class="ast-doc">    bash chains in Claude Code. Instead we raise a sentinel exception</span>
-    <span class="ast-doc">    that main() turns into a short # note: line on stdout..."""</span>
-        <span class="ast-keyword">def</span> <span class="ast-method">error</span>(self, message: <span class="ast-type">str</span>) -&gt; <span class="ast-type">None</span>  <span class="ast-line">L43-44</span>
-        <span class="ast-keyword">def</span> <span class="ast-method">exit</span>(self, status: <span class="ast-type">int</span> = 0, message: <span class="ast-type">str | None</span> = None) -&gt; <span class="ast-type">None</span>  <span class="ast-line">L46-51</span>
+    ```python title="$ ast-outline src/ast_outline/cli.py"
+    # src/ast_outline/cli.py (563 lines, ~5,326 tokens, 2 types, 12 methods, 6 fields)
+    SUBCOMMANDS  L30
 
-    <span class="ast-keyword">def</span> <span class="ast-method">main</span>(argv: <span class="ast-type">list[str] | None</span> = None) -&gt; <span class="ast-type">int</span>  <span class="ast-line">L58-132</span>
-    <span class="ast-keyword">def</span> <span class="ast-method">_cmd_version</span>(_args) -&gt; <span class="ast-type">int</span>  <span class="ast-line">L135-146</span>
-        <span class="ast-doc">"""Print version + authorship in the standard `tool x.y.z` form..."""</span>
-    <span class="ast-keyword">def</span> <span class="ast-method">_cmd_prompt</span>(_args) -&gt; <span class="ast-type">int</span>  <span class="ast-line">L149-158</span>
-        <span class="ast-doc">"""Print the canonical copy-paste LLM-agent prompt snippet verbatim."""</span></pre>
-    </div>
+    class _LLMArgumentParser(argparse.ArgumentParser)  L33-51
+        """ArgumentParser that doesn't ``sys.exit`` on bad args.
+
+            Default ``argparse`` behavior on bad arguments is to print to stderr
+            and call ``sys.exit(2)``. For an LLM-facing CLI that breaks parallel
+            bash chains in Claude Code. Instead we raise a sentinel exception
+            that ``main()`` turns into a short ``# note:`` line on stdout..."""
+        def error(self, message: str) -> None  L43-44
+        def exit(self, status: int = 0, message: str | None = None) -> None  L46-51
+
+    def main(argv: list[str] | None = None) -> int  L58-132
+
+    def _cmd_version(_args) -> int  L135-146
+        """Print version + authorship in the standard `tool x.y.z` form..."""
+
+    def _cmd_prompt(_args) -> int  L149-158
+        """Print the canonical copy-paste LLM-agent prompt snippet verbatim."""
+    ```
 
 === ":material-language-typescript: TypeScript"
 
-    <div class="ast-console" markdown="0">
-    <div class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">storage_service.ts — ast-outline</span></div>
-    <div class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/storage_service.ts</div>
-    <pre class="ast-console__out"><span class="ast-comment"># src/storage_service.ts (60 lines, ~352 tokens, 3 types, 8 methods, 10 fields)</span>
-    <span class="ast-keyword">const</span> <span class="ast-method">DB_NAME</span> = <span class="ast-string">"demo-db"</span>  <span class="ast-line">L5</span>
-    <span class="ast-keyword">const</span> <span class="ast-method">DB_VERSION</span> = <span class="ast-string">1</span>  <span class="ast-line">L6</span>
+    ```typescript title="$ ast-outline src/storage_service.ts"
+    # src/storage_service.ts (60 lines, ~352 tokens, 3 types, 8 methods, 10 fields)
+    const DB_NAME = "demo-db"  L5
+    const DB_VERSION = 1  L6
 
-    <span class="ast-keyword">interface</span> <span class="ast-type">DBSchema</span>  <span class="ast-line">L8-12</span>
-        projects: <span class="ast-type">Project</span>  <span class="ast-line">L9</span>
-        documents: <span class="ast-type">Document</span>  <span class="ast-line">L10</span>
-        settings: <span class="ast-type">AppSettings</span>  <span class="ast-line">L11</span>
+    interface DBSchema  L8-12
+        projects: Project  L9
+        documents: Document  L10
+        settings: AppSettings  L11
 
-    <span class="ast-keyword">export class</span> <span class="ast-type">StorageService</span>  <span class="ast-line">L14-44</span>
-        <span class="ast-keyword">private</span> db: <span class="ast-type">IDBDatabase | null</span>  <span class="ast-line">L15</span>
-        <span class="ast-keyword">private</span> initPromise: <span class="ast-type">Promise&lt;void&gt; | null</span>  <span class="ast-line">L16</span>
-        <span class="ast-keyword">async</span> <span class="ast-method">init</span>(): <span class="ast-type">Promise&lt;void&gt;</span>  <span class="ast-line">L18-22</span>
-        <span class="ast-comment">// Generic CRUD</span>
-        <span class="ast-keyword">private async</span> <span class="ast-method">getAll</span>&lt;<span class="ast-type">T</span>&gt;(storeName: <span class="ast-keyword">keyof</span> <span class="ast-type">DBSchema</span>): <span class="ast-type">Promise&lt;T[]&gt;</span>  <span class="ast-line">L29-31</span>
-        <span class="ast-keyword">async</span> <span class="ast-method">getProject</span>(id: <span class="ast-type">string</span>): <span class="ast-type">Promise&lt;Project | null&gt;</span>  <span class="ast-line">L33-35</span>
-        <span class="ast-keyword">async</span> <span class="ast-method">saveProject</span>(project: <span class="ast-type">Project</span>): <span class="ast-type">Promise&lt;void&gt;</span>  <span class="ast-line">L37-39</span>
-        <span class="ast-keyword">protected</span> <span class="ast-method">log</span>(msg: <span class="ast-type">string</span>): <span class="ast-type">void</span>  <span class="ast-line">L41-43</span>
+    export class StorageService  L14-44
+        private db: IDBDatabase | null  L15
+        private initPromise: Promise<void> | null  L16
+        async init(): Promise<void>  L18-22
+        // Generic CRUD
+        private async getAll<T>(storeName: keyof DBSchema): Promise<T[]>  L29-31
+        async getProject(id: string): Promise<Project | null>  L33-35
+        async saveProject(project: Project): Promise<void>  L37-39
+        protected log(msg: string): void  L41-43
 
-    <span class="ast-keyword">export const</span> <span class="ast-method">storage</span> = <span class="ast-keyword">new</span> <span class="ast-type">StorageService</span>()  <span class="ast-line">L58</span>
-    <span class="ast-keyword">export const</span> <span class="ast-method">language</span> = <span class="ast-keyword">new</span> <span class="ast-type">LanguageService</span>()  <span class="ast-line">L59</span></pre>
-    </div>
+    export const storage = new StorageService()  L58
+    export const language = new LanguageService()  L59
+    ```
 
 === ":material-language-rust: Rust"
 
-    <div class="ast-console" markdown="0">
-    <div class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">user_service.rs — ast-outline</span></div>
-    <div class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/user_service.rs</div>
-    <pre class="ast-console__out"><span class="ast-comment"># src/user_service.rs (72 lines, ~396 tokens, 3 types, 9 methods, 6 fields)</span>
-    <span class="ast-doc">/// Represents a registered user account.</span>
-    <span class="ast-doc">///</span>
-    <span class="ast-doc">/// Carries the public name visible to others plus the (private) raw</span>
-    <span class="ast-doc">/// id used for storage indexing.</span>
-    <span class="ast-attr">#[derive(Debug, Clone)]</span> <span class="ast-keyword">pub struct</span> <span class="ast-type">User</span>  <span class="ast-line">L10-47</span>
-        <span class="ast-keyword">pub</span> name: <span class="ast-type">String</span>  <span class="ast-line">L11</span>
-        <span class="ast-keyword">pub</span> email: <span class="ast-type">String</span>  <span class="ast-line">L12</span>
-        id: <span class="ast-type">u64</span>  <span class="ast-line">L13</span>
-        <span class="ast-doc">/// Constructor — assigns a fresh id at creation time.</span>
-        <span class="ast-keyword">pub fn</span> <span class="ast-method">new</span>(name: <span class="ast-type">String</span>, email: <span class="ast-type">String</span>, id: <span class="ast-type">u64</span>) -&gt; <span class="ast-type">Self</span>  <span class="ast-line">L29-31</span>
-        <span class="ast-doc">/// Read-only accessor for the raw id.</span>
-        <span class="ast-keyword">pub fn</span> <span class="ast-method">raw_id</span>(&amp;self) -&gt; <span class="ast-type">u64</span>  <span class="ast-line">L34-36</span>
+    ```rust title="$ ast-outline src/user_service.rs"
+    # src/user_service.rs (72 lines, ~396 tokens, 3 types, 9 methods, 6 fields)
+    /// Represents a registered user account.
+    ///
+    /// Carries the public name visible to others plus the (private) raw
+    /// id used for storage indexing.
+    #[derive(Debug, Clone)] pub struct User  L10-47
+        pub name: String  L11
+        pub email: String  L12
+        id: u64  L13
+        /// Constructor — assigns a fresh id at creation time.
+        pub fn new(name: String, email: String, id: u64) -> Self  L29-31
+        /// Read-only accessor for the raw id.
+        pub fn raw_id(&self) -> u64  L34-36
 
-    <span class="ast-doc">/// Trait describing anything that can be addressed by a unique id.</span>
-    <span class="ast-keyword">pub trait</span> <span class="ast-type">HasId</span>  <span class="ast-line">L17-20</span>
-        <span class="ast-doc">/// Numeric identifier — must be stable for the lifetime of the value.</span>
-        <span class="ast-keyword">fn</span> <span class="ast-method">id</span>(&amp;self) -&gt; <span class="ast-type">u64</span>  <span class="ast-line">L19</span>
+    /// Trait describing anything that can be addressed by a unique id.
+    pub trait HasId  L17-20
+        /// Numeric identifier — must be stable for the lifetime of the value.
+        fn id(&self) -> u64  L19
 
-    <span class="ast-doc">/// Service that owns a registry of users keyed by id.</span>
-    <span class="ast-keyword">pub struct</span> <span class="ast-type">UserService</span>  <span class="ast-line">L23-63</span>
-        users: <span class="ast-type">HashMap&lt;u64, User&gt;</span>  <span class="ast-line">L24</span>
-        <span class="ast-keyword">pub fn</span> <span class="ast-method">register</span>(&amp;<span class="ast-keyword">mut</span> self, user: <span class="ast-type">User</span>)  <span class="ast-line">L56-58</span>
-        <span class="ast-keyword">pub fn</span> <span class="ast-method">lookup</span>(&amp;self, id: <span class="ast-type">u64</span>) -&gt; <span class="ast-type">Option&lt;&amp;User&gt;</span>  <span class="ast-line">L60-62</span>
+    /// Service that owns a registry of users keyed by id.
+    pub struct UserService  L23-63
+        users: HashMap<u64, User>  L24
+        pub fn register(&mut self, user: User)  L56-58
+        pub fn lookup(&self, id: u64) -> Option<&User>  L60-62
 
-    <span class="ast-keyword">pub const</span> <span class="ast-method">MAX_USERS</span>: <span class="ast-type">u32</span> = <span class="ast-string">10_000</span>  <span class="ast-line">L70</span></pre>
-    </div>
+    pub const MAX_USERS: u32 = 10_000  L70
+    ```
+
+=== ":material-language-csharp: C# (Unity)"
+
+    ```csharp title="$ ast-outline Assets/Scripts/HeroController.cs"
+    # Assets/Scripts/HeroController.cs (54 lines, ~385 tokens, 3 types, 4 methods, 5 fields)
+    namespace Demo.Combat
+        /// <summary>
+        /// Controls the hero in-scene: movement, damage, death.
+        /// </summary>
+        [RequireComponent(typeof(Rigidbody2D))] public class HeroController : MonoBehaviour, IDamageable  L18-47
+            [SerializeField] private float _speed = 5f  L21
+            [SerializeField] private int _maxHealth = 100  L22
+            public int CurrentHealth { get; private set; }  L24
+            public bool IsAlive => CurrentHealth > 0  L25
+            /// <summary>Fired whenever health changes.</summary>
+            public event Action<int> OnHealthChanged  L28
+            /// <summary>Apply damage to the hero.</summary>
+            /// <param name="amount">HP to subtract.</param>
+            public void TakeDamage(int amount)  L34-39
+            private void Die()  L41-44
+            public enum State  L46
+                Idle, Moving, Dead  L46
+
+        public interface IDamageable  L49-52
+            void TakeDamage(int amount)  L51
+    ```
 
 === ":material-language-java: Java"
 
-    <div class="ast-console" markdown="0">
-    <div class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">UserService.java — ast-outline</span></div>
-    <div class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/main/java/com/example/UserService.java</div>
-    <pre class="ast-console__out"><span class="ast-comment"># UserService.java (64 lines, ~352 tokens, 3 types, 9 methods, 5 fields)</span>
-    <span class="ast-keyword">namespace</span> <span class="ast-type">com.example.demo.service</span>
-        <span class="ast-doc">/**</span>
-    <span class="ast-doc">     * Service layer for user accounts.</span>
-    <span class="ast-doc">     *</span>
-    <span class="ast-doc">     * &lt;p&gt;Demonstrates: Javadoc, multiple annotations, inheritance,</span>
-    <span class="ast-doc">     * generics, throws, abstract methods, nested types.</span>
-    <span class="ast-doc">     */</span>
-        <span class="ast-attr">@Service @Deprecated(since = "2.0")</span> <span class="ast-keyword">public class</span> <span class="ast-type">UserService</span> <span class="ast-keyword">extends</span> <span class="ast-type">BaseService</span> <span class="ast-keyword">implements</span> <span class="ast-type">UserRepository</span>, <span class="ast-type">AutoCloseable</span>  <span class="ast-line">L13-63</span>
-            <span class="ast-doc">/** Hard cap on concurrent users. */</span>
-            <span class="ast-keyword">public static final int</span> <span class="ast-method">MAX_USERS</span> = <span class="ast-string">100</span>  <span class="ast-line">L18</span>
-            <span class="ast-keyword">private final</span> <span class="ast-type">String</span> <span class="ast-method">name</span>  <span class="ast-line">L20</span>
-            <span class="ast-keyword">protected</span> <span class="ast-type">List&lt;String&gt;</span> <span class="ast-method">items</span>  <span class="ast-line">L21</span>
-            <span class="ast-keyword">public</span> <span class="ast-method">UserService</span>(<span class="ast-type">String</span> name)  <span class="ast-line">L24-27</span>
-            <span class="ast-doc">/** Saves a user. */</span>
-            <span class="ast-attr">@Override</span> <span class="ast-keyword">public void</span> <span class="ast-method">save</span>(<span class="ast-type">User</span> user) <span class="ast-keyword">throws</span> <span class="ast-type">IOException</span>, <span class="ast-type">IllegalArgumentException</span>  <span class="ast-line">L34-37</span>
-            <span class="ast-keyword">private static</span> &lt;<span class="ast-type">T</span> <span class="ast-keyword">extends</span> <span class="ast-type">Comparable&lt;T&gt;</span>&gt; <span class="ast-type">T</span> <span class="ast-method">findMax</span>(<span class="ast-type">List&lt;T&gt;</span> items)  <span class="ast-line">L39-41</span>
-            <span class="ast-keyword">public abstract int</span> <span class="ast-method">compute</span>()  <span class="ast-line">L43</span>
-            <span class="ast-attr">@Override</span> <span class="ast-keyword">public void</span> <span class="ast-method">close</span>()  <span class="ast-line">L45-46</span></pre>
-    </div>
+    ```java title="$ ast-outline src/main/java/com/example/UserService.java"
+    # UserService.java (64 lines, ~352 tokens, 3 types, 9 methods, 5 fields)
+    namespace com.example.demo.service
+        /**
+         * Service layer for user accounts.
+         *
+         * <p>Demonstrates: Javadoc, multiple annotations, inheritance,
+         * generics, throws, abstract methods, nested types.
+         */
+        @Service @Deprecated(since = "2.0", forRemoval = false) public class UserService extends BaseService implements UserRepository, AutoCloseable  L13-63
+            /** Hard cap on concurrent users. */
+            public static final int MAX_USERS = 100  L18
+            private final String name  L20
+            protected List<String> items  L21
+            public UserService(String name)  L24-27
+            /** Saves a user. */
+            @Override public void save(User user) throws IOException, IllegalArgumentException  L34-37
+            private static <T extends Comparable<T>> T findMax(List<T> items)  L39-41
+            public abstract int compute()  L43
+            @Override public void close()  L45-46
+            public static final class Inner  L48-58
+                public Inner(int value)  L51-53
+                public int value()  L55-57
+    ```
 
 === ":material-language-go: Go"
 
-    <div class="ast-console" markdown="0">
-    <div class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">user_service.go — ast-outline</span></div>
-    <div class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline service/user_service.go</div>
-    <pre class="ast-console__out"><span class="ast-comment"># user_service.go (105 lines, ~635 tokens, 4 types, 9 methods, 9 fields)</span>
-    <span class="ast-keyword">namespace</span> <span class="ast-type">service</span>
-        <span class="ast-keyword">const</span> <span class="ast-method">MaxUsers</span> = <span class="ast-string">100</span>  <span class="ast-line">L16</span>
-        <span class="ast-keyword">var</span> <span class="ast-method">GlobalCounter</span> <span class="ast-type">int</span> = <span class="ast-string">0</span>  <span class="ast-line">L23</span>
+    ```go title="$ ast-outline service/user_service.go"
+    # user_service.go (105 lines, ~635 tokens, 4 types, 9 methods, 9 fields)
+    namespace service
+        const MaxUsers = 100  L16
+        var GlobalCounter int = 0  L23
 
-        <span class="ast-comment">// BaseService is a top-level service primitive other services embed.</span>
-        <span class="ast-keyword">type</span> <span class="ast-type">BaseService</span> <span class="ast-keyword">struct</span>  <span class="ast-line">L29-44</span>
-            <span class="ast-method">Name</span> <span class="ast-type">string</span>  <span class="ast-line">L30</span>
-            closed <span class="ast-type">bool</span>  <span class="ast-line">L32</span>
-            <span class="ast-comment">// Open marks the service as ready.</span>
-            <span class="ast-keyword">func</span> (b *<span class="ast-type">BaseService</span>) <span class="ast-method">Open</span>()  <span class="ast-line">L36-38</span>
-            <span class="ast-comment">// close is unexported.</span>
-            <span class="ast-keyword">func</span> (b *<span class="ast-type">BaseService</span>) <span class="ast-method">close</span>() <span class="ast-type">error</span>  <span class="ast-line">L41-44</span>
+        // BaseService is a top-level service primitive other services embed.
+        type BaseService struct  L29-44
+            Name string  L30
+            closed bool  L32
+            // Open marks the service as ready.
+            func (b *BaseService) Open()  L36-38
+            // close is unexported.
+            func (b *BaseService) close() error  L41-44
 
-        <span class="ast-comment">// UserService is the primary user-facing service.</span>
-        <span class="ast-comment">//</span>
-        <span class="ast-comment">// Embeds BaseService — Go's idiom for "extends BaseService" — and</span>
-        <span class="ast-comment">// implements the io.Closer interface contract via Close().</span>
-        <span class="ast-keyword">type</span> <span class="ast-type">UserService</span> <span class="ast-keyword">struct</span>  <span class="ast-line">L50-78</span>
-            <span class="ast-method">Repo</span> <span class="ast-type">Repository</span>  <span class="ast-line">L52</span>
-            cache <span class="ast-keyword">map</span>[<span class="ast-type">string</span>]<span class="ast-keyword">any</span>  <span class="ast-line">L53</span>
-            <span class="ast-comment">// Save persists a user; returns an error on failure.</span>
-            <span class="ast-keyword">func</span> (u *<span class="ast-type">UserService</span>) <span class="ast-method">Save</span>(user <span class="ast-type">string</span>) <span class="ast-type">error</span>  <span class="ast-line">L57-62</span>
-            <span class="ast-comment">// Close satisfies io.Closer.</span>
-            <span class="ast-keyword">func</span> (u *<span class="ast-type">UserService</span>) <span class="ast-method">Close</span>() <span class="ast-type">error</span>  <span class="ast-line">L76-78</span></pre>
-    </div>
+        // UserService is the primary user-facing service.
+        //
+        // Embeds BaseService — Go's idiom for "extends BaseService" — and
+        // implements the io.Closer interface contract via Close().
+        type UserService struct  L50-78
+            Repo Repository  L52
+            cache map[string]any  L53
+            // Save persists a user; returns an error on failure.
+            func (u *UserService) Save(user string) error  L57-62
+            // Close satisfies io.Closer.
+            func (u *UserService) Close() error  L76-78
 
-!!! info "+ 6 more languages with the same digest format"
-    `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs`),
-    **C#** (`.cs` — Unity, ASP.NET, anything), **Kotlin** (`.kt`/`.kts` — Android,
-    Spring), **Scala** (`.scala`/`.sc` — Scala 2 + Scala 3 with `enum`/`given`/`extension`),
-    **Markdown** (`.md`/`.mdx` — heading hierarchy + code blocks), and **YAML**
-    (`.yaml`/`.yml` — Kubernetes / OpenAPI / GitHub Actions, with key paths and
-    sequence indices).
+        // Repository is the contract user-stores must satisfy.
+        type Repository interface  L81-88
+            Get(id string) (string, error)  L83
+            List() []string  L85
+    ```
+
+=== ":material-language-markdown: Markdown"
+
+    ```markdown title="$ ast-outline README.md"
+    # README.md (52 lines, ~153 tokens, 8 headings, 5 code blocks)
+    # Sample Project  L1-51
+        ## Installation  L5-26
+            bash code block  L9-11
+            ### From source  L13-20
+                bash code block  L15-19
+            ### Via pipx  L21-26
+                bash code block  L23-25
+        ## Usage  L27-44
+            python code block  L31-34
+            ### Configuration  L36-44
+                code code block  L40-43
+        ## Contributing  L45-48
+        ## License  L49-51
+    ```
+
+!!! info "+ 4 more languages with the same digest format"
+    `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs` — parsed by
+    the TypeScript grammar, so React/Node/ES-module files all flow through),
+    **Kotlin** (`.kt`/`.kts` — Android, Compose, Spring; `data class`, `sealed`,
+    `suspend`, KDoc), **Scala** (`.scala`/`.sc` — Scala 2 + Scala 3 with
+    `enum`/`given`/`extension`, Scaladoc), and **YAML** (`.yaml`/`.yml` — Kubernetes /
+    OpenAPI / GitHub Actions, with dotted key paths and sequence indices).
 
     Same digest format, same legend, same `[broken]` recovery semantics. Adding
     another language is a single new adapter file —
