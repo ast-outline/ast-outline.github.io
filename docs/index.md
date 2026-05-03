@@ -24,11 +24,11 @@ before reading the whole thing.
 </div>
 
 <div class="ast-hero__stats">
-<span><strong>11</strong> languages</span>
+<span><strong>12</strong> languages</span>
 <span><strong>0</strong> runtime deps you write</span>
 <span><strong>0</strong> indexes / caches</span>
 <span><strong>5–10×</strong> token savings vs full reads</span>
-<span><strong>~0.1s</strong> for 600+ tests</span>
+<span><strong>~0.5s</strong> for 800+ tests</span>
 </div>
 
 </div>
