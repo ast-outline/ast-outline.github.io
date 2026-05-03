@@ -22,6 +22,15 @@ before reading the whole thing.
 [:simple-github: GitHub](https://github.com/ast-outline/ast-outline){ .md-button }
 
 </div>
+
+<div class="ast-hero__stats">
+<span><strong>11</strong> languages</span>
+<span><strong>0</strong> runtime deps you write</span>
+<span><strong>0</strong> indexes / caches</span>
+<span><strong>5–10×</strong> token savings vs full reads</span>
+<span><strong>~0.1s</strong> for 600+ tests</span>
+</div>
+
 </div>
 
 [![Code: Apache 2.0](https://img.shields.io/badge/code-Apache%202.0-blue.svg)](https://github.com/ast-outline/ast-outline/blob/main/LICENSE)
@@ -33,183 +42,276 @@ before reading the whole thing.
 
 ## See it live
 
-=== ":simple-python: Python"
+Real `ast-outline` output — including extracted **doc-comments**,
+**type annotations**, **decorators / attributes**, and per-file stats
+in the header. No method bodies, no fluff.
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline src/services/billing.py
-    <span class="ast-comment"># src/services/billing.py (412 lines)</span>
-    <span class="ast-keyword">class</span> <span class="ast-type">BillingService</span> : <span class="ast-type">BaseService</span>                            <span class="ast-line">L18-298</span>
-      <span class="ast-method">__init__</span>(<span class="ast-keyword">self</span>, db, gateway)                            <span class="ast-line">L24-31</span>
-      <span class="ast-method">create_invoice</span>(<span class="ast-keyword">self</span>, customer_id, items)               <span class="ast-line">L42-78</span>
-      <span class="ast-method">capture_payment</span>(<span class="ast-keyword">self</span>, invoice_id) <span class="ast-marker">[async]</span>           <span class="ast-line">L82-118</span>
-      <span class="ast-method">refund</span>(<span class="ast-keyword">self</span>, invoice_id, amount) <span class="ast-marker">[async]</span>            <span class="ast-line">L122-156</span>
-      <span class="ast-method">_total</span>(<span class="ast-keyword">self</span>, items) <span class="ast-marker">[classmethod]</span>                    <span class="ast-line">L260-274</span>
-      ...
-    <span class="ast-keyword">def</span> <span class="ast-method">format_currency</span>(amount, currency=<span class="ast-keyword">'USD'</span>)             <span class="ast-line">L301-318</span>
-    <span class="ast-keyword">def</span> <span class="ast-method">parse_amount</span>(raw)                                  <span class="ast-line">L321-342</span></pre>
+=== ":material-language-python: Python"
 
-=== ":simple-rust: Rust"
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">cli.py — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/ast_outline/cli.py</span><span class="ast-console__out"><span class="ast-comment"># src/ast_outline/cli.py (563 lines, ~5,326 tokens, 2 types, 12 methods, 6 fields)</span>
+    SUBCOMMANDS  <span class="ast-line">L30</span>
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline src/parser.rs
-    <span class="ast-comment"># src/parser.rs (847 lines)</span>
-    <span class="ast-keyword">pub struct</span> <span class="ast-type">Parser</span>&lt;<span class="ast-type">'src</span>&gt;                                 <span class="ast-line">L24-512</span>
-      <span class="ast-method">new</span>(source: &amp;<span class="ast-type">'src str</span>) -&gt; <span class="ast-type">Self</span>                       <span class="ast-line">L40-58</span>
-      <span class="ast-method">parse</span>(&amp;<span class="ast-keyword">mut self</span>) -&gt; <span class="ast-type">Result</span>&lt;<span class="ast-type">Ast</span>, <span class="ast-type">ParseError</span>&gt;          <span class="ast-line">L62-198</span>
-      <span class="ast-method">peek</span>(&amp;<span class="ast-keyword">self</span>) -&gt; <span class="ast-type">Option</span>&lt;<span class="ast-type">Token</span>&gt; <span class="ast-marker">[const]</span>             <span class="ast-line">L210-218</span>
-      <span class="ast-method">advance</span>(&amp;<span class="ast-keyword">mut self</span>) <span class="ast-marker">[unsafe]</span>                          <span class="ast-line">L222-234</span>
-    <span class="ast-keyword">pub trait</span> <span class="ast-type">Visitor</span> : <span class="ast-type">Send</span>, <span class="ast-type">Sync</span>                       <span class="ast-line">L520-580</span>
-      <span class="ast-method">visit_expr</span>(&amp;<span class="ast-keyword">mut self</span>, expr: &amp;<span class="ast-type">Expr</span>)                  <span class="ast-line">L535-545</span>
-      <span class="ast-method">visit_stmt</span>(&amp;<span class="ast-keyword">mut self</span>, stmt: &amp;<span class="ast-type">Stmt</span>)                  <span class="ast-line">L548-560</span></pre>
+    <span class="ast-keyword">class</span> <span class="ast-type">_LLMArgumentParser</span>(<span class="ast-type">argparse.ArgumentParser</span>)  <span class="ast-line">L33-51</span>
+        <span class="ast-doc">"""ArgumentParser that doesn't ``sys.exit`` on bad args.</span>
+    <span class="ast-doc">    Default ``argparse`` behavior on bad arguments is to print to stderr</span>
+    <span class="ast-doc">    and call ``sys.exit(2)``. For an LLM-facing CLI that breaks parallel</span>
+    <span class="ast-doc">    bash chains in Claude Code. Instead we raise a sentinel exception</span>
+    <span class="ast-doc">    that ``main()`` turns into a short ``# note:`` line on stdout +</span>
+    <span class="ast-doc">    ..."""</span>
+        <span class="ast-keyword">def</span> <span class="ast-method">error</span>(<span class="ast-keyword">self</span>, message: <span class="ast-type">str</span>) -&gt; <span class="ast-type">None</span>  <span class="ast-line">L43-44</span>
+        <span class="ast-keyword">def</span> <span class="ast-method">exit</span>(<span class="ast-keyword">self</span>, status: <span class="ast-type">int</span> = 0, message: <span class="ast-type">str | None</span> = <span class="ast-keyword">None</span>) -&gt; <span class="ast-type">None</span>  <span class="ast-line">L46-51</span>
 
-=== ":simple-typescript: TypeScript"
+    <span class="ast-keyword">def</span> <span class="ast-method">main</span>(argv: <span class="ast-type">list[str] | None</span> = <span class="ast-keyword">None</span>) -&gt; <span class="ast-type">int</span>  <span class="ast-line">L58-132</span>
+    <span class="ast-keyword">def</span> <span class="ast-method">_cmd_version</span>(_args) -&gt; <span class="ast-type">int</span>  <span class="ast-line">L135-146</span>
+        <span class="ast-doc">"""Print version + authorship in the standard `tool x.y.z` form..."""</span>
+    <span class="ast-keyword">def</span> <span class="ast-method">_cmd_prompt</span>(_args) -&gt; <span class="ast-type">int</span>  <span class="ast-line">L149-158</span>
+        <span class="ast-doc">"""Print the canonical copy-paste LLM-agent prompt snippet verbatim."""</span></span></pre>
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline src/components/UserCard.tsx
-    <span class="ast-comment"># src/components/UserCard.tsx (218 lines)</span>
-    <span class="ast-keyword">interface</span> <span class="ast-type">UserCardProps</span>                                 <span class="ast-line">L8-18</span>
-      user: <span class="ast-type">User</span>
-      onEdit: (id: <span class="ast-type">string</span>) =&gt; <span class="ast-type">void</span>
-      compact?: <span class="ast-type">boolean</span>
-    <span class="ast-keyword">export const</span> <span class="ast-method">UserCard</span> : <span class="ast-type">React.FC</span>&lt;<span class="ast-type">UserCardProps</span>&gt;        <span class="ast-line">L22-148</span>
-    <span class="ast-keyword">function</span> <span class="ast-method">getInitials</span>(name: <span class="ast-type">string</span>)                       <span class="ast-line">L152-164</span>
-    <span class="ast-keyword">async function</span> <span class="ast-method">fetchAvatar</span>(userId: <span class="ast-type">string</span>) <span class="ast-marker">[async]</span>     <span class="ast-line">L168-198</span></pre>
+=== ":material-language-rust: Rust"
 
-=== ":simple-javascript: JavaScript"
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">user_service.rs — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/user_service.rs</span><span class="ast-console__out"><span class="ast-comment"># src/user_service.rs (72 lines, ~396 tokens, 3 types, 9 methods, 6 fields)</span>
+    <span class="ast-doc">/// Represents a registered user account.</span>
+    <span class="ast-doc">///</span>
+    <span class="ast-doc">/// Carries the public name visible to others plus the (private) raw</span>
+    <span class="ast-doc">/// id used for storage indexing.</span>
+    <span class="ast-attr">#[derive(Debug, Clone)]</span> <span class="ast-keyword">pub struct</span> <span class="ast-type">User</span>  <span class="ast-line">L10-47</span>
+        <span class="ast-keyword">pub</span> name: <span class="ast-type">String</span>  <span class="ast-line">L11</span>
+        <span class="ast-keyword">pub</span> email: <span class="ast-type">String</span>  <span class="ast-line">L12</span>
+        id: <span class="ast-type">u64</span>  <span class="ast-line">L13</span>
+        <span class="ast-doc">/// Constructor — assigns a fresh id at creation time.</span>
+        <span class="ast-keyword">pub fn</span> <span class="ast-method">new</span>(name: <span class="ast-type">String</span>, email: <span class="ast-type">String</span>, id: <span class="ast-type">u64</span>) -&gt; <span class="ast-type">Self</span>  <span class="ast-line">L29-31</span>
+        <span class="ast-doc">/// Read-only accessor for the raw id.</span>
+        <span class="ast-keyword">pub fn</span> <span class="ast-method">raw_id</span>(&amp;<span class="ast-keyword">self</span>) -&gt; <span class="ast-type">u64</span>  <span class="ast-line">L34-36</span>
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline server.mjs
-    <span class="ast-comment"># server.mjs (164 lines, Node.js / Express)</span>
-    <span class="ast-keyword">import</span> express <span class="ast-keyword">from</span> <span class="ast-keyword">'express'</span>                              <span class="ast-line">L1-1</span>
-    <span class="ast-keyword">import</span> { authMiddleware } <span class="ast-keyword">from</span> <span class="ast-keyword">'./auth.mjs'</span>             <span class="ast-line">L2-2</span>
-    <span class="ast-keyword">const</span> <span class="ast-method">app</span> = express()                                    <span class="ast-line">L8-8</span>
-    <span class="ast-keyword">function</span> <span class="ast-method">attachMiddleware</span>(app)                            <span class="ast-line">L14-32</span>
-    <span class="ast-keyword">async function</span> <span class="ast-method">getUsers</span>(req, res) <span class="ast-marker">[async]</span>            <span class="ast-line">L38-58</span>
-    <span class="ast-keyword">async function</span> <span class="ast-method">createUser</span>(req, res) <span class="ast-marker">[async]</span>          <span class="ast-line">L62-92</span>
-    <span class="ast-keyword">async function</span> <span class="ast-method">deleteUser</span>(req, res) <span class="ast-marker">[async]</span>          <span class="ast-line">L96-118</span>
-    <span class="ast-keyword">function</span> <span class="ast-method">errorHandler</span>(err, req, res, next)               <span class="ast-line">L124-138</span>
-    app.<span class="ast-method">listen</span>(<span class="ast-marker">3000</span>, () =&gt; ...)                          <span class="ast-line">L160-162</span></pre>
+    <span class="ast-doc">/// Trait describing anything that can be addressed by a unique id.</span>
+    <span class="ast-keyword">pub trait</span> <span class="ast-type">HasId</span>  <span class="ast-line">L17-20</span>
+        <span class="ast-doc">/// Numeric identifier — must be stable for the lifetime of the value.</span>
+        <span class="ast-keyword">fn</span> <span class="ast-method">id</span>(&amp;<span class="ast-keyword">self</span>) -&gt; <span class="ast-type">u64</span>  <span class="ast-line">L19</span>
 
-=== ":simple-csharp: C# (Unity)"
+    <span class="ast-doc">/// Service that owns a registry of users keyed by id.</span>
+    <span class="ast-keyword">pub struct</span> <span class="ast-type">UserService</span>  <span class="ast-line">L23-63</span>
+        users: <span class="ast-type">HashMap&lt;u64, User&gt;</span>  <span class="ast-line">L24</span>
+        <span class="ast-keyword">pub fn</span> <span class="ast-method">register</span>(&amp;<span class="ast-keyword">mut self</span>, user: <span class="ast-type">User</span>)  <span class="ast-line">L56-58</span>
+        <span class="ast-keyword">pub fn</span> <span class="ast-method">lookup</span>(&amp;<span class="ast-keyword">self</span>, id: <span class="ast-type">u64</span>) -&gt; <span class="ast-type">Option&lt;&amp;User&gt;</span>  <span class="ast-line">L60-62</span>
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline Assets/Scripts/Player.cs
-    <span class="ast-comment"># Assets/Scripts/Player.cs (382 lines)</span>
-    [<span class="ast-type">RequireComponent</span>(<span class="ast-keyword">typeof</span>(<span class="ast-type">Rigidbody</span>))]
-    <span class="ast-keyword">public class</span> <span class="ast-type">Player</span> : <span class="ast-type">MonoBehaviour</span>, <span class="ast-type">IDamageable</span>             <span class="ast-line">L18-298</span>
-      [<span class="ast-type">SerializeField</span>] <span class="ast-keyword">private float</span> <span class="ast-method">MaxHealth</span>                <span class="ast-line">L22-22</span>
-      [<span class="ast-type">SerializeField</span>] <span class="ast-keyword">private float</span> <span class="ast-method">Speed</span>                    <span class="ast-line">L23-23</span>
-      <span class="ast-keyword">public int</span> <span class="ast-method">Health</span> <span class="ast-marker">[property]</span>                          <span class="ast-line">L28-32</span>
-      <span class="ast-keyword">private void</span> <span class="ast-method">Awake</span>()                                    <span class="ast-line">L40-52</span>
-      <span class="ast-keyword">private void</span> <span class="ast-method">Update</span>()                                   <span class="ast-line">L56-78</span>
-      <span class="ast-keyword">private void</span> <span class="ast-method">FixedUpdate</span>()                              <span class="ast-line">L82-98</span>
-      <span class="ast-keyword">public void</span> <span class="ast-method">TakeDamage</span>(<span class="ast-keyword">float</span> amount)                   <span class="ast-line">L104-130</span>
-      <span class="ast-keyword">public</span> <span class="ast-type">IEnumerator</span> <span class="ast-method">Heal</span>(<span class="ast-keyword">float</span> amount, <span class="ast-keyword">float</span> dur)        <span class="ast-line">L134-162</span>
-      <span class="ast-keyword">private void</span> <span class="ast-method">OnTriggerEnter</span>(<span class="ast-type">Collider</span> other)            <span class="ast-line">L168-198</span>
-      <span class="ast-keyword">private void</span> <span class="ast-method">Die</span>()                                      <span class="ast-line">L202-220</span>
-    <span class="ast-keyword">public class</span> <span class="ast-type">HealthChangedEvent</span> : <span class="ast-type">UnityEvent</span>&lt;<span class="ast-type">float</span>&gt;       <span class="ast-line">L302-310</span></pre>
+    <span class="ast-keyword">pub const</span> <span class="ast-method">MAX_USERS</span>: <span class="ast-type">u32</span> = <span class="ast-string">10_000</span>  <span class="ast-line">L70</span></span></pre>
 
-=== ":simple-openjdk: Java (Spring)"
+=== ":material-language-typescript: TypeScript"
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline src/main/java/com/example/UserController.java
-    <span class="ast-comment"># UserController.java (218 lines)</span>
-    @<span class="ast-type">RestController</span>
-    @<span class="ast-type">RequestMapping</span>(<span class="ast-keyword">"/api/users"</span>)
-    <span class="ast-keyword">public class</span> <span class="ast-type">UserController</span>                                <span class="ast-line">L24-198</span>
-      @<span class="ast-type">Autowired</span> <span class="ast-keyword">private</span> <span class="ast-type">UserService</span> <span class="ast-method">userService</span>             <span class="ast-line">L28-28</span>
-      @<span class="ast-type">Autowired</span> <span class="ast-keyword">private</span> <span class="ast-type">UserMapper</span> <span class="ast-method">userMapper</span>               <span class="ast-line">L29-29</span>
-      @<span class="ast-type">GetMapping</span>
-      <span class="ast-keyword">public</span> <span class="ast-type">ResponseEntity</span>&lt;<span class="ast-type">List</span>&lt;<span class="ast-type">UserDto</span>&gt;&gt; <span class="ast-method">findAll</span>()              <span class="ast-line">L36-48</span>
-      @<span class="ast-type">GetMapping</span>(<span class="ast-keyword">"/{id}"</span>)
-      <span class="ast-keyword">public</span> <span class="ast-type">ResponseEntity</span>&lt;<span class="ast-type">UserDto</span>&gt; <span class="ast-method">findById</span>(<span class="ast-type">Long</span> id)        <span class="ast-line">L52-72</span>
-      @<span class="ast-type">PostMapping</span>
-      <span class="ast-keyword">public</span> <span class="ast-type">ResponseEntity</span>&lt;<span class="ast-type">UserDto</span>&gt; <span class="ast-method">create</span>(<span class="ast-type">UserDto</span> dto)       <span class="ast-line">L76-98</span>
-      @<span class="ast-type">PutMapping</span>(<span class="ast-keyword">"/{id}"</span>)
-      <span class="ast-keyword">public</span> <span class="ast-type">ResponseEntity</span>&lt;<span class="ast-type">UserDto</span>&gt; <span class="ast-method">update</span>(<span class="ast-type">Long</span> id, ...)       <span class="ast-line">L102-130</span>
-      @<span class="ast-type">DeleteMapping</span>(<span class="ast-keyword">"/{id}"</span>)
-      <span class="ast-keyword">public</span> <span class="ast-type">ResponseEntity</span>&lt;<span class="ast-type">Void</span>&gt; <span class="ast-method">delete</span>(<span class="ast-type">Long</span> id)              <span class="ast-line">L134-148</span></pre>
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">storage_service.ts — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/storage_service.ts</span><span class="ast-console__out"><span class="ast-comment"># src/storage_service.ts (60 lines, ~352 tokens, 3 types, 8 methods, 10 fields)</span>
+    <span class="ast-keyword">const</span> <span class="ast-method">DB_NAME</span> = <span class="ast-string">"demo-db"</span>  <span class="ast-line">L5</span>
+    <span class="ast-keyword">const</span> <span class="ast-method">DB_VERSION</span> = <span class="ast-string">1</span>  <span class="ast-line">L6</span>
 
-=== ":simple-kotlin: Kotlin (Android)"
+    <span class="ast-keyword">interface</span> <span class="ast-type">DBSchema</span>  <span class="ast-line">L8-12</span>
+        projects: <span class="ast-type">Project</span>  <span class="ast-line">L9</span>
+        documents: <span class="ast-type">Document</span>  <span class="ast-line">L10</span>
+        settings: <span class="ast-type">AppSettings</span>  <span class="ast-line">L11</span>
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline app/src/main/java/MainActivity.kt
-    <span class="ast-comment"># MainActivity.kt (276 lines)</span>
-    <span class="ast-keyword">class</span> <span class="ast-type">MainActivity</span> : <span class="ast-type">AppCompatActivity</span>()                  <span class="ast-line">L20-198</span>
-      <span class="ast-keyword">private lateinit var</span> <span class="ast-method">binding</span> : <span class="ast-type">ActivityMainBinding</span>      <span class="ast-line">L24-24</span>
-      <span class="ast-keyword">private val</span> <span class="ast-method">viewModel</span> : <span class="ast-type">MainViewModel</span> <span class="ast-keyword">by</span> viewModels()    <span class="ast-line">L26-26</span>
-      <span class="ast-marker">[override]</span> <span class="ast-keyword">fun</span> <span class="ast-method">onCreate</span>(savedInstanceState: <span class="ast-type">Bundle?</span>)     <span class="ast-line">L30-72</span>
-      <span class="ast-marker">[override]</span> <span class="ast-keyword">fun</span> <span class="ast-method">onResume</span>()                              <span class="ast-line">L76-88</span>
-      <span class="ast-keyword">private fun</span> <span class="ast-method">setupRecyclerView</span>()                          <span class="ast-line">L106-138</span>
-      <span class="ast-keyword">private fun</span> <span class="ast-method">observeState</span>()                               <span class="ast-line">L142-168</span>
-      <span class="ast-keyword">private suspend fun</span> <span class="ast-method">loadUsers</span>() <span class="ast-marker">[suspend]</span>                <span class="ast-line">L172-198</span>
-    <span class="ast-keyword">class</span> <span class="ast-type">MainViewModel</span> : <span class="ast-type">ViewModel</span>()                          <span class="ast-line">L210-262</span>
-      <span class="ast-keyword">val</span> <span class="ast-method">uiState</span> : <span class="ast-type">StateFlow</span>&lt;<span class="ast-type">UiState</span>&gt;                       <span class="ast-line">L214-216</span>
-      <span class="ast-keyword">fun</span> <span class="ast-method">refresh</span>()                                          <span class="ast-line">L222-238</span>
-    <span class="ast-keyword">sealed class</span> <span class="ast-type">UiState</span>                                       <span class="ast-line">L268-274</span>
-      <span class="ast-keyword">object</span> <span class="ast-type">Loading</span> : <span class="ast-type">UiState</span>
-      <span class="ast-keyword">data class</span> <span class="ast-type">Success</span>(<span class="ast-keyword">val</span> users : <span class="ast-type">List</span>&lt;<span class="ast-type">User</span>&gt;) : <span class="ast-type">UiState</span>
-      <span class="ast-keyword">data class</span> <span class="ast-type">Error</span>(<span class="ast-keyword">val</span> message : <span class="ast-type">String</span>) : <span class="ast-type">UiState</span></pre>
+    <span class="ast-keyword">export class</span> <span class="ast-type">StorageService</span>  <span class="ast-line">L14-44</span>
+        <span class="ast-keyword">private</span> db: <span class="ast-type">IDBDatabase | null</span>  <span class="ast-line">L15</span>
+        <span class="ast-keyword">private</span> initPromise: <span class="ast-type">Promise&lt;void&gt; | null</span>  <span class="ast-line">L16</span>
+        <span class="ast-keyword">async</span> <span class="ast-method">init</span>(): <span class="ast-type">Promise&lt;void&gt;</span>  <span class="ast-line">L18-22</span>
+        <span class="ast-comment">// Generic CRUD</span>
+        <span class="ast-keyword">private async</span> <span class="ast-method">getAll</span>&lt;<span class="ast-type">T</span>&gt;(storeName: <span class="ast-keyword">keyof</span> <span class="ast-type">DBSchema</span>): <span class="ast-type">Promise&lt;T[]&gt;</span>  <span class="ast-line">L29-31</span>
+        <span class="ast-keyword">async</span> <span class="ast-method">getProject</span>(id: <span class="ast-type">string</span>): <span class="ast-type">Promise&lt;Project | null&gt;</span>  <span class="ast-line">L33-35</span>
+        <span class="ast-keyword">async</span> <span class="ast-method">saveProject</span>(project: <span class="ast-type">Project</span>): <span class="ast-type">Promise&lt;void&gt;</span>  <span class="ast-line">L37-39</span>
+        <span class="ast-keyword">protected</span> <span class="ast-method">log</span>(msg: <span class="ast-type">string</span>): <span class="ast-type">void</span>  <span class="ast-line">L41-43</span>
+
+    <span class="ast-keyword">export const</span> <span class="ast-method">storage</span> = <span class="ast-keyword">new</span> <span class="ast-type">StorageService</span>()  <span class="ast-line">L58</span>
+    <span class="ast-keyword">export const</span> <span class="ast-method">language</span> = <span class="ast-keyword">new</span> <span class="ast-type">LanguageService</span>()  <span class="ast-line">L59</span></span></pre>
+
+=== ":material-language-javascript: JavaScript"
+
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">page.tsx — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline app/blog/[...slug]/page.tsx</span><span class="ast-console__out"><span class="ast-comment"># app/blog/[...slug]/page.tsx (41 lines, ~296 tokens, 1 types, 5 methods, 2 fields)</span>
+    <span class="ast-keyword">interface</span> <span class="ast-type">PageProps</span>  <span class="ast-line">L10-12</span>
+        params: { slug: <span class="ast-type">string[]</span> }  <span class="ast-line">L11</span>
+
+    <span class="ast-keyword">export const</span> <span class="ast-method">dynamicParams</span> = <span class="ast-keyword">true</span>  <span class="ast-line">L14</span>
+
+    <span class="ast-keyword">export async function</span> <span class="ast-method">generateStaticParams</span>(): <span class="ast-type">Promise&lt;Array&lt;{ slug: string[] }&gt;&gt;</span>  <span class="ast-line">L16-18</span>
+
+    <span class="ast-doc">/**</span>
+    <span class="ast-doc"> * Generate metadata for SEO + social sharing.</span>
+    <span class="ast-doc"> */</span>
+    <span class="ast-keyword">export async function</span> <span class="ast-method">generateMetadata</span>({ params }: <span class="ast-type">PageProps</span>): <span class="ast-type">Promise&lt;Metadata&gt;</span>  <span class="ast-line">L23-25</span>
+
+    <span class="ast-comment">// A plain helper used by the page</span>
+    <span class="ast-keyword">function</span> <span class="ast-method">wrapBody</span>(content: <span class="ast-type">string</span>): <span class="ast-type">string</span>  <span class="ast-line">L28-30</span>
+
+    <span class="ast-comment">// Arrow component, exported via `export const`</span>
+    <span class="ast-keyword">export const</span> <span class="ast-method">Sidebar</span> = ({ items }: { items: <span class="ast-type">string[]</span> }): <span class="ast-type">JSX.Element</span> =&gt; ...  <span class="ast-line">L33-35</span>
+
+    <span class="ast-keyword">export default function</span> <span class="ast-method">Page</span>({ params }: <span class="ast-type">PageProps</span>): <span class="ast-type">JSX.Element</span>  <span class="ast-line">L37-40</span></span></pre>
+
+=== ":material-language-csharp: C# (Unity)"
+
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">HeroController.cs — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline Assets/Scripts/HeroController.cs</span><span class="ast-console__out"><span class="ast-comment"># Assets/Scripts/HeroController.cs (54 lines, ~385 tokens, 3 types, 4 methods, 5 fields)</span>
+    <span class="ast-keyword">namespace</span> <span class="ast-type">Demo.Combat</span>
+        <span class="ast-doc">/// &lt;summary&gt;</span>
+        <span class="ast-doc">/// Controls the hero in-scene: movement, damage, death.</span>
+        <span class="ast-doc">/// &lt;/summary&gt;</span>
+        <span class="ast-attr">[RequireComponent(typeof(Rigidbody2D))]</span> <span class="ast-keyword">public class</span> <span class="ast-type">HeroController</span> : <span class="ast-type">MonoBehaviour</span>, <span class="ast-type">IDamageable</span>  <span class="ast-line">L18-47</span>
+            <span class="ast-attr">[SerializeField]</span> <span class="ast-keyword">private float</span> <span class="ast-method">_speed</span> = <span class="ast-string">5f</span>  <span class="ast-line">L21</span>
+            <span class="ast-attr">[SerializeField]</span> <span class="ast-keyword">private int</span> <span class="ast-method">_maxHealth</span> = <span class="ast-string">100</span>  <span class="ast-line">L22</span>
+            <span class="ast-keyword">public int</span> <span class="ast-method">CurrentHealth</span> { <span class="ast-keyword">get</span>; <span class="ast-keyword">private set</span>; }  <span class="ast-line">L24</span>
+            <span class="ast-keyword">public bool</span> <span class="ast-method">IsAlive</span> =&gt; <span class="ast-method">CurrentHealth</span> &gt; 0  <span class="ast-line">L25</span>
+            <span class="ast-doc">/// &lt;summary&gt;Fired whenever health changes.&lt;/summary&gt;</span>
+            <span class="ast-keyword">public event</span> <span class="ast-type">Action&lt;int&gt;</span> <span class="ast-method">OnHealthChanged</span>  <span class="ast-line">L28</span>
+            <span class="ast-doc">/// &lt;summary&gt;Apply damage to the hero.&lt;/summary&gt;</span>
+            <span class="ast-doc">/// &lt;param name="amount"&gt;HP to subtract.&lt;/param&gt;</span>
+            <span class="ast-keyword">public void</span> <span class="ast-method">TakeDamage</span>(<span class="ast-keyword">int</span> amount)  <span class="ast-line">L34-39</span>
+            <span class="ast-keyword">private void</span> <span class="ast-method">Die</span>()  <span class="ast-line">L41-44</span>
+
+        <span class="ast-keyword">public interface</span> <span class="ast-type">IDamageable</span>  <span class="ast-line">L49-52</span>
+            <span class="ast-keyword">void</span> <span class="ast-method">TakeDamage</span>(<span class="ast-keyword">int</span> amount)  <span class="ast-line">L51</span></span></pre>
+
+=== ":material-language-java: Java"
+
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">UserService.java — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/main/java/com/example/UserService.java</span><span class="ast-console__out"><span class="ast-comment"># UserService.java (64 lines, ~352 tokens, 3 types, 9 methods, 5 fields)</span>
+    <span class="ast-keyword">namespace</span> <span class="ast-type">com.example.demo.service</span>
+        <span class="ast-doc">/**</span>
+    <span class="ast-doc">     * Service layer for user accounts.</span>
+    <span class="ast-doc">     *</span>
+    <span class="ast-doc">     * &lt;p&gt;Demonstrates: Javadoc, multiple annotations, inheritance,</span>
+    <span class="ast-doc">     * generics, throws, abstract methods, nested types.</span>
+    <span class="ast-doc">     */</span>
+        <span class="ast-attr">@Service @Deprecated(since = "2.0")</span> <span class="ast-keyword">public class</span> <span class="ast-type">UserService</span> <span class="ast-keyword">extends</span> <span class="ast-type">BaseService</span> <span class="ast-keyword">implements</span> <span class="ast-type">UserRepository</span>, <span class="ast-type">AutoCloseable</span>  <span class="ast-line">L13-63</span>
+            <span class="ast-doc">/** Hard cap on concurrent users. */</span>
+            <span class="ast-keyword">public static final int</span> <span class="ast-method">MAX_USERS</span> = <span class="ast-string">100</span>  <span class="ast-line">L18</span>
+            <span class="ast-keyword">private final</span> <span class="ast-type">String</span> <span class="ast-method">name</span>  <span class="ast-line">L20</span>
+            <span class="ast-keyword">protected</span> <span class="ast-type">List&lt;String&gt;</span> <span class="ast-method">items</span>  <span class="ast-line">L21</span>
+            <span class="ast-keyword">public</span> <span class="ast-method">UserService</span>(<span class="ast-type">String</span> name)  <span class="ast-line">L24-27</span>
+            <span class="ast-doc">/** Saves a user. */</span>
+            <span class="ast-attr">@Override</span> <span class="ast-keyword">public void</span> <span class="ast-method">save</span>(<span class="ast-type">User</span> user) <span class="ast-keyword">throws</span> <span class="ast-type">IOException</span>, <span class="ast-type">IllegalArgumentException</span>  <span class="ast-line">L34-37</span>
+            <span class="ast-keyword">private static</span> &lt;<span class="ast-type">T</span> <span class="ast-keyword">extends</span> <span class="ast-type">Comparable&lt;T&gt;</span>&gt; <span class="ast-type">T</span> <span class="ast-method">findMax</span>(<span class="ast-type">List&lt;T&gt;</span> items)  <span class="ast-line">L39-41</span>
+            <span class="ast-keyword">public abstract int</span> <span class="ast-method">compute</span>()  <span class="ast-line">L43</span>
+            <span class="ast-attr">@Override</span> <span class="ast-keyword">public void</span> <span class="ast-method">close</span>()  <span class="ast-line">L45-46</span>
+
+            <span class="ast-keyword">public static final class</span> <span class="ast-type">Inner</span>  <span class="ast-line">L48-58</span>
+                <span class="ast-keyword">private final int</span> <span class="ast-method">value</span>  <span class="ast-line">L49</span>
+                <span class="ast-keyword">public int</span> <span class="ast-method">value</span>()  <span class="ast-line">L55-57</span></span></pre>
+
+=== ":material-language-kotlin: Kotlin"
+
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">model.kt — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline app/src/main/kotlin/com/example/model.kt</span><span class="ast-console__out"><span class="ast-comment"># model.kt (41 lines, ~282 tokens, 7 types, 7 methods, 6 fields)</span>
+    <span class="ast-keyword">namespace</span> <span class="ast-type">com.example.demo.model</span>
+        <span class="ast-doc">/** Plain data class — primary-ctor components should become fields. */</span>
+        <span class="ast-keyword">data class</span> <span class="ast-type">Point</span>(<span class="ast-keyword">val</span> x: <span class="ast-type">Int</span>, <span class="ast-keyword">val</span> y: <span class="ast-type">Int</span>) : <span class="ast-type">Comparable&lt;Point&gt;</span>  <span class="ast-line">L4-6</span>
+            <span class="ast-keyword">override fun</span> <span class="ast-method">compareTo</span>(other: <span class="ast-type">Point</span>): <span class="ast-type">Int</span>  <span class="ast-line">L5</span>
+
+        <span class="ast-doc">/** Sealed class hierarchy — permits is implicit. */</span>
+        <span class="ast-keyword">sealed class</span> <span class="ast-type">Shape</span>  <span class="ast-line">L9-11</span>
+            <span class="ast-keyword">abstract fun</span> <span class="ast-method">area</span>(): <span class="ast-type">Double</span>  <span class="ast-line">L10</span>
+
+        <span class="ast-keyword">data class</span> <span class="ast-type">Circle</span>(<span class="ast-keyword">val</span> radius: <span class="ast-type">Double</span>) : <span class="ast-type">Shape</span>()  <span class="ast-line">L13-15</span>
+            <span class="ast-keyword">override fun</span> <span class="ast-method">area</span>(): <span class="ast-type">Double</span>  <span class="ast-line">L14</span>
+
+        <span class="ast-keyword">class</span> <span class="ast-type">Square</span>(<span class="ast-keyword">val</span> side: <span class="ast-type">Double</span>) : <span class="ast-type">Shape</span>()  <span class="ast-line">L17-19</span>
+            <span class="ast-keyword">override fun</span> <span class="ast-method">area</span>(): <span class="ast-type">Double</span>  <span class="ast-line">L18</span>
+
+        <span class="ast-keyword">object</span> <span class="ast-type">UnitShape</span> : <span class="ast-type">Shape</span>()  <span class="ast-line">L21-23</span>
+            <span class="ast-keyword">override fun</span> <span class="ast-method">area</span>(): <span class="ast-type">Double</span>  <span class="ast-line">L22</span>
+
+        <span class="ast-doc">/**</span>
+    <span class="ast-doc">     * Enum class with a primary-ctor field, value-carrying entries, and a</span>
+    <span class="ast-doc">     * declared method that follows the entries.</span>
+    <span class="ast-doc">     */</span>
+        <span class="ast-keyword">enum class</span> <span class="ast-type">Status</span>(<span class="ast-keyword">val</span> label: <span class="ast-type">String</span>, <span class="ast-keyword">val</span> weight: <span class="ast-type">Int</span>) : <span class="ast-type">java.io.Serializable</span>  <span class="ast-line">L29-40</span></span></pre>
 
 === ":simple-scala: Scala 3"
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline src/main/scala/com/example/Routes.scala
-    <span class="ast-comment"># Routes.scala (148 lines)</span>
-    <span class="ast-keyword">case class</span> <span class="ast-type">User</span>(id: <span class="ast-type">Long</span>, name: <span class="ast-type">String</span>, email: <span class="ast-type">String</span>) <span class="ast-line">L8-12</span>
-    <span class="ast-keyword">enum</span> <span class="ast-type">AuthError</span>                                            <span class="ast-line">L16-22</span>
-      <span class="ast-keyword">case</span> <span class="ast-type">NotAuthenticated</span>, <span class="ast-type">Forbidden</span>, <span class="ast-type">TokenExpired</span>
-    <span class="ast-keyword">trait</span> <span class="ast-type">UserRepository</span>                                       <span class="ast-line">L26-38</span>
-      <span class="ast-keyword">def</span> <span class="ast-method">findById</span>(id: <span class="ast-type">Long</span>): <span class="ast-type">IO</span>[<span class="ast-type">Option</span>[<span class="ast-type">User</span>]]
-      <span class="ast-keyword">def</span> <span class="ast-method">create</span>(user: <span class="ast-type">User</span>): <span class="ast-type">IO</span>[<span class="ast-type">User</span>]
-      <span class="ast-keyword">def</span> <span class="ast-method">delete</span>(id: <span class="ast-type">Long</span>): <span class="ast-type">IO</span>[<span class="ast-type">Unit</span>]
-    <span class="ast-keyword">class</span> <span class="ast-type">Routes</span>(repo: <span class="ast-type">UserRepository</span>) : <span class="ast-type">Http4sDsl</span>[<span class="ast-type">IO</span>]      <span class="ast-line">L42-128</span>
-      <span class="ast-keyword">val</span> <span class="ast-method">routes</span> : <span class="ast-type">HttpRoutes</span>[<span class="ast-type">IO</span>]                            <span class="ast-line">L48-122</span>
-      <span class="ast-keyword">given</span> <span class="ast-method">userEncoder</span> : <span class="ast-type">EntityEncoder</span>[<span class="ast-type">IO</span>, <span class="ast-type">User</span>]            <span class="ast-line">L126-126</span>
-    <span class="ast-keyword">extension</span> (req: <span class="ast-type">Request</span>[<span class="ast-type">IO</span>])                              <span class="ast-line">L132-146</span>
-      <span class="ast-keyword">def</span> <span class="ast-method">authenticated</span> : <span class="ast-type">EitherT</span>[<span class="ast-type">IO</span>, <span class="ast-type">AuthError</span>, <span class="ast-type">User</span>]</pre>
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">objects.scala — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline src/main/scala/app/objects.scala</span><span class="ast-console__out"><span class="ast-comment"># objects.scala (40 lines, ~189 tokens, 6 types, 7 methods, 2 fields)</span>
+    <span class="ast-keyword">namespace</span> <span class="ast-type">app</span>
+        <span class="ast-doc">/** Top-level singleton object. */</span>
+        <span class="ast-keyword">object</span> <span class="ast-type">Logger</span>  <span class="ast-line">L4-8</span>
+            <span class="ast-keyword">private val</span> <span class="ast-method">Prefix</span>: <span class="ast-type">String</span> = <span class="ast-string">"[app]"</span>  <span class="ast-line">L5</span>
+            <span class="ast-keyword">def</span> <span class="ast-method">log</span>(msg: <span class="ast-type">String</span>): <span class="ast-type">Unit</span>  <span class="ast-line">L7</span>
 
-=== ":simple-go: Go"
+        <span class="ast-doc">/**</span>
+    <span class="ast-doc">     * Class + companion object pair — Scala's idiomatic equivalent of</span>
+    <span class="ast-doc">     * Kotlin's companion object, but modelled as two SEPARATE top-level</span>
+    <span class="ast-doc">     * declarations with the same name.</span>
+    <span class="ast-doc">     */</span>
+        <span class="ast-keyword">class</span> <span class="ast-type">Registry</span>  <span class="ast-line">L15-17</span>
+            <span class="ast-keyword">def</span> <span class="ast-method">id</span>: <span class="ast-type">Int</span>  <span class="ast-line">L16</span>
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline internal/http/handlers.go
-    <span class="ast-comment"># handlers.go (264 lines)</span>
-    <span class="ast-keyword">type</span> <span class="ast-type">Handler</span> <span class="ast-keyword">struct</span>                                       <span class="ast-line">L16-28</span>
-      db        *<span class="ast-type">sql.DB</span>
-      logger    *<span class="ast-type">slog.Logger</span>
-      cache     <span class="ast-type">Cache</span>
-    <span class="ast-keyword">func</span> <span class="ast-method">NewHandler</span>(db *<span class="ast-type">sql.DB</span>, log *<span class="ast-type">slog.Logger</span>) *<span class="ast-type">Handler</span>     <span class="ast-line">L32-40</span>
-    <span class="ast-keyword">func</span> (h *<span class="ast-type">Handler</span>) <span class="ast-method">Routes</span>() <span class="ast-type">http.Handler</span>                   <span class="ast-line">L44-78</span>
-    <span class="ast-keyword">func</span> (h *<span class="ast-type">Handler</span>) <span class="ast-method">listUsers</span>(w <span class="ast-type">http.ResponseWriter</span>, r ...) <span class="ast-line">L82-118</span>
-    <span class="ast-keyword">func</span> (h *<span class="ast-type">Handler</span>) <span class="ast-method">getUser</span>(w, r)                          <span class="ast-line">L122-148</span>
-    <span class="ast-keyword">func</span> (h *<span class="ast-type">Handler</span>) <span class="ast-method">createUser</span>(w, r)                       <span class="ast-line">L152-198</span>
-    <span class="ast-keyword">func</span> (h *<span class="ast-type">Handler</span>) <span class="ast-method">updateUser</span>(w, r)                       <span class="ast-line">L202-240</span>
-    <span class="ast-keyword">func</span> (h *<span class="ast-type">Handler</span>) <span class="ast-method">deleteUser</span>(w, r)                       <span class="ast-line">L244-260</span>
-    <span class="ast-keyword">type</span> <span class="ast-type">Cache</span> <span class="ast-keyword">interface</span>                                     <span class="ast-line">L268-274</span>
-      <span class="ast-method">Get</span>(key <span class="ast-keyword">string</span>) (<span class="ast-keyword">any</span>, <span class="ast-keyword">bool</span>)
-      <span class="ast-method">Set</span>(key <span class="ast-keyword">string</span>, value <span class="ast-keyword">any</span>) <span class="ast-keyword">error</span></pre>
+        <span class="ast-keyword">object</span> <span class="ast-type">Registry</span>  <span class="ast-line">L19-25</span>
+            <span class="ast-keyword">private var</span> <span class="ast-method">counter</span>: <span class="ast-type">Int</span> = <span class="ast-string">0</span>  <span class="ast-line">L20</span>
+            <span class="ast-keyword">def</span> <span class="ast-method">nextId</span>: <span class="ast-type">Int</span>  <span class="ast-line">L21-24</span>
+
+        <span class="ast-doc">/** Named singleton implementing a trait. */</span>
+        <span class="ast-keyword">trait</span> <span class="ast-type">Named</span>  <span class="ast-line">L28-30</span>
+            <span class="ast-keyword">def</span> <span class="ast-method">name</span>: <span class="ast-type">String</span>  <span class="ast-line">L29</span>
+
+        <span class="ast-keyword">object</span> <span class="ast-type">RootHandler</span> <span class="ast-keyword">extends</span> <span class="ast-type">BaseHandler</span> <span class="ast-keyword">with</span> <span class="ast-type">Named</span>  <span class="ast-line">L36-39</span>
+            <span class="ast-keyword">override def</span> <span class="ast-method">name</span>: <span class="ast-type">String</span>  <span class="ast-line">L37</span>
+            <span class="ast-keyword">override def</span> <span class="ast-method">handle</span>(): <span class="ast-type">Unit</span>  <span class="ast-line">L38</span></span></pre>
+
+=== ":material-language-go: Go"
+
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">user_service.go — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline service/user_service.go</span><span class="ast-console__out"><span class="ast-comment"># user_service.go (105 lines, ~635 tokens, 4 types, 9 methods, 9 fields)</span>
+    <span class="ast-keyword">namespace</span> <span class="ast-type">service</span>
+        <span class="ast-keyword">const</span> <span class="ast-method">MaxUsers</span> = <span class="ast-string">100</span>  <span class="ast-line">L16</span>
+        <span class="ast-keyword">var</span> <span class="ast-method">GlobalCounter</span> <span class="ast-type">int</span> = <span class="ast-string">0</span>  <span class="ast-line">L23</span>
+
+        <span class="ast-comment">// BaseService is a top-level service primitive other services embed.</span>
+        <span class="ast-keyword">type</span> <span class="ast-type">BaseService</span> <span class="ast-keyword">struct</span>  <span class="ast-line">L29-44</span>
+            <span class="ast-method">Name</span> <span class="ast-type">string</span>  <span class="ast-line">L30</span>
+            closed <span class="ast-type">bool</span>  <span class="ast-line">L32</span>
+            <span class="ast-comment">// Open marks the service as ready.</span>
+            <span class="ast-keyword">func</span> (b *<span class="ast-type">BaseService</span>) <span class="ast-method">Open</span>()  <span class="ast-line">L36-38</span>
+            <span class="ast-comment">// close is unexported.</span>
+            <span class="ast-keyword">func</span> (b *<span class="ast-type">BaseService</span>) <span class="ast-method">close</span>() <span class="ast-type">error</span>  <span class="ast-line">L41-44</span>
+
+        <span class="ast-comment">// UserService is the primary user-facing service.</span>
+        <span class="ast-comment">//</span>
+        <span class="ast-comment">// Embeds BaseService — Go's idiom for "extends BaseService" — and</span>
+        <span class="ast-comment">// implements the io.Closer interface contract via Close().</span>
+        <span class="ast-keyword">type</span> <span class="ast-type">UserService</span> <span class="ast-keyword">struct</span>  <span class="ast-line">L50-78</span>
+            <span class="ast-method">Repo</span> <span class="ast-type">Repository</span>  <span class="ast-line">L52</span>
+            cache <span class="ast-keyword">map</span>[<span class="ast-type">string</span>]<span class="ast-keyword">any</span>  <span class="ast-line">L53</span>
+            <span class="ast-comment">// Save persists a user; returns an error on failure.</span>
+            <span class="ast-keyword">func</span> (u *<span class="ast-type">UserService</span>) <span class="ast-method">Save</span>(user <span class="ast-type">string</span>) <span class="ast-type">error</span>  <span class="ast-line">L57-62</span>
+            <span class="ast-comment">// Close satisfies io.Closer.</span>
+            <span class="ast-keyword">func</span> (u *<span class="ast-type">UserService</span>) <span class="ast-method">Close</span>() <span class="ast-type">error</span>  <span class="ast-line">L76-78</span></span></pre>
 
 === ":simple-kubernetes: YAML (k8s)"
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline deploy/k8s/web.yaml
-    <span class="ast-comment"># web.yaml (84 lines, kubernetes)</span>
-    apiVersion: <span class="ast-type">apps/v1</span>                                       <span class="ast-line">L1-1</span>
-    kind: <span class="ast-type">Deployment</span>                                            <span class="ast-line">L2-2</span>
-    metadata.name: <span class="ast-method">web-frontend</span>                                 <span class="ast-line">L4-4</span>
-    metadata.labels.app: <span class="ast-method">web</span>                                    <span class="ast-line">L6-6</span>
-    spec.replicas: <span class="ast-marker">3</span>                                            <span class="ast-line">L9-9</span>
-    spec.selector.matchLabels.app: <span class="ast-method">web</span>                          <span class="ast-line">L11-12</span>
-    spec.template.metadata.labels.app: <span class="ast-method">web</span>                      <span class="ast-line">L14-15</span>
-    spec.template.spec.containers[0].name: <span class="ast-method">web</span>                  <span class="ast-line">L18-18</span>
-    spec.template.spec.containers[0].image: <span class="ast-method">ghcr.io/me/web:1.4</span>  <span class="ast-line">L19-19</span>
-    spec.template.spec.containers[0].ports[0].containerPort: <span class="ast-marker">8080</span> <span class="ast-line">L21-21</span>
-    spec.template.spec.containers[0].env[0].name: <span class="ast-keyword">DATABASE_URL</span>    <span class="ast-line">L24-24</span>
-    spec.template.spec.containers[0].resources.limits.memory: <span class="ast-method">512Mi</span> <span class="ast-line">L29-29</span>
-    spec.template.spec.containers[0].livenessProbe.httpGet.path: <span class="ast-method">/healthz</span> <span class="ast-line">L34-34</span></pre>
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">k8s_deployment.yaml — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline deploy/k8s_deployment.yaml</span><span class="ast-console__out"><span class="ast-comment"># k8s_deployment.yaml (37 lines, ~187 tokens) — Deployment apps/v1 prod/api-server</span>
+    apiVersion: <span class="ast-type">apps/v1</span>  <span class="ast-line">L1</span>
+    kind: <span class="ast-type">Deployment</span>  <span class="ast-line">L2</span>
+    metadata:  <span class="ast-line">L3-7</span>
+        name: <span class="ast-method">api-server</span>  <span class="ast-line">L4</span>
+        namespace: <span class="ast-method">prod</span>  <span class="ast-line">L5</span>
+        labels:  <span class="ast-line">L6-7</span>
+            app: <span class="ast-method">api</span>  <span class="ast-line">L7</span>
+    spec:  <span class="ast-line">L8-36</span>
+        replicas: <span class="ast-string">3</span>  <span class="ast-line">L9</span>
+        selector:  <span class="ast-line">L10-12</span>
+            matchLabels.app: <span class="ast-method">api</span>  <span class="ast-line">L12</span>
+        template:  <span class="ast-line">L13-36</span>
+            spec.containers: <span class="ast-marker">(2 items)</span>  <span class="ast-line">L18-36</span>
+                - <span class="ast-method">api</span>  <span class="ast-line">L19-34</span>
+                    image: <span class="ast-string">registry.example.com/api:v1.2.3</span>  <span class="ast-line">L20</span>
+                    ports[0].containerPort: <span class="ast-string">8080</span>  <span class="ast-line">L22</span>
+                    env[0].name: <span class="ast-method">DATABASE_URL</span>  <span class="ast-line">L24</span>
+                    env[0].value: <span class="ast-string">postgres://db.internal/prod</span>  <span class="ast-line">L25</span></span></pre>
 
-=== ":octicons-markdown-16: Markdown"
+=== ":material-language-markdown: Markdown"
 
-    <pre class="ast-console"><span class="ast-prompt">$</span> ast-outline ARCHITECTURE.md
-    <span class="ast-comment"># ARCHITECTURE.md (542 lines)</span>
-    <span class="ast-keyword">#</span> <span class="ast-type">Architecture</span>                                          <span class="ast-line">L1-1</span>
-    <span class="ast-keyword">##</span> <span class="ast-type">Overview</span>                                              <span class="ast-line">L8-8</span>
-    <span class="ast-keyword">##</span> <span class="ast-type">Module layout</span>                                         <span class="ast-line">L42-42</span>
-    <span class="ast-keyword">###</span> <span class="ast-type">Adapters</span>                                             <span class="ast-line">L78-78</span>
-    <span class="ast-keyword">###</span> <span class="ast-type">Renderers</span>                                            <span class="ast-line">L156-156</span>
-    <span class="ast-keyword">###</span> <span class="ast-type">CLI</span>                                                  <span class="ast-line">L234-234</span>
-    <span class="ast-keyword">##</span> <span class="ast-type">Data flow</span>                                             <span class="ast-line">L312-312</span>
-    <span class="ast-keyword">##</span> <span class="ast-type">Performance</span>                                           <span class="ast-line">L420-420</span></pre>
+    <pre class="ast-console"><span class="ast-console__bar"><span class="ast-console__dots"><span class="y"></span><span class="g"></span></span><span class="ast-console__title">README.md — ast-outline</span></span><span class="ast-console__cmd"><span class="ast-prompt">$</span> ast-outline README.md</span><span class="ast-console__out"><span class="ast-comment"># README.md (52 lines, ~153 tokens, 8 headings, 5 code blocks)</span>
+    <span class="ast-keyword">#</span> <span class="ast-type">Sample Project</span>  <span class="ast-line">L1-51</span>
+        <span class="ast-keyword">##</span> <span class="ast-type">Installation</span>  <span class="ast-line">L5-26</span>
+            <span class="ast-marker">bash code block</span>  <span class="ast-line">L9-11</span>
+            <span class="ast-keyword">###</span> <span class="ast-type">From source</span>  <span class="ast-line">L13-20</span>
+                <span class="ast-marker">bash code block</span>  <span class="ast-line">L15-19</span>
+            <span class="ast-keyword">###</span> <span class="ast-type">Via pipx</span>  <span class="ast-line">L21-26</span>
+                <span class="ast-marker">bash code block</span>  <span class="ast-line">L23-25</span>
+        <span class="ast-keyword">##</span> <span class="ast-type">Usage</span>  <span class="ast-line">L27-44</span>
+            <span class="ast-keyword">###</span> <span class="ast-type">Quick start</span>  <span class="ast-line">L29-37</span>
+                <span class="ast-marker">python code block</span>  <span class="ast-line">L31-36</span>
+            <span class="ast-keyword">###</span> <span class="ast-type">Configuration</span>  <span class="ast-line">L38-44</span>
+        <span class="ast-keyword">##</span> <span class="ast-type">License</span>  <span class="ast-line">L45-51</span></span></pre>
 
 ---
 
