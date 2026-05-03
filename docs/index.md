@@ -425,6 +425,29 @@ ast-outline digest src/        # whole-folder map
 ast-outline help               # full reference
 ```
 
+### Update / uninstall
+
+=== "uv"
+
+    ```bash
+    uv tool upgrade ast-outline      # update
+    uv tool uninstall ast-outline    # remove
+    ```
+
+=== "pipx"
+
+    ```bash
+    pipx upgrade ast-outline
+    pipx uninstall ast-outline
+    ```
+
+=== "pip"
+
+    ```bash
+    pip install -U ast-outline
+    pip uninstall ast-outline
+    ```
+
 ---
 
 ## Design philosophy
