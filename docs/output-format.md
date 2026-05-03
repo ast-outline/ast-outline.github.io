@@ -131,6 +131,39 @@ The import line is **verbatim** from the source — no normalization,
 no de-aliasing. An agent looking at `IDamageable` can grep the
 imports for where it lives.
 
+### Conditional / dynamic imports
+
+Some languages allow imports outside the file's static top level —
+e.g. PHP `require_once` inside an `if` / `else` fallback chain (the
+WordPress `wp-load.php` shape), Python lazy `import` inside a
+function body to break circular deps, Rust `use` inside a `fn`,
+Scala `import` inside a method.
+
+Listing those as if they were regular top-level imports would
+mislead an agent into thinking they always load. We don't list them
+— but we count them, and append a compact marker to the imports
+line:
+
+```text
+# wp-load.php [medium] (106 lines)
+imports: [+ 6 conditional includes]
+  # no declarations
+```
+
+When the file also has static imports, the marker trails them:
+
+```text
+# wp-includes/functions.php [large] (9285 lines)
+imports: require ABSPATH . WPINC . '/option.php' [+ 6 conditional includes]
+  ...
+```
+
+Currently surfaced by the **PHP**, **Python**, **Rust**, and
+**Scala** adapters. Java / Go / Kotlin / C# / TypeScript leave the
+counter at `0` — their import grammars allow only top-level imports.
+Treat the count as a hint to read the file directly when you need
+the full dependency picture.
+
 ---
 
 ## Errors and broken outlines

@@ -28,7 +28,7 @@ so an agent can jump straight to the body.
 ### `--imports`
 
 Add an `imports:` line to each file header listing the file's
-`import` / `use` / `using` statements verbatim.
+`import` / `use` / `using` / `require` statements verbatim.
 
 ```bash
 ast-outline --imports src/services/
@@ -37,6 +37,12 @@ ast-outline --imports src/services/
 Useful when the agent needs to know **which symbols a file pulls in**
 or **where a referenced type lives**. Skip it for normal structural
 reads — it adds one extra line per file.
+
+A trailing `[+ N conditional includes]` on the imports line means
+the file has more dependencies inside `if` / `try` / loop / function
+bodies (PHP `require_once` in if-fallbacks, Python lazy `import` for
+circular-deps avoidance, Rust fn-local `use`, Scala method-scoped
+`import`). See [Output format → Conditional / dynamic imports](output-format.md#conditional-dynamic-imports).
 
 ---
 

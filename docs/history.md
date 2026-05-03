@@ -10,6 +10,8 @@ the [GitHub release page](https://github.com/ast-outline/ast-outline/releases).
 
 | Date | Event |
 | --- | --- |
+| **2026-05-03** | **v0.6.3**: `conditional_imports_count` extended to **Python**, **Rust**, **Scala** — same `[+ N conditional includes]` marker now flags lazy `import` inside fn / class bodies (Python), `use` inside `fn` / closures (Rust), and method-scoped `import` (Scala). |
+| **2026-05-03** | **v0.6.2**: **PHP language adapter** (`.php`, `.phtml`, `.phps`, `.php8`) targeting modern PHP 8.x and the 7.4 LTS line — namespaces, classes (`abstract` / `final` / `readonly`), interfaces, traits, PHP 8.1 enums, magic ctor / dtor, PHP 8.0 ctor property promotion, multi-variable properties, PHP 8.3 typed class constants, PHP 8.0 `#[Attr]` attributes, `use` (incl. grouped) and top-level `include` / `require`. Verified on real WordPress core (no parse errors on files up to 291 KB). New common-IR field `ParseResult.conditional_imports_count` — renderers append `[+ N conditional includes]` to the imports line when the file has dependencies that aren't statically listed. |
 | **2026-05-03** | **v0.6.1**: PyPI metadata refresh after the GitHub Organization transfer (no code changes). |
 | **2026-05-03** | **Repository transferred** from `dim-s/ast-outline` to the [`ast-outline`](https://github.com/ast-outline) GitHub Organization. Old `dim-s/ast-outline` URLs continue to redirect. Copyright remains with Dmitrii Zaitsev (dim-s); the org is hosting infrastructure, not a new copyright holder. |
 | **2026-05-03** | **v0.6.0**: relicense from MIT to **Apache License 2.0**. Documentation separately licensed under **CC BY 4.0**. The previous MIT text is retained in `LICENSE-MIT` for compatibility with downstream forks of the 0.5.x tree. |

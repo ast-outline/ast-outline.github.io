@@ -23,9 +23,9 @@ ast-outline prompt | pbcopy   # macOS clipboard
     ## Code exploration — prefer `ast-outline` over full reads
 
     For `.cs`, `.py`, `.pyi`, `.ts`, `.tsx`, `.js`, `.jsx`, `.java`,
-    `.kt`, `.kts`, `.scala`, `.sc`, `.go`, `.rs`, `.md`, and
-    `.yaml`/`.yml` files, read structure with `ast-outline` before
-    opening the full file.
+    `.kt`, `.kts`, `.scala`, `.sc`, `.go`, `.rs`, `.php`, `.phtml`,
+    `.md`, and `.yaml`/`.yml` files, read structure with `ast-outline`
+    before opening the full file.
 
     Stop at the step that answers the question:
 
@@ -62,10 +62,16 @@ ast-outline prompt | pbcopy   # macOS clipboard
     referenced type lives**, pass `--imports` to `outline` / `digest`.
     Each file gets an extra `imports:` line listing its `import` /
     `use` / `using` statements verbatim — `from .core import X`,
-    `use foo::Bar`, `import { X } from './foo'`. Read that line, then
-    call `outline` / `show` on the source file directly — no `grep`
-    needed to find definitions. Skip `--imports` for routine structural
-    reads — it adds one line per file.
+    `use foo::Bar`, `import { X } from './foo'`, `use App\Foo`,
+    `require_once 'config.php'`. Read that line, then call
+    `outline` / `show` on the source file directly — no `grep`
+    needed to find definitions. Skip `--imports` for routine
+    structural reads — it adds one line per file.
+
+    A trailing `[+ N conditional includes]` on the imports line means
+    N more dependencies live inside `if` / `try` / loop / function
+    bodies — read the file directly when you need the full
+    dependency picture.
 
     Fall back to a full read only when `show`'s body isn't enough
     context. `ast-outline help` for the full flag list.

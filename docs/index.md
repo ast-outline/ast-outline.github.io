@@ -219,6 +219,34 @@ the same way it does in your editor.
             List() []string  L85
     ```
 
+=== ":material-language-php: PHP (WordPress / Laravel)"
+
+    ```php title="$ ast-outline app/Services/UserService.php"
+    # app/Services/UserService.php (66 lines, ~317 tokens, 2 types, 8 methods, 5 fields)
+    namespace App\Service
+        /**
+         * Coordinates user-related use cases.
+         */
+        final class UserService  L17-48
+            private readonly Repository $repository  L24
+            protected int $maxCacheSize = 100  L25
+            public const string DEFAULT_ROLE = "guest"  L19
+            public function __construct( private readonly Repository $repository, protected int $maxCacheSize = 100 )  L23-26
+            /** Fetch a user by id, caching the result. */
+            public function getUser(int $id): ?User  L31-34
+            /** @deprecated Use getUser instead. */
+            public function loadUser(int $id): ?User  L37-40
+            public function makeOrder(User $user): OrderModel  L42-45
+            private function flush(): void  L47
+
+        abstract class BaseService  L50-58
+            abstract public function name(): string  L52
+            final public function tag(): string  L54-57
+
+        function make_service(Repository $r): UserService  L60-63
+        const APP_VERSION = "1.0.0"  L65
+    ```
+
 === ":material-language-markdown: Markdown"
 
     ```markdown title="$ ast-outline README.md"
@@ -238,13 +266,17 @@ the same way it does in your editor.
         ## License  L49-51
     ```
 
-!!! info "+ 4 more languages with the same digest format"
+!!! info "+ 5 more languages with the same digest format"
     `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs` — parsed by
     the TypeScript grammar, so React/Node/ES-module files all flow through),
     **Kotlin** (`.kt`/`.kts` — Android, Compose, Spring; `data class`, `sealed`,
     `suspend`, KDoc), **Scala** (`.scala`/`.sc` — Scala 2 + Scala 3 with
-    `enum`/`given`/`extension`, Scaladoc), and **YAML** (`.yaml`/`.yml` — Kubernetes /
-    OpenAPI / GitHub Actions, with dotted key paths and sequence indices).
+    `enum`/`given`/`extension`, Scaladoc), **PHP** (`.php`/`.phtml` — modern
+    PHP 8.x and the still-deployed 7.4 LTS line: namespaces, traits, enums,
+    ctor property promotion, `#[Attr]` attributes, plus top-level
+    `include`/`require` for legacy WordPress / Drupal-7 codebases), and
+    **YAML** (`.yaml`/`.yml` — Kubernetes / OpenAPI / GitHub Actions, with
+    dotted key paths and sequence indices).
 
     Same digest format, same legend, same `[broken]` recovery semantics. Adding
     another language is a single new adapter file —
@@ -398,7 +430,7 @@ code structurally, **`ast-outline` overviews** it. They compose well
 After install:
 
 ```bash
-ast-outline --version          # 0.6.1
+ast-outline --version          # 0.6.3
 ast-outline path/to/Player.cs  # outline one file
 ast-outline digest src/        # whole-folder map
 ast-outline help               # full reference
@@ -432,6 +464,7 @@ without a local index earning its complexity.
 | Scala      | `.scala`, `.sc` |
 | Go         | `.go` |
 | Rust       | `.rs` |
+| PHP        | `.php`, `.phtml`, `.phps`, `.php8` |
 | Markdown   | `.md`, `.markdown`, `.mdx`, `.mdown` |
 | YAML       | `.yaml`, `.yml` |
 
