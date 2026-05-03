@@ -1,0 +1,32 @@
+ast-outline website
+Copyright 2026 Dmitrii Zaitsev (dim-s) and ast-outline contributors
+
+This repository contains the source for the ast-outline documentation
+website published at https://ast-outline.github.io/
+
+The actual ast-outline tool (CLI source code) lives in a separate
+repository: https://github.com/ast-outline/ast-outline
+
+All content in this repository — Markdown sources, configuration,
+generated HTML, illustrations, and prose — is licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0).
+See LICENSE.
+
+Reuse of any non-trivial portion of this documentation requires
+visible attribution. Use this format (verbatim or equivalent):
+
+    Based on ast-outline by Dmitrii Zaitsev (dim-s)
+    (https://github.com/ast-outline/ast-outline), licensed under
+    CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+------------------------------------------------------------------------
+
+"ast-outline" is an unregistered trademark (™) of Dmitrii Zaitsev.
+The CC BY 4.0 license does not grant rights to use this trademark.
+Forks, ports to other languages, and rebranded derivative works must
+use a different project name to avoid user confusion.
+
+The project's first public commit was 2026-04-22 at
+github.com/dim-s/ast-outline (later transferred to the ast-outline
+GitHub Organization on 2026-05-03). This date is the priority anchor
+for the trademark.
