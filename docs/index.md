@@ -461,6 +461,22 @@ the embedding-MCP crowd). LLM agents are sharp enough to chain
 and navigate real code fast — without reading whole files, and
 without a local index earning its complexity.
 
+### Why no MCP server?
+
+Same shape: a stateless CLI is the right form factor for this tool.
+In coding agents (Claude Code, Cursor, Codex CLI, Aider) `ast-outline`
+already runs through the agent's `bash` tool — composes with
+`grep` / `find` / `xargs`, runs in parallel batches, and adds zero
+registration overhead. An MCP server would either become a long-running
+daemon (which kills the "parse on demand, exit" model) or a thin shim
+around the same CLI — either way, more setup friction for users and a
+second ABI to keep in sync, with no extra capability for the actual
+target audience.
+
+The narrow case where MCP would help is non-shell hosts (e.g. Claude
+Desktop). If demand shows up there, a wrapper takes a day to write —
+but it's a separate add-on, not a redesign.
+
 ---
 
 ## Supported languages
