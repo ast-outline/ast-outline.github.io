@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ast-outline.github.io/sitemap.xml
