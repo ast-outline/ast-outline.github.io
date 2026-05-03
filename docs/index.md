@@ -6,7 +6,7 @@ hide:
 
 <div class="ast-hero" markdown>
 
-# <span class="ast-hero__bracket">[</span>ast-outline<span class="ast-hero__bracket">]</span>{ .ast-hero__title }
+<h1 class="ast-hero__title"><span class="ast-hero__bracket">[</span>ast-outline<span class="ast-hero__bracket">]</span></h1>
 
 <p class="ast-hero__tagline">
 Fast, AST-based <strong>structural outline</strong> for source files —

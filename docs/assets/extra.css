@@ -40,6 +40,11 @@
   color: var(--md-default-fg-color);
 }
 
+/* Hide the auto-generated `¶` anchor on the hero title */
+.ast-hero__title .headerlink {
+  display: none;
+}
+
 .ast-hero__title .ast-hero__bracket {
   color: var(--md-accent-fg-color);
   opacity: 0.85;
