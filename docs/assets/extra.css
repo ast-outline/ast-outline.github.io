@@ -130,18 +130,18 @@
 
 /* ─── Console blocks (terminal-style code) ───────────────── */
 
+/* Outer container — the "terminal window" */
 .ast-console {
   background: #0d1117;
   color: #c9d1d9;
   border-radius: 8px;
-  padding: 0;
-  font-family: "JetBrains Mono", "Fira Code", monospace;
-  font-size: 0.85rem;
-  line-height: 1.6;
-  overflow-x: auto;
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+  font-size: 0.74rem;
+  font-feature-settings: "calt" 1, "liga" 1;
+  line-height: 1.5;
+  overflow: hidden;
   margin: 1rem 0;
   border: 1px solid #30363d;
-  position: relative;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
 }
 
@@ -160,14 +160,16 @@
 .ast-console__dots {
   display: inline-flex;
   gap: 0.4em;
+  flex-shrink: 0;
 }
 .ast-console__dots::before { content: "●"; color: #ff5f57; }
 .ast-console__dots .y     { color: #febc2e; }
 .ast-console__dots .g     { color: #28c840; }
+.ast-console__dots .y::before,
+.ast-console__dots .g::before { content: "●"; }
 
 .ast-console__title {
   color: #8b949e;
-  font-style: normal;
   flex: 1;
   text-align: center;
   user-select: none;
@@ -175,12 +177,13 @@
 
 /* Command line — distinct band, brighter, with green caret */
 .ast-console__cmd {
-  display: block;
   padding: 0.7rem 1rem 0.5rem;
   color: #58a6ff;
   font-weight: 500;
   border-bottom: 1px dashed rgba(126, 231, 135, 0.18);
   background: rgba(126, 231, 135, 0.03);
+  white-space: pre;
+  overflow-x: auto;
 }
 
 .ast-console__cmd .ast-prompt {
@@ -191,13 +194,9 @@
 }
 
 .ast-console__cmd::after {
-  content: "";
-  display: inline-block;
-  width: 0.55em;
-  height: 1em;
-  background: #7ee787;
-  margin-left: 0.4em;
-  vertical-align: text-bottom;
+  content: "▋";
+  color: #7ee787;
+  margin-left: 0.25em;
   animation: ast-blink 1.05s step-end infinite;
 }
 
@@ -206,22 +205,39 @@
   50.01%, 100% { opacity: 0; }
 }
 
-/* Output band — main content of the console */
-.ast-console__out {
-  display: block;
+/* Output — the actual ast-outline result */
+pre.ast-console__out {
+  margin: 0;
   padding: 0.85rem 1rem 1rem;
+  background: transparent;
+  color: #c9d1d9;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
   white-space: pre;
+  overflow-x: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-.ast-console .ast-comment {
+pre.ast-console__out code {
+  background: transparent;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.ast-console .ast-comment,
+.ast-console .ast-doc {
   color: #8b949e;
   font-style: italic;
 }
 
 .ast-console .ast-doc {
   color: #6e7681;
-  font-style: italic;
-  display: block;
 }
 
 .ast-console .ast-attr {
