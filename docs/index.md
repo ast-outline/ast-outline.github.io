@@ -473,6 +473,29 @@ around the same CLI — either way, more setup friction for users and a
 second ABI to keep in sync, with no extra capability for the actual
 target audience.
 
+Concretely, these all fold into **one** agent round-trip — one `bash`
+tool call, one stdout result:
+
+```bash
+# Filter the digest for one class across a whole tree
+ast-outline digest src/ | rg 'class .*Service'
+
+# Outline only files changed since a baseline
+find src -name '*.py' -newer .last-review | xargs ast-outline --imports
+
+# List deprecated symbols across a module
+ast-outline digest src/ | grep '\[deprecated\]'
+
+# Drive one ast-outline call from the output of another tool
+ast-grep -l --pattern 'class $X extends Component' src \
+  | xargs ast-outline --imports
+```
+
+Through MCP the same outcomes are **N+1 round-trips**: the agent
+calls `list_files`, then `outline_file` per match, then filters
+results itself — each step paid for in context tokens and latency.
+A pipe in `bash` does that work in the kernel, invisibly.
+
 The narrow case where MCP would help is non-shell hosts (e.g. Claude
 Desktop). If demand shows up there, a wrapper takes a day to write —
 but it's a separate add-on, not a redesign.
