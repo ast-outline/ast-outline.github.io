@@ -98,6 +98,44 @@ dot-separated key path (`spec.containers[0].image`).
 `show` matches **keys**, not value text — use `grep`/`rg` for free-text
 search inside values.
 
+### Header-only output: `--signature` / `--view signature`
+
+When you already know the symbol name (typically after a `digest`) and
+just want the **contract** — what it promises rather than how it's
+implemented — pass `--signature` (or the long form `--view signature`).
+The output drops the body and keeps only docs + attributes + the
+signature line:
+
+```bash
+ast-outline show Player.cs TakeDamage --signature
+# tests/fixtures/csharp/unity_behaviour.cs:34-39  Demo.Combat.HeroController.TakeDamage  (method)
+# in: namespace Demo.Combat → public class HeroController : MonoBehaviour, IDamageable
+/// <summary>Apply damage to the hero.</summary>
+/// <param name="amount">HP to subtract.</param>
+public void TakeDamage(int amount)
+```
+
+The mutex-grouped `--full` / `--view full` aliases keep the existing
+body-extraction behavior; `--full` is the default, so omitting both
+flags reproduces the original behavior. `--signature` and `--full`
+cannot be combined — argparse rejects the pair as a `# note:` on
+stdout (still exit 0, per the LLM-friendly invariant).
+
+`--no-doc` composes with `--signature`: the doc-comment lines are
+stripped, leaving the bare contract:
+
+```bash
+ast-outline show Player.cs TakeDamage --signature --no-doc
+# tests/fixtures/csharp/unity_behaviour.cs:34-39  Demo.Combat.HeroController.TakeDamage  (method)
+# in: namespace Demo.Combat → public class HeroController : MonoBehaviour, IDamageable
+public void TakeDamage(int amount)
+```
+
+Doc placement matches `outline`: C# `///`, JSDoc, and Rust doc-comment
+lines render **before** the signature; Python docstrings render
+**after** the signature with one level of indent (mirroring how Python
+docstrings live inside the method body).
+
 ---
 
 ## `ast-outline prompt`

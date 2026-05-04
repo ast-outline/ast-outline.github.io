@@ -54,6 +54,10 @@ ast-outline prompt | pbcopy   # macOS clipboard
        YAML symbols are dot-separated key paths
        (`spec.containers[0].image`) — `show` matches **keys**, not
        values; for free-text search inside values use `grep`.
+       Add `--signature` to any of the above to return header only
+       (docs + attrs + signature, no body) — useful after `digest`,
+       when you have the name and want the contract, not the
+       implementation.
 
     Both `outline` and `digest` accept multiple paths in a single call
     (mix files and directories, mix languages). Both renderers append
