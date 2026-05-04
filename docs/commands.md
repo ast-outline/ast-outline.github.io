@@ -56,11 +56,17 @@ ast-outline digest src/Combat
 ast-outline digest src/services src/handlers
 ```
 
-Output starts with a one-line legend:
+Code-language output starts with a one-line legend:
 
 ```text
 # legend: name()=callable, name [kind]=non-callable, [N overloads]=N callables share name, [deprecated]=obsolete, ...
 ```
+
+The legend is **dynamic** — only entries whose token shape actually
+appears in the rendered body are listed. A YAML- or markdown-only
+batch emits no legend at all (their digests contain no callables,
+kinds, markers, or inheritance), and code batches keep a legend
+pruned to the subset of tokens that actually surfaces.
 
 Each file gets a header with a **size label** (`[tiny]` / `[medium]` /
 `[large]`) and a `[broken]` tag when parse errors clip the outline. See

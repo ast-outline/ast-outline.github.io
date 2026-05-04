@@ -32,8 +32,8 @@ agents can `show` it or `Read` that exact slice.
 
 ## Digest format
 
-`digest` is denser: file headers + a one-line legend + collapsed
-callables.
+`digest` is denser: file headers + (when needed) a one-line legend +
+collapsed callables.
 
 ```text
 # legend: name()=callable, name [kind]=non-callable, [N overloads]=N callables share name, [deprecated]=obsolete, ...
@@ -50,9 +50,14 @@ class Enemy : Entity
   PatrolTo(), Attack() [async], Despawn()
 ```
 
-The legend is one line, intentionally — the format is
-self-explanatory once you see the legend once, and agents don't need
-to look it up again per query.
+The legend is **dynamic** — only entries whose token shape actually
+appears in the rendered body are listed. A code batch with overloads
+and `@deprecated` members gets the full legend; a batch using only
+free functions skips `[N overloads]` and `[deprecated]`. A YAML- or
+markdown-only batch (whose digest contains no callables, kinds,
+markers, or inheritance) emits no legend at all — there is nothing
+non-obvious to explain. The legend is one line, intentionally — easy
+to scan once and drop into a prompt.
 
 ---
 
