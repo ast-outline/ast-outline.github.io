@@ -41,46 +41,14 @@ actual textual output of running `ast-outline` against a file in the
 language; syntax-highlighted by **Pygments** so the structure reads
 the same way it does in your editor.
 
-=== ":material-language-cpp: C++ (Unreal Engine)"
-
-    ```cpp title="$ ast-outline Source/MyGame/MyActor.h"
-    # MyActor.h (97 lines, ~548 tokens, 6 types, 9 methods, 7 fields)
-    UENUM(BlueprintType) enum class EWeaponSlot : uint8  L15-20
-        Primary  L17
-        Secondary  L18
-        Sidearm  L19
-
-    USTRUCT(BlueprintType) struct FItemData  L23-35
-        UPROPERTY(EditAnywhere, BlueprintReadWrite) FString Name  L28
-        UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 Count  L31
-        UPROPERTY() EWeaponSlot Slot  L34
-
-    UINTERFACE(MinimalAPI, Blueprintable) class UInteractable : public UInterface  L38-41
-
-    class IInteractable  L43-50
-        UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Interaction") void Interact()  L49
-
-    UCLASS(Blueprintable, BlueprintType) class AMyActor : public AActor, public IInteractable  L53-81
-        AMyActor()  L58
-        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats") float Health  L61
-        UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components") UStaticMeshComponent* Mesh  L64
-        UPROPERTY(EditDefaultsOnly, Category="Combat") TArray<FItemData> Inventory  L67
-        UFUNCTION(BlueprintCallable, Category="Combat") virtual void TakeDamage(float Amount)  L70
-        UFUNCTION(BlueprintNativeEvent, Category="Events") void OnHit()  L73
-        UFUNCTION() void HandleOverlap(AActor* Other)  L76
-        virtual void BeginPlay() override  L79
-        virtual void Tick(float DeltaSeconds) override  L80
-    ```
-
-    Reflection macros (`UCLASS`, `USTRUCT`, `UENUM`, `UINTERFACE`,
-    `UPROPERTY`, `UFUNCTION`) are recognised by default and attach to
-    the next declaration as decorators — same way C# `[Attribute]`
-    and Python `@decorator` do. The `GENERATED_BODY()` family is
-    silently dropped from the outline (UHT boilerplate, no signal).
-    Plain modern C++ (templates, concepts, namespaces, inheritance)
-    works the same way without UE.
+Tab labels show the language only; the *italic line under each tab* is
+context (real codebase, framework, file kind) — not part of the
+`ast-outline` output. Everything inside the code block is the actual
+stdout from the command in the title bar.
 
 === ":material-language-python: Python"
+
+    *Real codebase — `ast-outline/cli.py` (this project itself).*
 
     ```python title="$ ast-outline src/ast_outline/cli.py"
     # src/ast_outline/cli.py (563 lines, ~5,326 tokens, 2 types, 12 methods, 6 fields)
@@ -107,6 +75,8 @@ the same way it does in your editor.
 
 === ":material-language-typescript: TypeScript"
 
+    *Browser app — IndexedDB storage layer with generic CRUD and async methods.*
+
     ```typescript title="$ ast-outline src/storage_service.ts"
     # src/storage_service.ts (60 lines, ~352 tokens, 3 types, 8 methods, 10 fields)
     const DB_NAME = "demo-db"  L5
@@ -132,6 +102,8 @@ the same way it does in your editor.
     ```
 
 === ":material-language-rust: Rust"
+
+    *Library crate — struct + trait + service with `///` doc-comments and `#[derive]`.*
 
     ```rust title="$ ast-outline src/user_service.rs"
     # src/user_service.rs (72 lines, ~396 tokens, 3 types, 9 methods, 6 fields)
@@ -162,7 +134,9 @@ the same way it does in your editor.
     pub const MAX_USERS: u32 = 10_000  L70
     ```
 
-=== ":material-language-csharp: C# (Unity)"
+=== ":material-language-csharp: C#"
+
+    *Unity MonoBehaviour — `[Attribute]` decorators and XML doc-comments preserved.*
 
     ```csharp title="$ ast-outline Assets/Scripts/HeroController.cs"
     # Assets/Scripts/HeroController.cs (54 lines, ~385 tokens, 3 types, 4 methods, 5 fields)
@@ -188,7 +162,42 @@ the same way it does in your editor.
             void TakeDamage(int amount)  L51
     ```
 
+=== ":material-language-cpp: C++"
+
+    *Unreal Engine actor — UCLASS / UPROPERTY / UFUNCTION render as decorators on the right declaration. Plain modern C++ works the same way without UE.*
+
+    ```cpp title="$ ast-outline Source/MyGame/MyActor.h"
+    # MyActor.h (97 lines, ~548 tokens, 6 types, 9 methods, 7 fields)
+    UENUM(BlueprintType) enum class EWeaponSlot : uint8  L15-20
+        Primary  L17
+        Secondary  L18
+        Sidearm  L19
+
+    USTRUCT(BlueprintType) struct FItemData  L23-35
+        UPROPERTY(EditAnywhere, BlueprintReadWrite) FString Name  L28
+        UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 Count  L31
+        UPROPERTY() EWeaponSlot Slot  L34
+
+    UINTERFACE(MinimalAPI, Blueprintable) class UInteractable : public UInterface  L38-41
+
+    class IInteractable  L43-50
+        UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Interaction") void Interact()  L49
+
+    UCLASS(Blueprintable, BlueprintType) class AMyActor : public AActor, public IInteractable  L53-81
+        AMyActor()  L58
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats") float Health  L61
+        UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components") UStaticMeshComponent* Mesh  L64
+        UPROPERTY(EditDefaultsOnly, Category="Combat") TArray<FItemData> Inventory  L67
+        UFUNCTION(BlueprintCallable, Category="Combat") virtual void TakeDamage(float Amount)  L70
+        UFUNCTION(BlueprintNativeEvent, Category="Events") void OnHit()  L73
+        UFUNCTION() void HandleOverlap(AActor* Other)  L76
+        virtual void BeginPlay() override  L79
+        virtual void Tick(float DeltaSeconds) override  L80
+    ```
+
 === ":material-language-java: Java"
+
+    *Spring-style service — Javadoc, annotations, generics, abstract + nested types.*
 
     ```java title="$ ast-outline src/main/java/com/example/UserService.java"
     # UserService.java (64 lines, ~352 tokens, 3 types, 9 methods, 5 fields)
@@ -216,6 +225,8 @@ the same way it does in your editor.
     ```
 
 === ":material-language-go: Go"
+
+    *Standard service — methods grouped under their receiver type.*
 
     ```go title="$ ast-outline service/user_service.go"
     # user_service.go (105 lines, ~635 tokens, 4 types, 9 methods, 9 fields)
@@ -250,7 +261,9 @@ the same way it does in your editor.
             List() []string  L85
     ```
 
-=== ":material-language-php: PHP (WordPress / Laravel)"
+=== ":material-language-php: PHP"
+
+    *Laravel-style service — PHP 8 readonly fields, ctor property promotion, typed constants.*
 
     ```php title="$ ast-outline app/Services/UserService.php"
     # app/Services/UserService.php (66 lines, ~317 tokens, 2 types, 8 methods, 5 fields)
@@ -278,7 +291,41 @@ the same way it does in your editor.
         const APP_VERSION = "1.0.0"  L65
     ```
 
+=== ":simple-yaml: YAML"
+
+    *Kubernetes Deployment — format auto-detected, sequence items use `[i]` paths.*
+
+    ```yaml title="$ ast-outline deploy/k8s_deployment.yaml"
+    # deploy/k8s_deployment.yaml (37 lines, ~187 tokens) — Deployment apps/v1 prod/api-server
+    apiVersion: apps/v1  L1
+    kind: Deployment  L2
+    metadata:  L3-7
+        name: api-server  L4
+        namespace: prod  L5
+        labels:  L6-7
+            app: api  L7
+    spec:  L8-36
+        replicas: 3  L9
+        selector:  L10-12
+            matchLabels:  L11-12
+                app: api  L12
+        template:  L13-36
+            metadata:  L14-16
+                labels:  L15-16
+                    app: api  L16
+            spec:  L17-36
+                containers: (2 items)  L18-36
+                    - api  L19-34
+                        name: api  L19
+                        image: registry.example.com/api:v1.2.3  L20
+                        ports: (1 item)  L21-22
+                            - 8080  L22
+                                containerPort: 8080  L22
+    ```
+
 === ":material-language-markdown: Markdown"
+
+    *Hierarchical TOC — heading levels indented, code blocks tagged by language.*
 
     ```markdown title="$ ast-outline README.md"
     # README.md (52 lines, ~153 tokens, 8 headings, 5 code blocks)
@@ -297,14 +344,12 @@ the same way it does in your editor.
         ## License  L49-51
     ```
 
-!!! info "+ 4 more languages with the same digest format"
-    `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs` — parsed by
-    the TypeScript grammar, so React/Node/ES-module files all flow through),
-    **Kotlin** (`.kt`/`.kts` — Android, Compose, Spring; `data class`, `sealed`,
-    `suspend`, KDoc), **Scala** (`.scala`/`.sc` — Scala 2 + Scala 3 with
-    `enum`/`given`/`extension`, Scaladoc), and **YAML** (`.yaml`/`.yml` —
-    Kubernetes / OpenAPI / GitHub Actions, with dotted key paths and
-    sequence indices).
+!!! info "+ 3 more languages with the same digest format"
+    `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs` —
+    parsed by the TypeScript grammar, so React / Node / ES-module files
+    all flow through), **Kotlin** (`.kt`/`.kts` — Android, Compose, Spring;
+    `data class`, `sealed`, `suspend`, KDoc), and **Scala** (`.scala`/`.sc`
+    — Scala 2 + Scala 3 with `enum`/`given`/`extension`, Scaladoc).
 
     Same digest format, same legend, same `[broken]` recovery semantics. Adding
     another language is a single new adapter file —
