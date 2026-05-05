@@ -41,6 +41,45 @@ actual textual output of running `ast-outline` against a file in the
 language; syntax-highlighted by **Pygments** so the structure reads
 the same way it does in your editor.
 
+=== ":material-language-cpp: C++ (Unreal Engine)"
+
+    ```cpp title="$ ast-outline Source/MyGame/MyActor.h"
+    # MyActor.h (97 lines, ~548 tokens, 6 types, 9 methods, 7 fields)
+    UENUM(BlueprintType) enum class EWeaponSlot : uint8  L15-20
+        Primary  L17
+        Secondary  L18
+        Sidearm  L19
+
+    USTRUCT(BlueprintType) struct FItemData  L23-35
+        UPROPERTY(EditAnywhere, BlueprintReadWrite) FString Name  L28
+        UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 Count  L31
+        UPROPERTY() EWeaponSlot Slot  L34
+
+    UINTERFACE(MinimalAPI, Blueprintable) class UInteractable : public UInterface  L38-41
+
+    class IInteractable  L43-50
+        UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Interaction") void Interact()  L49
+
+    UCLASS(Blueprintable, BlueprintType) class AMyActor : public AActor, public IInteractable  L53-81
+        AMyActor()  L58
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats") float Health  L61
+        UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components") UStaticMeshComponent* Mesh  L64
+        UPROPERTY(EditDefaultsOnly, Category="Combat") TArray<FItemData> Inventory  L67
+        UFUNCTION(BlueprintCallable, Category="Combat") virtual void TakeDamage(float Amount)  L70
+        UFUNCTION(BlueprintNativeEvent, Category="Events") void OnHit()  L73
+        UFUNCTION() void HandleOverlap(AActor* Other)  L76
+        virtual void BeginPlay() override  L79
+        virtual void Tick(float DeltaSeconds) override  L80
+    ```
+
+    Reflection macros (`UCLASS`, `USTRUCT`, `UENUM`, `UINTERFACE`,
+    `UPROPERTY`, `UFUNCTION`) are recognised by default and attach to
+    the next declaration as decorators — same way C# `[Attribute]`
+    and Python `@decorator` do. The `GENERATED_BODY()` family is
+    silently dropped from the outline (UHT boilerplate, no signal).
+    Plain modern C++ (templates, concepts, namespaces, inheritance)
+    works the same way without UE.
+
 === ":material-language-python: Python"
 
     ```python title="$ ast-outline src/ast_outline/cli.py"
@@ -310,10 +349,11 @@ answer *"what methods exist here?"*.
     No index, no cache, no embeddings, no network. Always fresh,
     invisible to the repo.
 
-- :material-format-list-checks: **One tool, twelve languages**
+- :material-format-list-checks: **One tool, thirteen languages**
 
-    C#, Python, TypeScript, JavaScript, Java, Kotlin, Scala, Go, Rust,
-    PHP, Markdown, YAML — same digest format, same legend.
+    C#, C++ (incl. Unreal Engine), Python, TypeScript, JavaScript,
+    Java, Kotlin, Scala, Go, Rust, PHP, Markdown, YAML — same digest
+    format, same legend.
 
 </div>
 
@@ -507,6 +547,7 @@ but it's a separate add-on, not a redesign.
 | Language   | Extensions |
 | ---        | --- |
 | C#         | `.cs` |
+| C++        | `.cpp`, `.cc`, `.cxx`, `.c++`, `.h`, `.hpp`, `.hh`, `.hxx`, `.h++`, `.ipp`, `.tpp`, `.inl`, `.cppm`, `.ixx` *(Unreal Engine reflection macros recognised)* |
 | Python     | `.py`, `.pyi` |
 | TypeScript | `.ts`, `.tsx` |
 | JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` *(via the TS grammar)* |
