@@ -189,6 +189,139 @@ ast-outline --lang python README.legacy
 
 ---
 
+## Directory walks — what gets ignored
+
+When you point `outline` or `digest` at a directory, the walk **respects
+the project's `.gitignore` and `.ignore`** (including nested ones in
+subdirs, with proper override semantics) plus a small hardcoded list
+of universally non-source dirs. No flag, no config — it just works on
+a fresh clone.
+
+Hardcoded fallback (applied alongside `.gitignore`, kicks in even when
+the project has none):
+
+| Category | Dirs |
+| --- | --- |
+| VCS metadata | `.git/`, `.svn/`, `.hg/` |
+| Node | `node_modules/` |
+| Python caches, venvs, build metadata | `__pycache__/`, `.venv/`, `venv/`, `.tox/`, `.mypy_cache/`, `.pytest_cache/`, `.ruff_cache/`, `.eggs/`, `*.egg-info/` |
+| JVM | `.gradle/` |
+| IDE / editor | `.idea/`, `.vs/`, `.vscode/`, `.cursor/`, `.zed/`, `.fleet/` |
+| JS test infra & hooks | `__snapshots__/`, `.husky/` |
+| JS framework build caches | `.next/`, `.nuxt/`, `.svelte-kit/`, `.turbo/`, `.parcel-cache/`, `.vite/` |
+| Infra | `.terraform/` |
+
+Names like `build/`, `bin/`, `dist/`, `target/`, `vendor/`, `out/`,
+`obj/` are **not** in the hardcoded list — they're sometimes
+legitimate source/data dirs across the wider ecosystem (Maven
+`target/` vs. Rust `target/` vs. some project's actual targets folder;
+`bin/` for shell scripts vs. .NET output; `vendor/` for Composer deps
+vs. hand-curated Go vendoring the user wants parsed; `obj/` for C#
+output vs. C `.o` files vs. data dirs holding `.obj` 3D models). We
+delegate those to `.gitignore` per repo — if your project has them,
+list them there (which you likely already do).
+
+### Priority order
+
+Multiple ignore sources combine into one filter, with later sources
+winning on conflict — same precedence ripgrep / fd / ast-grep use:
+
+```text
+hardcoded defaults  <  .gitignore  <  .ignore
+       lowest                          highest
+```
+
+So if your `.gitignore` excludes `vendor/` but your `.ignore` has
+`!vendor/`, `vendor/*`, `!vendor/our-fork/` — the `.ignore` wins for
+the rescued subdir. Same idea works at the file level: a generated
+`schema.gen.ts` you keep in git but want hidden from outline goes
+into `.ignore` (not `.gitignore`).
+
+### `.ignore` — search-tool convention
+
+`.ignore` is the file `ripgrep` / `fd` / `ast-grep` use to mean
+"hide from search/tool output without affecting git tracking."
+Same syntax as `.gitignore`, just a different file. ast-outline
+reads it the same way — root-level and nested in subdirs. If you
+already have an `.ignore` set up for `rg`/`ag`, ast-outline picks
+it up automatically.
+
+### Nested `.gitignore` / `.ignore` files
+
+Mirroring `git` itself, a `.gitignore` placed in a subdir applies
+**only to that subtree**, with patterns resolved relative to the
+subdir. Sibling subtrees aren't affected, and a deeper `.gitignore`
+can override its parent's rule via `!` negation:
+
+```text
+# proj/.gitignore        — top-level rule
+*.skip.py
+
+# proj/keep/.gitignore   — local override for this subtree
+!*.skip.py
+```
+
+`proj/drop.skip.py` is filtered, `proj/keep/rescued.skip.py` is kept.
+
+### Un-ignoring a default-pruned dir (monorepo escape hatch)
+
+If you need to scan something inside a dir we filter by default —
+classic case: a hand-curated fork at `node_modules/our-fork/` you
+want parsed alongside everything else — use git's standard three-line
+idiom in your `.gitignore`:
+
+```text
+!node_modules/             # un-exclude the dir
+node_modules/*             # re-exclude its top-level contents
+!node_modules/our-fork/    # un-exclude the one subtree you care about
+```
+
+A bare `!node_modules/our-fork/` won't work on its own — neither for
+us nor for git. That's intentional: git refuses to descend into a
+parent that was excluded, so descendant negations have no effect
+unless the parent is un-excluded first.
+
+### The `# note:` line
+
+When the walker prunes anything, the output starts with a one-line
+note listing the **unique basenames** of pruned dirs (sorted, deduped
+across nested occurrences, capped at 8 with a `… +N more` tail in
+deep monorepos), with a hint about the escape hatch:
+
+```text
+# note: ignored 12 dirs (.git, .gradle, .idea, .next, .pytest_cache, .venv, __pycache__, node_modules) via .gitignore/.ignore + defaults — pass --no-ignore to disable
+```
+
+A clean directory (nothing to ignore) emits no note. File-level
+gitignore matches are filtered silently — listing them tends to bloat
+the note without giving the agent useful disambiguation.
+
+Pointing at a file directly (`ast-outline show .venv/foo.py X`) bypasses
+the walker entirely — explicit file paths always work, even if their
+parent dir would have been pruned in a directory walk.
+
+### `--no-ignore` — disable the whole filter
+
+For the rare case when you want to outline a default-pruned subtree
+without editing any ignore files (`.gitignore`/`.ignore`/the
+hardcoded list), pass `--no-ignore`. It works on `outline` and
+`digest`:
+
+```bash
+ast-outline digest node_modules/our-fork --no-ignore
+ast-outline outline .venv/lib/python3.12/site-packages/somepkg --no-ignore
+```
+
+When set, the walker only filters by supported extension —
+`.gitignore`, `.ignore`, and the hardcoded defaults are all
+disabled. The `# note: ignored …` line is also omitted (since
+nothing was filtered).
+
+This is **the** escape hatch — there's no `--exclude`,
+`--include`, or per-rule disable flags. One switch, on/off.
+
+---
+
 ## Exit codes — the LLM-friendly contract
 
 `ast-outline` **always exits `0` on handled errors** and prints a
