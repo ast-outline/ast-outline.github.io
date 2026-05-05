@@ -1,4 +1,4 @@
-# LLM agents
+# AI agents
 
 This is the primary use case for `ast-outline`. Add the snippet below to
 your `CLAUDE.md`, `AGENTS.md`, subagent file, or any system prompt that

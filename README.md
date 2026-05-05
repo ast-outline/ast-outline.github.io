@@ -32,7 +32,7 @@ mkdocs build --strict
 docs/              Markdown sources
   index.md         Landing page
   commands.md      CLI reference
-  agents.md        LLM-agent integration
+  agents.md        AI-agent integration
   output-format.md Digest format reference
   about.md         License & attribution
   history.md       Project history

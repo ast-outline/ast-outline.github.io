@@ -12,7 +12,7 @@ hide:
 A CLI that prints the <strong>structural outline</strong> of a source
 file — classes, methods, signatures with line numbers,
 <strong>no method bodies</strong>. Output is
-<strong>5–10× smaller than the source</strong>, built for LLM coding
+<strong>5–10× smaller than the source</strong>, built for AI coding
 agents (Claude Code, Cursor, Codex CLI) that scan a repo before reading
 any file in full.
 </p>
@@ -543,7 +543,7 @@ ast-outline help               # full reference
 > Parse on demand, print, exit.
 
 Opposite of RAG-style codebase indexers (Cursor, Bloop, Continue,
-the embedding-MCP crowd). LLM agents are sharp enough to chain
+the embedding-MCP crowd). AI coding agents are sharp enough to chain
 `ast-outline` with `grep`, `find`, `ast-grep` and other unix tools
 and navigate real code fast — without reading whole files, and
 without a local index earning its complexity.
@@ -620,7 +620,7 @@ Adding another language is a single new adapter file. See
 
     Outline, digest, show, prompt — full CLI reference with examples.
 
--   :material-robot: **[LLM agents](agents.md)**
+-   :material-robot: **[AI agents](agents.md)**
 
     How to wire `ast-outline` into Claude Code, Cursor, Aider, custom
     agents.

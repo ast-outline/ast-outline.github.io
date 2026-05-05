@@ -2,7 +2,7 @@
 
 `ast-outline` has two output modes: **outline** (per-file, detailed)
 and **digest** (multi-file, compact). Both are designed to be
-**parseable cold by an LLM agent** — no out-of-band reference doc
+**parseable cold by an AI agent** — no out-of-band reference doc
 needed.
 
 ## Outline format

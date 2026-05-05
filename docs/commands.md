@@ -146,7 +146,7 @@ docstrings live inside the method body).
 
 ## `ast-outline prompt`
 
-Print the canonical LLM-agent prompt snippet. Pipe it into your
+Print the canonical AI-agent prompt snippet. Pipe it into your
 `CLAUDE.md` / `AGENTS.md` so the agent learns to use `ast-outline`
 before reading whole files:
 
@@ -156,7 +156,7 @@ ast-outline prompt >> .claude/CLAUDE.md
 ast-outline prompt | pbcopy   # macOS clipboard
 ```
 
-See [LLM agents](agents.md) for the full snippet and integration notes.
+See [AI agents](agents.md) for the full snippet and integration notes.
 
 ---
 
