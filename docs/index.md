@@ -9,10 +9,12 @@ hide:
 <h1 class="ast-hero__title"><span class="ast-hero__bracket">[</span>ast-outline<span class="ast-hero__bracket">]</span></h1>
 
 <p class="ast-hero__tagline">
-Fast, AST-based <strong>structural outline</strong> for source files —
-classes, methods, signatures with line numbers, but <strong>no method bodies</strong>.
-Built for LLM coding agents that should read the <em>shape</em> of a file
-before reading the whole thing.
+A CLI that prints the <strong>structural outline</strong> of a source
+file — classes, methods, signatures with line numbers,
+<strong>no method bodies</strong>. Output is
+<strong>5–10× smaller than the source</strong>, built for LLM coding
+agents (Claude Code, Cursor, Codex CLI) that scan a repo before reading
+any file in full.
 </p>
 
 <div class="ast-hero__cta" markdown>
