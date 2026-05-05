@@ -12,9 +12,6 @@ copyright: >-
   &mdash; visible attribution required for reuse.
   <strong>ast-outline&trade;</strong> is an unregistered trademark of Dmitrii Zaitsev.
 
-repo_url: https://github.com/ast-outline/ast-outline
-repo_name: ast-outline/ast-outline
-
 docs_dir: docs
 
 theme:
@@ -59,7 +56,6 @@ theme:
     - content.tabs.link
     - announce.dismiss
   icon:
-    repo: fontawesome/brands/github
     annotation: material/arrow-right-circle
 
 markdown_extensions:
