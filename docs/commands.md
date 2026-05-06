@@ -6,7 +6,7 @@ with file/directory arguments — is `outline`.
 ## `ast-outline <paths…>` — outline
 
 Print structural signatures (classes, methods, fields, line ranges)
-without method bodies. Typical output is **5–10× smaller** than the
+without method bodies. Typical output is **2–10× smaller** than the
 source.
 
 ```bash

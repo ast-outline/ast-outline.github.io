@@ -12,7 +12,7 @@ hide:
 A CLI that prints the <strong>structural outline</strong> of a source
 file — classes, methods, signatures with line numbers,
 <strong>no method bodies</strong>. Output is
-<strong>5–10× smaller than the source</strong>, built for AI coding
+<strong>2–10× smaller than the source</strong>, built for AI coding
 agents (Claude Code, Cursor, Codex CLI) that scan a repo before reading
 any file in full.
 </p>
@@ -882,7 +882,7 @@ answer *"what methods exist here?"*.
 
 <div class="grid cards" markdown>
 
-- :material-database-arrow-down: **5–10× fewer tokens**
+- :material-database-arrow-down: **2–10× fewer tokens**
 
     An outline replaces a full file read when the agent only needs
     structural understanding.

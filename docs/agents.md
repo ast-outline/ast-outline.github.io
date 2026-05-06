@@ -42,7 +42,7 @@ ast-outline prompt | pbcopy   # macOS clipboard
        them when you need the full structure.
 
     2. **File-level structure** — `ast-outline <paths…>`: signatures
-       with line ranges, no bodies (5–10× smaller than a full read on
+       with line ranges, no bodies (2–10× smaller than a full read on
        non-trivial files). If the header carries `# WARNING: N parse
        errors`, the outline is incomplete — read the affected region
        directly.
