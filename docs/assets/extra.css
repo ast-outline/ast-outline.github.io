@@ -480,6 +480,102 @@ pre.ast-console__out code {
   border-color: #ffa657;
 }
 
+/* ─── Language picker (showcase tabs as a pill grid) ────────
+ *
+ * The "See it live" tabs render as a horizontal row by default, which
+ * stops scaling around 10-12 languages. We wrap that one tab-set in
+ * `<div class="ast-langs" markdown="1">` and re-style only its labels
+ * row as a wrapping grid of pills, so the picker grows down (more rows)
+ * instead of overflowing right. All sixteen language labels stay
+ * visible at once at any viewport, with the active one highlighted.
+ * The underlying `tabbed-content` panes (one per language) keep
+ * mkdocs-material's default behavior — exactly one is shown, others
+ * hidden, swapped on click. Zero JS.
+ */
+
+.ast-langs .tabbed-labels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.4rem;
+  border-bottom: 0;
+  margin: 0 0 1rem;
+  padding: 0;
+  overflow: visible;
+  /* Material's default gradient mask on overflow is meant for horizontal
+     scrolling; we don't scroll, so kill the mask to keep edge labels
+     fully visible. */
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.ast-langs .tabbed-labels > label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  padding: 0.55em 0.85em;
+  margin: 0;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--md-default-fg-color--light);
+  background: var(--md-code-bg-color);
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms, background 150ms,
+              transform 150ms;
+  white-space: nowrap;
+  /* Material renders the language icon as a `:before` pseudo by way of
+     the `material/...` icon syntax; let it size with the label text. */
+}
+
+.ast-langs .tabbed-labels > label:hover {
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-default-fg-color);
+  transform: translateY(-1px);
+}
+
+/* Active pill — green ring + accent text. The selector chains
+   `:checked + label` because mkdocs-material drives the tab state with
+   hidden radio inputs. */
+.ast-langs .tabbed-set > input:checked + label {
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-accent-fg-color);
+  background: var(--md-accent-fg-color--transparent);
+  font-weight: 700;
+}
+
+[data-md-color-scheme="slate"] .ast-langs .tabbed-labels > label {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-md-color-scheme="slate"] .ast-langs .tabbed-labels > label:hover {
+  border-color: var(--md-accent-fg-color);
+}
+
+/* The underline-marker mkdocs-material draws under the active label
+   doesn't fit a pill grid — hide it; the colored ring carries the
+   active state. */
+.ast-langs .tabbed-labels::before {
+  display: none;
+}
+
+/* On narrow screens, shrink the minimum cell so 2 pills still fit
+   side-by-side instead of going single-column. */
+@media (max-width: 30em) {
+  .ast-langs .tabbed-labels {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.3rem;
+  }
+  .ast-langs .tabbed-labels > label {
+    padding: 0.45em 0.6em;
+    font-size: 0.72rem;
+  }
+}
+
 /* ─── Comparison table ────────────────────────────────────── */
 
 .ast-compare {

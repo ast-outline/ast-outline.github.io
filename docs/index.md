@@ -43,10 +43,12 @@ actual textual output of running `ast-outline` against a file in the
 language; syntax-highlighted by **Pygments** so the structure reads
 the same way it does in your editor.
 
-Tab labels show the language only; the *italic line under each tab* is
-context (real codebase, framework, file kind) — not part of the
-`ast-outline` output. Everything inside the code block is the actual
-stdout from the command in the title bar.
+Pick a language below; the *italic line under the picker* is context
+(real codebase, framework, file kind) — not part of the `ast-outline`
+output. Everything inside the code block is the actual stdout from the
+command in the title bar.
+
+<div class="ast-langs" markdown="1">
 
 === ":material-language-python: Python"
 
@@ -401,6 +403,8 @@ stdout from the command in the title bar.
         ## Contributing  L45-48
         ## License  L49-51
     ```
+
+</div>
 
 !!! info "+ 4 more languages with the same digest format"
     `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs` —
