@@ -25,8 +25,8 @@ ast-outline prompt | pbcopy   # macOS clipboard
     For `.cs`, `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, `.hh`, `.py`,
     `.pyi`, `.ts`, `.tsx`, `.js`, `.jsx`, `.java`, `.kt`, `.kts`,
     `.scala`, `.sc`, `.go`, `.rs`, `.php`, `.phtml`, `.rb`, `.rake`,
-    `.gemspec`, `.md`, and `.yaml`/`.yml` files, read structure with
-    `ast-outline` before opening the full file.
+    `.gemspec`, `.css`, `.scss`, `.md`, and `.yaml`/`.yml` files,
+    read structure with `ast-outline` before opening the full file.
 
     Pick the smallest of these that answers your question — they're a
     broad-to-narrow menu, not a sequence; skip straight to `show` when
@@ -35,7 +35,10 @@ ast-outline prompt | pbcopy   # macOS clipboard
     1. **Unfamiliar directory** — `ast-outline digest <paths…>`: a
        one-page map of every file's types and public methods. Each
        file is tagged with a size label — `[tiny]` / `[medium]` /
-       `[large]` — plus `[broken]` if parse errors clipped the outline.
+       `[large]` / `[huge]` — plus `[broken]` if parse errors clipped
+       the outline. `[huge]` files (≥100k tokens) collapse to
+       header-only in the digest; call `ast-outline outline <path>` on
+       them when you need the full structure.
 
     2. **File-level structure** — `ast-outline <paths…>`: signatures
        with line ranges, no bodies (5–10× smaller than a full read on
@@ -55,6 +58,10 @@ ast-outline prompt | pbcopy   # macOS clipboard
        YAML symbols are dot-separated key paths
        (`spec.containers[0].image`) — `show` matches **keys**, not
        values; for free-text search inside values use `grep`.
+       For css/scss, the symbol is a selector token (`.btn-primary`,
+       `$var`) — pseudos and attribute filters are stripped, so
+       `.btn-primary` finds the rule even when it carries `:hover`
+       or nests in `.modal`.
        Add `--signature` to any of the above to return header only
        (docs + attrs + signature, no body) — useful after `digest`,
        when you have the name and want the contract, not the

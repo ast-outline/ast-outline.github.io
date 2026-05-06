@@ -319,6 +319,36 @@ stdout from the command in the title bar.
 
     Also recognised: `class << self` blocks, `alias` / `alias_method`, `private` / `protected` state machine (`private :foo, :bar` flips named methods retroactively), `Rakefile` / `Gemfile` (resolved by basename, no extension needed). The MRO clause `: ApplicationRecord, include Comparable, extend Searchable` shows superclass + mixins as one inheritance line in the digest.
 
+=== ":material-language-css3: SCSS"
+
+    *Component stylesheet — `&` resolves against the parent, so nested rules become findable as their fully-qualified BEM selectors. Mixins and functions render as callables.*
+
+    ```scss title="$ ast-outline styles/_components.scss"
+    # styles/_components.scss [tiny] (84 lines, ~370 tokens)
+    # imports: @use "sass:math"; @use "../tokens" as t; @forward "icons"
+    $primary: #007bff !default  L8
+    $secondary: #6c757d !default  L9
+    $radius: 4px  L10
+    %button-base  L18-24
+    @mixin button($bg: $primary, $fg: white, $size: medium)  L29-46
+    @function strip-unit($value)  L54-56
+    .btn  L62-64
+    .btn-primary  L66-68
+    .btn-secondary  L70-77
+        .btn-secondary.disabled  L73-76
+    .card  L80-108
+        .card__header  L84-92
+            h2  L88-91
+        .card__body  L94-96
+        .card--featured  L98-107
+            .card__header  L101-106
+    @media (max-width: 768px)  L113-122
+        .card  L114-121
+            .card__header, .card__body  L117-120
+    ```
+
+    `find_symbols(".card__header")` returns every cascade-relevant definition — top-level, inside `@media`, themed under `.card--featured` — with the wrapping at-rule visible in the breadcrumb. `:is(...)` / `:where(...)` selectors recurse (additive); `:not(...)` / `:has(...)` don't. Pseudo-classes and attribute filters are stripped for matching, so `.btn-primary` finds the rule whether it carries `:hover`, `[disabled]`, or sits in `.modal`. Plain CSS gets the same treatment minus the SCSS-specific symbols.
+
 === ":simple-yaml: YAML"
 
     *Kubernetes Deployment — format auto-detected, sequence items use `[i]` paths.*
@@ -422,11 +452,11 @@ answer *"what methods exist here?"*.
     No index, no cache, no embeddings, no network. Always fresh,
     invisible to the repo.
 
-- :material-format-list-checks: **One tool, fourteen languages**
+- :material-format-list-checks: **One tool, sixteen languages**
 
     C#, C++ (incl. Unreal Engine), Python, TypeScript, JavaScript,
-    Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), Markdown,
-    YAML — same digest format, same legend.
+    Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), CSS, SCSS,
+    Markdown, YAML — same digest format, same legend.
 
 </div>
 
@@ -631,6 +661,8 @@ but it's a separate add-on, not a redesign.
 | Rust       | `.rs` |
 | PHP        | `.php`, `.phtml`, `.phps`, `.php8` |
 | Ruby       | `.rb`, `.rake`, `.gemspec`, `.ru`, `Rakefile`, `Gemfile` *(Rails associations recognised)* |
+| CSS        | `.css` |
+| SCSS       | `.scss` *(mixins, functions, variables, placeholders; `&` resolves against parent)* |
 | Markdown   | `.md`, `.markdown`, `.mdx`, `.mdown` |
 | YAML       | `.yaml`, `.yml` |
 

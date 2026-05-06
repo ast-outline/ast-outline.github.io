@@ -70,11 +70,40 @@ size label based on **outline output size**:
 | --- | --- | --- |
 | `[tiny]` | < ~500 tokens | Outline is roughly the same size as the source — `Read` directly is fine. |
 | `[medium]` | ~500–5000 tokens | Outline meaningfully compresses — prefer it. |
-| `[large]` | 5000+ tokens | Outline output itself can run long; prefer `digest`, then `show` on specific symbols. |
+| `[large]` | ~5000–100k tokens | Outline output itself can run long; prefer `digest`, then `show` on specific symbols. |
+| `[huge]` | 100k+ tokens | In `digest`, the file collapses to its header line only — call `ast-outline outline <path>` to expand. |
 
 These labels are about **how much you save with the outline**, not the
 file's intrinsic complexity. A large generated file might still be
 `[large]` even though no human writes it.
+
+`[tiny]` / `[medium]` / `[large]` are purely descriptive — they don't
+change what gets rendered, just inform the agent's choice between
+`Read` / `outline` / `show`. **`[huge]` is the one label that also
+changes behavior**, but only in `digest`: the body is suppressed so
+a directory full of generated SDKs / vendored mega-files doesn't
+bloat the output. The full `(N lines, ~N tokens, N types, N methods,
+N fields)` counters in parens still appear, so the agent can size up
+the file from the digest alone. `outline` and `show` are unaffected
+— when the agent explicitly opens one file by path, they get the full
+structure regardless of size. The digest legend gets one extra clause
+whenever a huge file is in the batch:
+
+```
+# legend: [huge]=body omitted (use `ast-outline outline <path>`)
+```
+
+Before / after on a directory of 50 huge TypeScript checker.ts copies
+(51 232 lines each, ~742 k tokens):
+
+| | Lines of digest output |
+| --- | --- |
+| Before `[huge]` collapse | 1 602 |
+| After `[huge]` collapse | 52 |
+
+A 31× reduction without losing any decision-relevant info — every
+collapsed file still carries lines, tokens, and per-kind counters in
+its header.
 
 ---
 
