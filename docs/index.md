@@ -505,45 +505,159 @@ highlighted by Pygments. The italic line under the picker is context
 
 === ":material-database: SQL"
 
-    *PostgreSQL schema dump — tables surface as types with their columns as fields, so an agent reads the schema shape without loading the file.*
+    *Order-processing module — schema + audit trigger + two views + business-logic functions. **Source 95 lines → outline 50 lines** (1.9× by lines, 1.5× by chars). Tables keep all columns verbatim; PL/pgSQL function bodies, view SELECTs, and trigger timing/event details get stripped — agents see the schema shape and the function contracts, not the implementation.*
 
-    ```sql title="$ ast-outline schema.sql"
-    # schema.sql [tiny] (43 lines, ~303 tokens, 5 types, 20 fields)
-    namespace loyalty
+    ```sql title="orders.sql — source (95 lines)"
+    -- Order processing — schema + business logic.
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-    -- Status of an order in the fulfilment pipeline.
-    CREATE TYPE order_status AS ENUM  L7
-        'pending'  L7
-        'paid'  L7
-        'shipped'  L7
-        'cancelled'  L7
+    CREATE TYPE order_status AS ENUM ('pending', 'paid', 'shipped', 'cancelled');
 
-    CREATE TYPE address  L9-13
-        street TEXT  L10
-        city TEXT  L11
-        zip TEXT  L12
+    CREATE TABLE customers (
+      id BIGINT PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      display_name TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
 
-    /* Users of the loyalty programme. The `email` column is the
-       external identity used in JWTs; treat it as immutable. */
-    CREATE TABLE users  L17-25
-        id BIGINT PRIMARY KEY  L18
-        email TEXT NOT NULL UNIQUE  L19
-        display_name TEXT  L20
-        status order_status NOT NULL DEFAULT 'pending'  L21
-        shipping_address address  L22
-        created_at TIMESTAMP NOT NULL DEFAULT now()  L23
-        updated_at TIMESTAMP  L24
+    CREATE TABLE orders (
+      id BIGINT PRIMARY KEY,
+      customer_id BIGINT NOT NULL REFERENCES customers(id),
+      total_cents INTEGER NOT NULL,
+      status order_status NOT NULL DEFAULT 'pending',
+      placed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ
+    );
 
-    -- Reward points earned per user, aggregated nightly.
-    CREATE TABLE points_ledger  L28-34
-        id BIGSERIAL PRIMARY KEY  L29
-        user_id BIGINT NOT NULL REFERENCES users(id)  L30
-        delta INTEGER NOT NULL CHECK (delta <> 0)  L31
-        reason TEXT NOT NULL  L32
-        created_at TIMESTAMP NOT NULL DEFAULT now()  L33
+    -- Audit log captures every status transition for compliance.
+    CREATE TABLE order_audit (
+      id BIGSERIAL PRIMARY KEY,
+      order_id BIGINT NOT NULL,
+      old_status order_status,
+      new_status order_status NOT NULL,
+      actor TEXT,
+      changed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    -- Computes total cents the customer has paid across all paid orders.
+    CREATE FUNCTION customer_lifetime_value(cid BIGINT) RETURNS BIGINT
+    LANGUAGE plpgsql STABLE AS $$
+    DECLARE
+      total BIGINT;
+    BEGIN
+      SELECT COALESCE(sum(total_cents), 0) INTO total
+      FROM orders
+      WHERE customer_id = cid AND status = 'paid';
+
+      IF total IS NULL THEN
+        RETURN 0;
+      END IF;
+      RETURN total;
+    END;
+    $$;
+
+    -- Audit hook: records every status change and stamps updated_at.
+    CREATE FUNCTION audit_order_status() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+    BEGIN
+      IF NEW.status IS DISTINCT FROM OLD.status THEN
+        INSERT INTO order_audit (order_id, old_status, new_status, actor)
+        VALUES (OLD.id, OLD.status, NEW.status, current_user);
+      END IF;
+      NEW.updated_at := now();
+      RETURN NEW;
+    END;
+    $$;
+
+    CREATE TRIGGER orders_audit
+    BEFORE UPDATE ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION audit_order_status();
+
+    -- Active orders for the dashboard — joined with customer email,
+    -- excluding cancellations and anything older than 90 days.
+    CREATE VIEW active_orders AS
+      SELECT o.id,
+             o.customer_id,
+             c.email,
+             c.display_name,
+             o.total_cents,
+             o.status,
+             o.placed_at,
+             o.updated_at
+      FROM orders o
+      JOIN customers c ON c.id = o.customer_id
+      WHERE o.status <> 'cancelled'
+        AND o.placed_at > now() - INTERVAL '90 days'
+      ORDER BY o.placed_at DESC;
+
+    -- Daily revenue rollup, refreshed nightly by a cron job.
+    CREATE MATERIALIZED VIEW daily_revenue AS
+      SELECT date_trunc('day', placed_at) AS day,
+             count(*) AS order_count,
+             sum(total_cents) AS revenue_cents,
+             avg(total_cents)::INTEGER AS avg_order_cents
+      FROM orders
+      WHERE status = 'paid'
+      GROUP BY 1
+      ORDER BY 1 DESC;
+
+    CREATE INDEX idx_orders_status ON orders(status, placed_at DESC);
+    CREATE INDEX idx_orders_customer ON orders(customer_id);
     ```
 
-    `show users` returns the full `CREATE TABLE` block; `show users.email` returns the single column line. PostgreSQL is the primary target — every modern construct works including `CREATE PROCEDURE`, `CREATE DOMAIN`, `CREATE TABLE … PARTITION OF`, `SECURITY DEFINER` functions, `LOAD`, and `IMPORT FOREIGN SCHEMA` (a regex fallback recovers what the upstream grammar errors on, gated by AST skip-ranges so red herrings inside comments and PL/pgSQL bodies don't surface). MySQL and SQLite schemas extract tables / columns / indexes / views cleanly with some `error_count > 0` noise on dialect-specifics like `ENGINE=InnoDB` and `AUTOINCREMENT`.
+    ```sql title="$ ast-outline orders.sql --imports — outline (50 lines)"
+    # orders.sql [medium] (96 lines, ~674 tokens, 6 types, 3 methods, 18 fields)
+    # imports: CREATE EXTENSION IF NOT EXISTS pgcrypto
+    CREATE TYPE order_status AS ENUM  L4
+        'pending'  L4
+        'paid'  L4
+        'shipped'  L4
+        'cancelled'  L4
+
+    CREATE TABLE customers  L6-11
+        id BIGINT PRIMARY KEY  L7
+        email TEXT NOT NULL UNIQUE  L8
+        display_name TEXT  L9
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()  L10
+
+    CREATE TABLE orders  L13-20
+        id BIGINT PRIMARY KEY  L14
+        customer_id BIGINT NOT NULL REFERENCES customers(id)  L15
+        total_cents INTEGER NOT NULL  L16
+        status order_status NOT NULL DEFAULT 'pending'  L17
+        placed_at TIMESTAMPTZ NOT NULL DEFAULT now()  L18
+        updated_at TIMESTAMPTZ  L19
+
+    -- Audit log captures every status transition for compliance.
+    CREATE TABLE order_audit  L23-30
+        id BIGSERIAL PRIMARY KEY  L24
+        order_id BIGINT NOT NULL  L25
+        old_status order_status  L26
+        new_status order_status NOT NULL  L27
+        actor TEXT  L28
+        changed_at TIMESTAMPTZ NOT NULL DEFAULT now()  L29
+
+    -- Computes total cents the customer has paid across all paid orders.
+    CREATE FUNCTION customer_lifetime_value(cid BIGINT) RETURNS BIGINT  L33-47
+
+    -- Audit hook: records every status change and stamps updated_at.
+    CREATE FUNCTION audit_order_status() RETURNS TRIGGER  L50-59
+
+    CREATE TRIGGER orders_audit ON orders  L61-64
+
+    -- Active orders for the dashboard — joined with customer email,
+    -- excluding cancellations and anything older than 90 days.
+    CREATE VIEW active_orders  L68-81
+
+    -- Daily revenue rollup, refreshed nightly by a cron job.
+    CREATE MATERIALIZED VIEW daily_revenue  L84-92
+
+    CREATE INDEX idx_orders_status ON orders(status, placed_at DESC)  L94
+
+    CREATE INDEX idx_orders_customer ON orders(customer_id)  L95
+    ```
+
+    `show customers` returns the full `CREATE TABLE` block, `show customers.email` returns the single column line, `show customer_lifetime_value` returns the function header, `show active_orders` returns the view's `SELECT` — bodies are one `show` away when actually needed. PostgreSQL is the primary target — every modern construct works including `CREATE PROCEDURE`, `CREATE DOMAIN`, `CREATE TABLE … PARTITION OF`, `SECURITY DEFINER` functions, `LOAD`, and `IMPORT FOREIGN SCHEMA` (a regex fallback recovers what the upstream grammar errors on, gated by AST skip-ranges so red herrings inside comments and PL/pgSQL bodies don't surface). MySQL and SQLite schemas extract tables / columns / indexes / views cleanly with some `error_count > 0` noise on dialect-specifics like `ENGINE=InnoDB` and `AUTOINCREMENT`.
 
 </div>
 
