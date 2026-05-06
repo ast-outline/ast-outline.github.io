@@ -480,70 +480,101 @@ pre.ast-console__out code {
   border-color: #ffa657;
 }
 
-/* ─── Language picker (showcase tabs as a pill grid) ────────
+/* ─── Language picker (showcase tabs as a centered pill row) ─
  *
  * The "See it live" tabs render as a horizontal row by default, which
  * stops scaling around 10-12 languages. We wrap that one tab-set in
  * `<div class="ast-langs" markdown="1">` and re-style only its labels
- * row as a wrapping grid of pills, so the picker grows down (more rows)
- * instead of overflowing right. All sixteen language labels stay
- * visible at once at any viewport, with the active one highlighted.
- * The underlying `tabbed-content` panes (one per language) keep
- * mkdocs-material's default behavior — exactly one is shown, others
- * hidden, swapped on click. Zero JS.
+ * row as a centered, wrapping pill row with each language tinted in its
+ * own brand color. The picker grows down (more rows) instead of
+ * overflowing right; rows centre-align so a partial last row sits
+ * balanced. The underlying `tabbed-content` panes keep mkdocs-material's
+ * default exactly-one-visible behavior. Zero JS.
+ *
+ * Flex (not grid) is used so the last row centers naturally — grid's
+ * auto-fill keeps cells full-width, leaving the last row left-aligned
+ * with empty space on the right.
  */
 
 .ast-langs .tabbed-labels {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
   border-bottom: 0;
-  margin: 0 0 1rem;
+  margin: 0 0 1.25rem;
   padding: 0;
   overflow: visible;
-  /* Material's default gradient mask on overflow is meant for horizontal
-     scrolling; we don't scroll, so kill the mask to keep edge labels
-     fully visible. */
   mask-image: none;
   -webkit-mask-image: none;
 }
 
 .ast-langs .tabbed-labels > label {
-  display: flex;
+  /* Default accent — overridden per language by the nth-child rules
+     below. Drives the icon color in the default state and the
+     border / text / background in hover and active states. */
+  --ast-lang-accent: var(--md-default-fg-color--light);
+
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 0.4em;
-  padding: 0.55em 0.85em;
+  padding: 0.4em 0.85em;
   margin: 0;
   border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: 8px;
+  border-radius: 999px;
   font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--md-default-fg-color--light);
   background: var(--md-code-bg-color);
   cursor: pointer;
   transition: border-color 150ms, color 150ms, background 150ms,
-              transform 150ms;
+              transform 150ms, box-shadow 150ms;
   white-space: nowrap;
-  /* Material renders the language icon as a `:before` pseudo by way of
-     the `material/...` icon syntax; let it size with the label text. */
+}
+
+/* Per-language accent — drives icon color, hover, active. Order matches
+   the markdown source: 1 Python, 2 TypeScript, 3 Rust, 4 C#, 5 C++,
+   6 Java, 7 Go, 8 PHP, 9 Ruby, 10 SCSS, 11 YAML, 12 Markdown.
+   Inserting a language between existing tabs shifts subsequent
+   indexes — keep this list and the markdown source in sync. */
+.ast-langs .tabbed-labels > label:nth-child(1)  { --ast-lang-accent: #3776ab; }
+.ast-langs .tabbed-labels > label:nth-child(2)  { --ast-lang-accent: #2b7489; }
+.ast-langs .tabbed-labels > label:nth-child(3)  { --ast-lang-accent: #ce422b; }
+.ast-langs .tabbed-labels > label:nth-child(4)  { --ast-lang-accent: #9b4f96; }
+.ast-langs .tabbed-labels > label:nth-child(5)  { --ast-lang-accent: #f34b7d; }
+.ast-langs .tabbed-labels > label:nth-child(6)  { --ast-lang-accent: #d9701f; }
+.ast-langs .tabbed-labels > label:nth-child(7)  { --ast-lang-accent: #00add8; }
+.ast-langs .tabbed-labels > label:nth-child(8)  { --ast-lang-accent: #777bb4; }
+.ast-langs .tabbed-labels > label:nth-child(9)  { --ast-lang-accent: #cc342d; }
+.ast-langs .tabbed-labels > label:nth-child(10) { --ast-lang-accent: #cf649a; }
+.ast-langs .tabbed-labels > label:nth-child(11) { --ast-lang-accent: #6e7681; }
+.ast-langs .tabbed-labels > label:nth-child(12) { --ast-lang-accent: #4a90e2; }
+
+/* Icon picks up the language accent in the default state. */
+.ast-langs .tabbed-labels > label > .twemoji,
+.ast-langs .tabbed-labels > label > .twemoji svg {
+  color: var(--ast-lang-accent);
+  width: 1em;
+  height: 1em;
 }
 
 .ast-langs .tabbed-labels > label:hover {
-  border-color: var(--md-accent-fg-color);
+  border-color: var(--ast-lang-accent);
   color: var(--md-default-fg-color);
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Active pill — green ring + accent text. The selector chains
-   `:checked + label` because mkdocs-material drives the tab state with
-   hidden radio inputs. */
+/* Active pill — language accent on border, text, and a soft tinted
+   background. `:checked + label` because mkdocs-material drives the tab
+   state with hidden radio inputs. `color-mix` produces a 12%-opacity
+   accent fill that reads as "selected" without overpowering the page. */
 .ast-langs .tabbed-set > input:checked + label {
-  border-color: var(--md-accent-fg-color);
-  color: var(--md-accent-fg-color);
-  background: var(--md-accent-fg-color--transparent);
+  border-color: var(--ast-lang-accent);
+  color: var(--ast-lang-accent);
+  background: color-mix(in srgb, var(--ast-lang-accent) 12%, transparent);
   font-weight: 700;
 }
 
@@ -552,27 +583,26 @@ pre.ast-console__out code {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-[data-md-color-scheme="slate"] .ast-langs .tabbed-labels > label:hover {
-  border-color: var(--md-accent-fg-color);
+[data-md-color-scheme="slate"] .ast-langs .tabbed-set > input:checked + label {
+  background: color-mix(in srgb, var(--ast-lang-accent) 18%, transparent);
 }
 
-/* The underline-marker mkdocs-material draws under the active label
-   doesn't fit a pill grid — hide it; the colored ring carries the
-   active state. */
+/* Hide the underline marker mkdocs-material draws under the active
+   label — the colored ring + tinted background already carry the
+   active state in pill mode, and the underline doesn't fit a pill. */
 .ast-langs .tabbed-labels::before {
   display: none;
 }
 
-/* On narrow screens, shrink the minimum cell so 2 pills still fit
-   side-by-side instead of going single-column. */
+/* On narrow screens, tighten further so 3 pills still fit per row at
+   typical mobile widths. */
 @media (max-width: 30em) {
   .ast-langs .tabbed-labels {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 0.3rem;
+    gap: 0.25rem;
   }
   .ast-langs .tabbed-labels > label {
-    padding: 0.45em 0.6em;
-    font-size: 0.72rem;
+    padding: 0.32em 0.6em;
+    font-size: 0.7rem;
   }
 }
 
