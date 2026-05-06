@@ -503,6 +503,48 @@ highlighted by Pygments. The italic line under the picker is context
         ## License  L49-51
     ```
 
+=== ":material-database: SQL"
+
+    *PostgreSQL schema dump — tables surface as types with their columns as fields, so an agent reads the schema shape without loading the file.*
+
+    ```sql title="$ ast-outline schema.sql"
+    # schema.sql [tiny] (43 lines, ~303 tokens, 5 types, 20 fields)
+    namespace loyalty
+
+    -- Status of an order in the fulfilment pipeline.
+    CREATE TYPE order_status AS ENUM  L7
+        'pending'  L7
+        'paid'  L7
+        'shipped'  L7
+        'cancelled'  L7
+
+    CREATE TYPE address  L9-13
+        street TEXT  L10
+        city TEXT  L11
+        zip TEXT  L12
+
+    /* Users of the loyalty programme. The `email` column is the
+       external identity used in JWTs; treat it as immutable. */
+    CREATE TABLE users  L17-25
+        id BIGINT PRIMARY KEY  L18
+        email TEXT NOT NULL UNIQUE  L19
+        display_name TEXT  L20
+        status order_status NOT NULL DEFAULT 'pending'  L21
+        shipping_address address  L22
+        created_at TIMESTAMP NOT NULL DEFAULT now()  L23
+        updated_at TIMESTAMP  L24
+
+    -- Reward points earned per user, aggregated nightly.
+    CREATE TABLE points_ledger  L28-34
+        id BIGSERIAL PRIMARY KEY  L29
+        user_id BIGINT NOT NULL REFERENCES users(id)  L30
+        delta INTEGER NOT NULL CHECK (delta <> 0)  L31
+        reason TEXT NOT NULL  L32
+        created_at TIMESTAMP NOT NULL DEFAULT now()  L33
+    ```
+
+    `show users` returns the full `CREATE TABLE` block; `show users.email` returns the single column line. PostgreSQL is the primary target — every modern construct works including `CREATE PROCEDURE`, `CREATE DOMAIN`, `CREATE TABLE … PARTITION OF`, `SECURITY DEFINER` functions, `LOAD`, and `IMPORT FOREIGN SCHEMA` (a regex fallback recovers what the upstream grammar errors on, gated by AST skip-ranges so red herrings inside comments and PL/pgSQL bodies don't surface). MySQL and SQLite schemas extract tables / columns / indexes / views cleanly with some `error_count > 0` noise on dialect-specifics like `ENGINE=InnoDB` and `AUTOINCREMENT`.
+
 </div>
 
 Same digest format, same legend, same `[broken]` recovery semantics across
@@ -548,11 +590,12 @@ answer *"what methods exist here?"*.
     No index, no cache, no embeddings, no network. Always fresh,
     invisible to the repo.
 
-- :material-format-list-checks: **One tool, sixteen languages**
+- :material-format-list-checks: **One tool, every major language**
 
     C#, C++ (incl. Unreal Engine), Python, TypeScript, JavaScript,
     Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), CSS, SCSS,
-    Markdown, YAML — same digest format, same legend.
+    SQL (PostgreSQL primary), Markdown, YAML — same digest format,
+    same legend.
 
 </div>
 
@@ -759,6 +802,7 @@ but it's a separate add-on, not a redesign.
 | Ruby       | `.rb`, `.rake`, `.gemspec`, `.ru`, `Rakefile`, `Gemfile` *(Rails associations recognised)* |
 | CSS        | `.css` |
 | SCSS       | `.scss` *(mixins, functions, variables, placeholders; `&` resolves against parent)* |
+| SQL        | `.sql` *(tables w/ columns, views, types, enums, functions, procedures, triggers, indexes, sequences, schemas, domains; PostgreSQL primary, MySQL/SQLite usable)* |
 | Markdown   | `.md`, `.markdown`, `.mdx`, `.mdown` |
 | YAML       | `.yaml`, `.yml` |
 
