@@ -751,6 +751,25 @@ pre.ast-console__out code {
   }
 }
 
+/* ─── "Paste into your agent" CTA code block ──────────────── *
+ *
+ * The setup-prompt CTA admonition embeds a single-line code block
+ * carrying the magic phrase the user pastes into Claude / Codex /
+ * Gemini / Cursor. Bump the font size so the line reads as a primary
+ * call-to-action instead of an incidental code snippet, and lift the
+ * vertical padding to match. The `.highlight` ancestor selector
+ * targets the wrapper mkdocs-material adds around fenced blocks. */
+.md-typeset .highlight.ast-cta pre,
+.md-typeset .highlight.ast-cta code,
+.md-typeset .ast-cta pre code {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.md-typeset .highlight.ast-cta pre {
+  padding: 0.85rem 1rem;
+}
+
 /* ─── Comparison table ────────────────────────────────────── */
 
 .ast-compare {

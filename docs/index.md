@@ -985,11 +985,16 @@ code structurally, **`ast-outline` overviews** it. They compose well
 
 ## Install with AI { #install-with-ai }
 
-The fastest path: **let your coding agent set everything up**. After
-`ast-outline` is on your machine, ask any of Claude Code, Codex CLI,
-Gemini CLI, or Cursor:
+The fastest path: **let your coding agent set everything up**. Once
+`ast-outline` is on your machine:
 
-> Run `ast-outline setup-prompt` and follow its instructions.
+!!! success ":material-robot-happy-outline: One-line setup &mdash; paste into your agent"
+
+    Works in Claude Code, Codex CLI, Gemini CLI, or Cursor.
+
+    ```text { .ast-cta }
+    Run `ast-outline setup-prompt` and follow its instructions.
+    ```
 
 The agent reads a one-shot install-time checklist from stdout and
 walks you through:

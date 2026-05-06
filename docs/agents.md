@@ -7,9 +7,13 @@ Two paths to get the snippet there.
 
 ## Automatic — `ast-outline setup-prompt` (recommended)
 
-Inside Claude Code, Codex CLI, Gemini CLI, or Cursor, ask the agent:
+!!! success ":material-robot-happy-outline: One-line setup &mdash; paste into your agent"
 
-> Run `ast-outline setup-prompt` and follow its instructions.
+    Works in Claude Code, Codex CLI, Gemini CLI, or Cursor.
+
+    ```text { .ast-cta }
+    Run `ast-outline setup-prompt` and follow its instructions.
+    ```
 
 The agent reads a checklist from stdout and walks you through:
 

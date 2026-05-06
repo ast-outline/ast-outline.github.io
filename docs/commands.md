@@ -148,10 +148,15 @@ docstrings live inside the method body).
 ## `ast-outline setup-prompt` — automatic install via your agent (recommended)
 
 Print an install-time checklist for one-shot consumption by a coding
-agent (Claude Code, Codex CLI, Gemini CLI, Cursor). Inside your agent
-session, ask:
+agent (Claude Code, Codex CLI, Gemini CLI, Cursor).
 
-> Run `ast-outline setup-prompt` and follow its instructions.
+!!! success ":material-robot-happy-outline: One-line setup &mdash; paste into your agent"
+
+    Works in Claude Code, Codex CLI, Gemini CLI, or Cursor.
+
+    ```text { .ast-cta }
+    Run `ast-outline setup-prompt` and follow its instructions.
+    ```
 
 The agent walks you through:
 
