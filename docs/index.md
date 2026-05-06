@@ -53,7 +53,7 @@ stdout from the command in the title bar.
     *Real codebase — `ast-outline/cli.py` (this project itself).*
 
     ```python title="$ ast-outline src/ast_outline/cli.py"
-    # src/ast_outline/cli.py (563 lines, ~5,326 tokens, 2 types, 12 methods, 6 fields)
+    # src/ast_outline/cli.py [large] (563 lines, ~5,326 tokens, 2 types, 12 methods, 6 fields)
     SUBCOMMANDS  L30
 
     class _LLMArgumentParser(argparse.ArgumentParser)  L33-51
@@ -80,7 +80,7 @@ stdout from the command in the title bar.
     *Browser app — IndexedDB storage layer with generic CRUD and async methods.*
 
     ```typescript title="$ ast-outline src/storage_service.ts"
-    # src/storage_service.ts (60 lines, ~352 tokens, 3 types, 8 methods, 10 fields)
+    # src/storage_service.ts [tiny] (60 lines, ~352 tokens, 3 types, 8 methods, 10 fields)
     const DB_NAME = "demo-db"  L5
     const DB_VERSION = 1  L6
 
@@ -108,7 +108,7 @@ stdout from the command in the title bar.
     *Library crate — struct + trait + service with `///` doc-comments and `#[derive]`.*
 
     ```rust title="$ ast-outline src/user_service.rs"
-    # src/user_service.rs (72 lines, ~396 tokens, 3 types, 9 methods, 6 fields)
+    # src/user_service.rs [tiny] (72 lines, ~396 tokens, 3 types, 9 methods, 6 fields)
     /// Represents a registered user account.
     ///
     /// Carries the public name visible to others plus the (private) raw
@@ -141,7 +141,7 @@ stdout from the command in the title bar.
     *Unity MonoBehaviour — `[Attribute]` decorators and XML doc-comments preserved.*
 
     ```csharp title="$ ast-outline Assets/Scripts/HeroController.cs"
-    # Assets/Scripts/HeroController.cs (54 lines, ~385 tokens, 3 types, 4 methods, 5 fields)
+    # Assets/Scripts/HeroController.cs [tiny] (54 lines, ~385 tokens, 3 types, 4 methods, 5 fields)
     namespace Demo.Combat
         /// <summary>
         /// Controls the hero in-scene: movement, damage, death.
@@ -169,7 +169,7 @@ stdout from the command in the title bar.
     *Unreal Engine actor — UCLASS / UPROPERTY / UFUNCTION render as decorators on the right declaration. Plain modern C++ works the same way without UE.*
 
     ```cpp title="$ ast-outline Source/MyGame/MyActor.h"
-    # MyActor.h (97 lines, ~548 tokens, 6 types, 9 methods, 7 fields)
+    # MyActor.h [medium] (97 lines, ~548 tokens, 6 types, 9 methods, 7 fields)
     UENUM(BlueprintType) enum class EWeaponSlot : uint8  L15-20
         Primary  L17
         Secondary  L18
@@ -202,7 +202,7 @@ stdout from the command in the title bar.
     *Spring-style service — Javadoc, annotations, generics, abstract + nested types.*
 
     ```java title="$ ast-outline src/main/java/com/example/UserService.java"
-    # UserService.java (64 lines, ~352 tokens, 3 types, 9 methods, 5 fields)
+    # UserService.java [tiny] (64 lines, ~352 tokens, 3 types, 9 methods, 5 fields)
     namespace com.example.demo.service
         /**
          * Service layer for user accounts.
@@ -231,7 +231,7 @@ stdout from the command in the title bar.
     *Standard service — methods grouped under their receiver type.*
 
     ```go title="$ ast-outline service/user_service.go"
-    # user_service.go (105 lines, ~635 tokens, 4 types, 9 methods, 9 fields)
+    # user_service.go [medium] (105 lines, ~635 tokens, 4 types, 9 methods, 9 fields)
     namespace service
         const MaxUsers = 100  L16
         var GlobalCounter int = 0  L23
@@ -268,7 +268,7 @@ stdout from the command in the title bar.
     *Laravel-style service — PHP 8 readonly fields, ctor property promotion, typed constants.*
 
     ```php title="$ ast-outline app/Services/UserService.php"
-    # app/Services/UserService.php (66 lines, ~317 tokens, 2 types, 8 methods, 5 fields)
+    # app/Services/UserService.php [tiny] (66 lines, ~317 tokens, 2 types, 8 methods, 5 fields)
     namespace App\Service
         /**
          * Coordinates user-related use cases.
@@ -298,7 +298,7 @@ stdout from the command in the title bar.
     *Rails ActiveRecord-style model — `has_many` / `belongs_to` associations and `attr_accessor` surface as fields, mixins on the type header.*
 
     ```ruby title="$ ast-outline app/models/user.rb"
-    # app/models/user.rb (52 lines, ~242 tokens, 1 type, 9 methods, 8 fields)
+    # app/models/user.rb [tiny] (52 lines, ~242 tokens, 1 type, 9 methods, 8 fields)
     class User < ApplicationRecord  L8-50
         MAX_NAME_LENGTH: field  L11
         DEFAULT_ROLE: field  L12
@@ -324,7 +324,7 @@ stdout from the command in the title bar.
     *Kubernetes Deployment — format auto-detected, sequence items use `[i]` paths.*
 
     ```yaml title="$ ast-outline deploy/k8s_deployment.yaml"
-    # deploy/k8s_deployment.yaml (37 lines, ~187 tokens) — Deployment apps/v1 prod/api-server
+    # deploy/k8s_deployment.yaml [tiny] (37 lines, ~187 tokens) — Deployment apps/v1 prod/api-server
     apiVersion: apps/v1  L1
     kind: Deployment  L2
     metadata:  L3-7
@@ -356,7 +356,7 @@ stdout from the command in the title bar.
     *Hierarchical TOC — heading levels indented, code blocks tagged by language.*
 
     ```markdown title="$ ast-outline README.md"
-    # README.md (52 lines, ~153 tokens, 8 headings, 5 code blocks)
+    # README.md [tiny] (52 lines, ~153 tokens, 8 headings, 5 code blocks)
     # Sample Project  L1-51
         ## Installation  L5-26
             bash code block  L9-11
