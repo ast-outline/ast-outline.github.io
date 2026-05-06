@@ -402,12 +402,16 @@ stdout from the command in the title bar.
         ## License  L49-51
     ```
 
-!!! info "+ 3 more languages with the same digest format"
+!!! info "+ 4 more languages with the same digest format"
     `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs` —
     parsed by the TypeScript grammar, so React / Node / ES-module files
     all flow through), **Kotlin** (`.kt`/`.kts` — Android, Compose, Spring;
-    `data class`, `sealed`, `suspend`, KDoc), and **Scala** (`.scala`/`.sc`
-    — Scala 2 + Scala 3 with `enum`/`given`/`extension`, Scaladoc).
+    `data class`, `sealed`, `suspend`, KDoc), **Scala** (`.scala`/`.sc`
+    — Scala 2 + Scala 3 with `enum`/`given`/`extension`, Scaladoc), and
+    plain **CSS** (`.css` — same selector-token matching as the SCSS tab
+    above, just without `@mixin` / `@function` / `$variable` /
+    `%placeholder`; rules, at-rules, native nesting, `:root` token blocks
+    all surface).
 
     Same digest format, same legend, same `[broken]` recovery semantics. Adding
     another language is a single new adapter file —
