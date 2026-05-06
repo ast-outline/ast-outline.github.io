@@ -8,7 +8,7 @@ needed.
 ## Outline format
 
 ```text
-# path/to/Player.cs (1247 lines)
+# path/to/Player.cs [medium] (1247 lines, ~3,400 tokens, 2 types, 8 methods)
 class Player : Entity, IDamageable                        L12-340
   public int Health                                       L18-18
   public int Speed                                        L19-19
@@ -63,7 +63,8 @@ to scan once and drop into a prompt.
 
 ## Size labels
 
-Each file in a digest gets a label based on **outline output size**:
+Both **outline** and **digest** stamp each file with a categorical
+size label based on **outline output size**:
 
 | Label | Approximate range | Meaning |
 | --- | --- | --- |
@@ -178,7 +179,8 @@ When tree-sitter recovers from syntax errors, the outline is kept
 but a warning surfaces. In `outline`:
 
 ```text
-# path/to/Player.cs (1247 lines) WARNING: 3 parse errors
+# path/to/Player.cs [medium] (1247 lines, ~3,400 tokens, 1 types, 4 methods)
+# WARNING: 3 parse errors — output may be incomplete
 class Player : Entity                                     L12-340
   ...
 ```
