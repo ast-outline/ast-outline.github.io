@@ -608,6 +608,7 @@ pre.ast-console__out code {
 .ast-langs .tabbed-labels > label:nth-child(14) { --ast-lang-accent: #cf649a; }
 .ast-langs .tabbed-labels > label:nth-child(15) { --ast-lang-accent: #6e7681; }
 .ast-langs .tabbed-labels > label:nth-child(16) { --ast-lang-accent: #4a90e2; }
+.ast-langs .tabbed-labels > label:nth-child(17) { --ast-lang-accent: #336791; }
 
 /* Icon picks up the language accent in the default state. mkdocs-material
    inlines the SVG without an explicit `fill` attribute, so without the
@@ -641,7 +642,7 @@ pre.ast-console__out code {
    label isn't a direct sibling of any input). Instead we count the
    `:checked` input by `:nth-child` and reach across to the label at
    the same ordinal inside `.tabbed-labels` via `~`. One rule per
-   ordinal — N=16 today, expand the list when adding more languages. */
+   ordinal — N=17 today, expand the list when adding more languages. */
 .md-typeset .ast-langs .tabbed-set > input:nth-child(1):checked ~ .tabbed-labels > label:nth-child(1),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > label:nth-child(2),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > label:nth-child(3),
@@ -657,7 +658,8 @@ pre.ast-console__out code {
 .md-typeset .ast-langs .tabbed-set > input:nth-child(13):checked ~ .tabbed-labels > label:nth-child(13),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(14):checked ~ .tabbed-labels > label:nth-child(14),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(15):checked ~ .tabbed-labels > label:nth-child(15),
-.md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) {
+.md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) {
   border-color: var(--ast-lang-accent);
   color: #fff;
   background: var(--ast-lang-accent);
@@ -716,7 +718,10 @@ pre.ast-console__out code {
 .md-typeset .ast-langs .tabbed-set > input:nth-child(15):checked ~ .tabbed-labels > label:nth-child(15) .twemoji svg path,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji svg path {
+.md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji svg,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji svg path {
   color: #fff;
   fill: #fff;
 }
