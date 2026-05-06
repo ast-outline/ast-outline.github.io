@@ -20,6 +20,7 @@ any file in full.
 <div class="ast-hero__cta" markdown>
 
 [:octicons-rocket-16: Install](#install){ .md-button .md-button--primary }
+[:material-robot: Install with AI](#install-with-ai){ .md-button .md-button--primary }
 [:octicons-terminal-16: Commands](commands.md){ .md-button }
 [:simple-github: GitHub](https://github.com/ast-outline/ast-outline){ .md-button }
 
@@ -979,6 +980,54 @@ answer *"what methods exist here?"*.
 `ast-outline` and `ast-grep` are siblings: **`ast-grep` searches**
 code structurally, **`ast-outline` overviews** it. They compose well
 — use `digest` for the map, `ast-grep` for cross-file pattern hunts.
+
+---
+
+## Install with AI { #install-with-ai }
+
+The fastest path: **let your coding agent set everything up**. After
+`ast-outline` is on your machine, ask any of Claude Code, Codex CLI,
+Gemini CLI, or Cursor:
+
+> Run `ast-outline setup-prompt` and follow its instructions.
+
+The agent reads a one-shot install-time checklist from stdout and
+walks you through:
+
+1. **Verify the CLI** — runs `ast-outline --version`. If missing,
+   offers `uv tool install` (recommended), `pipx install`, or
+   `pip install` and can install on your behalf with explicit
+   consent. Best-effort PyPI version check; surfaces the matching
+   upgrade command without auto-upgrading.
+2. **Pick the right file and write the snippet** — `./AGENTS.md` is
+   the cross-tool default (read by Codex CLI, Claude Code via
+   `@AGENTS.md` import, Gemini CLI with `settings.json` config, and
+   Cursor); single-vendor users get the native file (`./CLAUDE.md`,
+   `./GEMINI.md`); a project-local vs global scope choice
+   (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`,
+   `~/.gemini/GEMINI.md`) is offered. The snippet lives inside
+   `<!-- ast-outline:start -->` / `<!-- ast-outline:end -->` markers
+   so re-runs upgrade in place. Diff-aware: if the existing block
+   differs from the fresh canonical, the agent shows the diff and
+   asks before overwriting — your manual edits are never lost
+   silently.
+3. **Optional subagent patches** — finds exploration-oriented
+   subagent files in `.claude/agents/` / `.codex/agents/` /
+   `.gemini/agents/` and inserts a small `## Tooling — ast-outline`
+   block, with per-agent permission.
+
+Cross-vendor universal — same checklist works in Claude Code, Codex
+CLI, Gemini CLI, and Cursor. Cross-OS — the agent translates
+`which`, `$VIRTUAL_ENV`, `curl` examples to PowerShell or `cmd.exe`
+on Windows. Adapts to whichever human language the surrounding
+conversation is using.
+
+If you don't have `ast-outline` installed yet, scroll down to
+[Install](#install) for the one-line `uv tool install` /
+`pipx install` / `pip install` paths — then come back here.
+
+For the manual equivalent (no agent involvement), see
+[`ast-outline prompt`](commands.md#ast-outline-prompt-manual-install-path).
 
 ---
 
