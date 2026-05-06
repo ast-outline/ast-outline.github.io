@@ -23,14 +23,16 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 3rem 1rem 2.25rem;
+  /* ~40% tighter than the original 3rem / 2.25rem block — keeps the
+     hero feeling distinct without eating the fold above "See it live". */
+  padding: 1.75rem 1rem 1.35rem;
   background:
     radial-gradient(circle at 50% 0%, rgba(126, 231, 135, 0.07), transparent 60%),
     linear-gradient(180deg,
       var(--md-default-bg-color) 0%,
       var(--md-code-bg-color) 100%);
   border-radius: 12px;
-  margin: 1rem 0 2.5rem;
+  margin: 0.6rem 0 1.5rem;
   position: relative;
   overflow: hidden;
 }
@@ -53,7 +55,9 @@
 
 .ast-hero__title {
   font-family: "JetBrains Mono", "Fira Code", monospace;
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  /* Original `clamp(2rem, 5vw, 3.5rem)` — shrunk ~30% so the title
+     still anchors the hero but doesn't dominate the fold. */
+  font-size: clamp(1.5rem, 3.6vw, 2.4rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0;
@@ -86,19 +90,45 @@
 }
 
 .ast-hero__tagline {
-  font-size: 1.15rem;
+  font-size: 1rem;
   max-width: 42rem;
-  margin: 0.75rem auto 1.5rem;
+  margin: 0.45rem auto 0.85rem;
   color: var(--md-default-fg-color--light);
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .ast-hero__cta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.55rem;
   justify-content: center;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.ast-hero__cta a.md-button {
+  padding: 0.4em 0.9em;
+}
+
+/* Badge row immediately below the hero — pull it up tight, badges are
+   self-contained pills and don't need surrounding margin. */
+.md-typeset .ast-hero + p {
+  margin: 0.4rem 0 0;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Horizontal rule that separates the hero block from the
+   "See it live" section — original Material default leaves ~3rem of
+   combined vertical whitespace, halve it. */
+.md-typeset .ast-hero ~ hr {
+  margin: 0.9rem 0;
+}
+
+/* "See it live" h2 heading right after the hero/separator — Material's
+   default top margin on h2 stacks on top of the hr's margin, so we
+   pull it in. */
+.md-typeset .ast-hero ~ h2 {
+  margin-top: 1rem;
 }
 
 .ast-hero__cta a.md-button {
@@ -496,20 +526,35 @@ pre.ast-console__out code {
  * with empty space on the right.
  */
 
-.ast-langs .tabbed-labels {
+/* `.md-typeset .ast-langs ...` (specificity 0,3,0) beats mkdocs-material's
+   own `.md-typeset .tabbed-labels` (0,2,0), so the divider line that
+   normally sits under the labels row is reliably suppressed and our
+   pill styling wins without `!important`. */
+.md-typeset .ast-langs .tabbed-labels,
+.md-typeset .ast-langs .tabbed-set {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.2rem;
+  border: 0;
   border-bottom: 0;
-  margin: 0 0 1.25rem;
+  box-shadow: none;
+  margin: 0 0 0.85rem;
   padding: 0;
   overflow: visible;
   mask-image: none;
   -webkit-mask-image: none;
 }
 
-.ast-langs .tabbed-labels > label {
+/* Kill the top-border / divider on the content pane — without this,
+   the content area still draws a 1px line right under the pill row. */
+.md-typeset .ast-langs .tabbed-content,
+.md-typeset .ast-langs .tabbed-set > .tabbed-content {
+  border-top: 0;
+  padding-top: 0.25rem;
+}
+
+.md-typeset .ast-langs .tabbed-labels > label {
   /* Default accent — overridden per language by the nth-child rules
      below. Drives the icon color in the default state and the
      border / text / background in hover and active states. */
@@ -517,15 +562,16 @@ pre.ast-console__out code {
 
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  padding: 0.4em 0.85em;
+  gap: 0.3em;
+  padding: 0.18em 0.6em;
   margin: 0;
   border: 1px solid var(--md-default-fg-color--lightest);
   border-radius: 999px;
   font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.01em;
+  line-height: 1.45;
   color: var(--md-default-fg-color--light);
   background: var(--md-code-bg-color);
   cursor: pointer;
@@ -534,23 +580,34 @@ pre.ast-console__out code {
   white-space: nowrap;
 }
 
+/* Slightly smaller icon so the pill height stays compact even with
+   the brand-color glyph. */
+.md-typeset .ast-langs .tabbed-labels > label > .twemoji {
+  font-size: 0.85em;
+}
+
 /* Per-language accent — drives icon color, hover, active. Order matches
-   the markdown source: 1 Python, 2 TypeScript, 3 Rust, 4 C#, 5 C++,
-   6 Java, 7 Go, 8 PHP, 9 Ruby, 10 SCSS, 11 YAML, 12 Markdown.
-   Inserting a language between existing tabs shifts subsequent
-   indexes — keep this list and the markdown source in sync. */
+   the markdown source: 1 Python, 2 TypeScript, 3 JavaScript, 4 Rust,
+   5 C#, 6 C++, 7 Java, 8 Kotlin, 9 Scala, 10 Go, 11 PHP, 12 Ruby,
+   13 CSS, 14 SCSS, 15 YAML, 16 Markdown. Inserting a language between
+   existing tabs shifts subsequent indexes — keep this list and the
+   markdown source in sync. */
 .ast-langs .tabbed-labels > label:nth-child(1)  { --ast-lang-accent: #3776ab; }
 .ast-langs .tabbed-labels > label:nth-child(2)  { --ast-lang-accent: #2b7489; }
-.ast-langs .tabbed-labels > label:nth-child(3)  { --ast-lang-accent: #ce422b; }
-.ast-langs .tabbed-labels > label:nth-child(4)  { --ast-lang-accent: #9b4f96; }
-.ast-langs .tabbed-labels > label:nth-child(5)  { --ast-lang-accent: #f34b7d; }
-.ast-langs .tabbed-labels > label:nth-child(6)  { --ast-lang-accent: #d9701f; }
-.ast-langs .tabbed-labels > label:nth-child(7)  { --ast-lang-accent: #00add8; }
-.ast-langs .tabbed-labels > label:nth-child(8)  { --ast-lang-accent: #777bb4; }
-.ast-langs .tabbed-labels > label:nth-child(9)  { --ast-lang-accent: #cc342d; }
-.ast-langs .tabbed-labels > label:nth-child(10) { --ast-lang-accent: #cf649a; }
-.ast-langs .tabbed-labels > label:nth-child(11) { --ast-lang-accent: #6e7681; }
-.ast-langs .tabbed-labels > label:nth-child(12) { --ast-lang-accent: #4a90e2; }
+.ast-langs .tabbed-labels > label:nth-child(3)  { --ast-lang-accent: #ca8a04; }
+.ast-langs .tabbed-labels > label:nth-child(4)  { --ast-lang-accent: #ce422b; }
+.ast-langs .tabbed-labels > label:nth-child(5)  { --ast-lang-accent: #9b4f96; }
+.ast-langs .tabbed-labels > label:nth-child(6)  { --ast-lang-accent: #f34b7d; }
+.ast-langs .tabbed-labels > label:nth-child(7)  { --ast-lang-accent: #d9701f; }
+.ast-langs .tabbed-labels > label:nth-child(8)  { --ast-lang-accent: #7f52ff; }
+.ast-langs .tabbed-labels > label:nth-child(9)  { --ast-lang-accent: #dc322f; }
+.ast-langs .tabbed-labels > label:nth-child(10) { --ast-lang-accent: #00add8; }
+.ast-langs .tabbed-labels > label:nth-child(11) { --ast-lang-accent: #777bb4; }
+.ast-langs .tabbed-labels > label:nth-child(12) { --ast-lang-accent: #cc342d; }
+.ast-langs .tabbed-labels > label:nth-child(13) { --ast-lang-accent: #1572b6; }
+.ast-langs .tabbed-labels > label:nth-child(14) { --ast-lang-accent: #cf649a; }
+.ast-langs .tabbed-labels > label:nth-child(15) { --ast-lang-accent: #6e7681; }
+.ast-langs .tabbed-labels > label:nth-child(16) { --ast-lang-accent: #4a90e2; }
 
 /* Icon picks up the language accent in the default state. */
 .ast-langs .tabbed-labels > label > .twemoji,
@@ -560,49 +617,64 @@ pre.ast-console__out code {
   height: 1em;
 }
 
-.ast-langs .tabbed-labels > label:hover {
+.md-typeset .ast-langs .tabbed-labels > label:hover {
   border-color: var(--ast-lang-accent);
   color: var(--md-default-fg-color);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Active pill — language accent on border, text, and a soft tinted
-   background. `:checked + label` because mkdocs-material drives the tab
-   state with hidden radio inputs. `color-mix` produces a 12%-opacity
-   accent fill that reads as "selected" without overpowering the page. */
-.ast-langs .tabbed-set > input:checked + label {
+/* Active pill — language accent fills the pill so the selection reads
+   at a glance instead of via subtle hint. The pill's text flips to
+   white on the accent background, the border thickens to a 2px ring,
+   and a soft branded glow lifts it slightly off the row. `:checked +
+   label` because mkdocs-material drives the tab state with hidden
+   radio inputs. */
+.md-typeset .ast-langs .tabbed-set > input:checked + label {
   border-color: var(--ast-lang-accent);
-  color: var(--ast-lang-accent);
-  background: color-mix(in srgb, var(--ast-lang-accent) 12%, transparent);
+  color: #fff;
+  background: var(--ast-lang-accent);
   font-weight: 700;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ast-lang-accent) 35%, transparent);
 }
 
-[data-md-color-scheme="slate"] .ast-langs .tabbed-labels > label {
+/* The icon in the active pill follows the white text — at small sizes
+   the brand-colored glyph on a brand-colored fill loses contrast. */
+.md-typeset .ast-langs .tabbed-set > input:checked + label > .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:checked + label > .twemoji svg {
+  color: #fff;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .ast-langs .tabbed-labels > label {
   background: rgba(255, 255, 255, 0.02);
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-[data-md-color-scheme="slate"] .ast-langs .tabbed-set > input:checked + label {
-  background: color-mix(in srgb, var(--ast-lang-accent) 18%, transparent);
+[data-md-color-scheme="slate"] .md-typeset .ast-langs .tabbed-set > input:checked + label {
+  /* On dark theme some accents (Markdown deep blue, Java brown) drop
+     contrast against #0d1117. Slightly lighten via color-mix toward
+     white so the active pill always stays legible. */
+  background: color-mix(in srgb, var(--ast-lang-accent) 85%, white);
+  border-color: color-mix(in srgb, var(--ast-lang-accent) 85%, white);
 }
 
-/* Hide the underline marker mkdocs-material draws under the active
-   label — the colored ring + tinted background already carry the
-   active state in pill mode, and the underline doesn't fit a pill. */
-.ast-langs .tabbed-labels::before {
+/* Hide every form of mkdocs-material's underline marker — the
+   sliding indicator (`::before`) AND the divider rule (`::after` in
+   some themes). The filled pill already carries the active state. */
+.md-typeset .ast-langs .tabbed-labels::before,
+.md-typeset .ast-langs .tabbed-labels::after {
   display: none;
 }
 
-/* On narrow screens, tighten further so 3 pills still fit per row at
-   typical mobile widths. */
+/* On narrow screens, tighten further so 3-4 pills still fit per row
+   at typical mobile widths. */
 @media (max-width: 30em) {
-  .ast-langs .tabbed-labels {
-    gap: 0.25rem;
+  .md-typeset .ast-langs .tabbed-labels {
+    gap: 0.18rem;
   }
-  .ast-langs .tabbed-labels > label {
-    padding: 0.32em 0.6em;
-    font-size: 0.7rem;
+  .md-typeset .ast-langs .tabbed-labels > label {
+    padding: 0.15em 0.5em;
+    font-size: 0.66rem;
   }
 }
 

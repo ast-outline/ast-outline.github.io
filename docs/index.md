@@ -36,17 +36,10 @@ any file in full.
 
 ## See it live
 
-Real `ast-outline` output — including extracted **doc-comments**,
-**type annotations**, **decorators / attributes**, and per-file stats
-in the header. No method bodies, no fluff. Each tab below is the
-actual textual output of running `ast-outline` against a file in the
-language; syntax-highlighted by **Pygments** so the structure reads
-the same way it does in your editor.
-
-Pick a language below; the *italic line under the picker* is context
-(real codebase, framework, file kind) — not part of the `ast-outline`
-output. Everything inside the code block is the actual stdout from the
-command in the title bar.
+Each block is real `ast-outline` stdout — doc-comments, type
+annotations, decorators, line ranges, no method bodies — syntax-
+highlighted by Pygments. The italic line under the picker is context
+(codebase, file kind), not part of the output.
 
 <div class="ast-langs" markdown="1">
 
@@ -103,6 +96,26 @@ command in the title bar.
 
     export const storage = new StorageService()  L58
     export const language = new LanguageService()  L59
+    ```
+
+=== ":material-language-javascript: JavaScript"
+
+    *Node service module — parsed by the TypeScript grammar, so React / ES modules / CommonJS all flow through.*
+
+    ```js title="$ ast-outline server/auth/session.js"
+    # server/auth/session.js [tiny] (96 lines, ~389 tokens, 1 type, 6 methods, 2 fields)
+    const SESSION_TTL_SEC  L4
+    const REFRESH_GRACE_SEC  L5
+
+    /** Minimal cookie-backed session manager — tokens are signed with */
+    /** HMAC-SHA256 and pinned to user-agent + IP fingerprint. */
+    class SessionManager  L9-94
+        constructor(secret, store)  L13-17
+        async create(userId, request)  L19-32
+        async verify(token, request)  L34-58
+        async refresh(token)  L60-78
+        async revoke(token)  L80-86
+        _signToken(payload)  L88-93
     ```
 
 === ":material-language-rust: Rust"
@@ -228,6 +241,61 @@ command in the title bar.
                 public int value()  L55-57
     ```
 
+=== ":material-language-kotlin: Kotlin"
+
+    *Android Compose ViewModel — `data class`, `sealed class`, `suspend`, `@Composable`.*
+
+    ```kotlin title="$ ast-outline app/src/main/kotlin/ProfileScreen.kt"
+    # app/src/main/kotlin/ProfileScreen.kt [tiny] (105 lines, ~451 tokens, 3 types, 5 methods, 2 fields)
+    data class UserProfile(val id: String, val name: String, val avatarUrl: String?)  L9
+
+    sealed class ProfileState  L11-15
+        object Loading  L12
+        data class Success(val profile: UserProfile)  L13
+        data class Error(val message: String)  L14
+
+    @HiltViewModel
+    class ProfileViewModel : ViewModel()  L19-50
+        private val _state: MutableStateFlow<ProfileState>  L21
+        val state: StateFlow<ProfileState>  L22
+
+        suspend fun loadProfile(userId: String)  L24-37
+        fun refresh()  L39-41
+        private suspend fun fetchAndCache(userId: String): UserProfile  L43-49
+
+    @Composable
+    fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel())  L53-105
+    ```
+
+=== ":simple-scala: Scala"
+
+    *Scala 3 — `enum`, `given`, `extension`. Indentation-based bodies.*
+
+    ```scala title="$ ast-outline core/src/main/scala/Json.scala"
+    # core/src/main/scala/Json.scala [medium] (118 lines, ~492 tokens, 3 types, 7 methods)
+    package json  L1
+
+    enum Json  L4-12
+        case JNull [enum_member]  L5
+        case JBool(value: Boolean) [enum_member]  L6
+        case JNumber(value: Double) [enum_member]  L7
+        case JString(value: String) [enum_member]  L8
+        case JArray(items: List[Json]) [enum_member]  L9
+        case JObject(fields: Map[String, Json]) [enum_member]  L10
+
+    trait Encoder[A]  L15-17
+        def encode(value: A): Json
+
+    object Encoder  L19-58
+        given Encoder[Int]  L21-22
+        given Encoder[String]  L24-25
+        given [A](using e: Encoder[A]): Encoder[List[A]]  L27-30
+
+    extension [A](value: A)(using enc: Encoder[A])  L33-37
+        def toJson: Json  L34
+        def toJsonString: String  L36
+    ```
+
 === ":material-language-go: Go"
 
     *Standard service — methods grouped under their receiver type.*
@@ -321,6 +389,37 @@ command in the title bar.
 
     Also recognised: `class << self` blocks, `alias` / `alias_method`, `private` / `protected` state machine (`private :foo, :bar` flips named methods retroactively), `Rakefile` / `Gemfile` (resolved by basename, no extension needed). The MRO clause `: ApplicationRecord, include Comparable, extend Searchable` shows superclass + mixins as one inheritance line in the digest.
 
+=== ":material-language-css3: CSS"
+
+    *Design tokens + components — `:root` token block, themed selectors via `[data-theme=dark]`, `@media` / `@keyframes` / `@layer` / `@font-face`, native nesting with `&`.*
+
+    ```css title="$ ast-outline src/styles/theme.css"
+    # src/styles/theme.css [tiny] (96 lines, ~371 tokens)
+    # imports: @import url("reset-extended.css"); @import "vendor/normalize.css" layer(reset)
+    :root  L2-12
+    [data-theme=dark]  L14-19
+    *, *::before, *::after  L23-27
+    body  L29-34
+    .container  L37-41
+    #main-header > .nav .item:hover  L44-46
+    .btn-primary, .btn-secondary  L49-55
+    .modal .btn-primary[disabled]  L58-61
+    @media (max-width: 768px)  L64-71
+        .container  L65-67
+        .btn-primary  L69-70
+    @media (min-width: 769px) and (max-width: 1024px)  L73-77
+        .container  L74-76
+    @keyframes fadeIn  L80-83
+    @keyframes slideUp  L85-88
+    @layer base  L91-95
+        h1, h2, h3  L92-94
+    @font-face  L98-101
+    :is(.alert, .warning, .error)  L104-107
+    :not(.disabled)  L109-111
+    ```
+
+    `find_symbols(".btn-primary")` returns every cascade-relevant rule — top-level group, the `@media` override, and `.modal .btn-primary[disabled]` descendant — with the wrapping at-rule visible in the breadcrumb. Pseudo-classes and attribute filters are stripped for matching, so `.btn-primary:hover` and `.btn-primary[disabled]` both match `.btn-primary`. `:is()` / `:where()` arguments recurse (additive); `:not()` / `:has()` don't.
+
 === ":material-language-css3: SCSS"
 
     *Component stylesheet — `&` resolves against the parent, so nested rules become findable as their fully-qualified BEM selectors. Mixins and functions render as callables.*
@@ -406,20 +505,9 @@ command in the title bar.
 
 </div>
 
-!!! info "+ 4 more languages with the same digest format"
-    `ast-outline` also handles **JavaScript** (`.js`/`.jsx`/`.mjs`/`.cjs` —
-    parsed by the TypeScript grammar, so React / Node / ES-module files
-    all flow through), **Kotlin** (`.kt`/`.kts` — Android, Compose, Spring;
-    `data class`, `sealed`, `suspend`, KDoc), **Scala** (`.scala`/`.sc`
-    — Scala 2 + Scala 3 with `enum`/`given`/`extension`, Scaladoc), and
-    plain **CSS** (`.css` — same selector-token matching as the SCSS tab
-    above, just without `@mixin` / `@function` / `$variable` /
-    `%placeholder`; rules, at-rules, native nesting, `:root` token blocks
-    all surface).
-
-    Same digest format, same legend, same `[broken]` recovery semantics. Adding
-    another language is a single new adapter file —
-    [`src/ast_outline/adapters/`](https://github.com/ast-outline/ast-outline/tree/main/src/ast_outline/adapters).
+Same digest format, same legend, same `[broken]` recovery semantics across
+every language. Adding another is a single new adapter file —
+[`src/ast_outline/adapters/`](https://github.com/ast-outline/ast-outline/tree/main/src/ast_outline/adapters).
 
 ---
 
