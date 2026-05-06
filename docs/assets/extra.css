@@ -762,12 +762,12 @@ pre.ast-console__out code {
 .md-typeset .highlight.ast-cta pre,
 .md-typeset .highlight.ast-cta code,
 .md-typeset .ast-cta pre code {
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.92rem;
+  line-height: 1.55;
 }
 
 .md-typeset .highlight.ast-cta pre {
-  padding: 0.85rem 1rem;
+  padding: 0.7rem 0.95rem;
 }
 
 /* ─── Comparison table ────────────────────────────────────── */

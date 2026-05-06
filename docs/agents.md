@@ -15,6 +15,9 @@ Two paths to get the snippet there.
     Run `ast-outline setup-prompt` and follow its instructions.
     ```
 
+    *Re-run after every `ast-outline` upgrade — the bundled snippet
+    is refreshed in place, your local edits are preserved.*
+
 The agent reads a checklist from stdout and walks you through:
 
 1. Verify `ast-outline` is installed (offers to install via
@@ -35,10 +38,6 @@ The agent reads a checklist from stdout and walks you through:
 5. Optionally patch existing exploration-oriented subagents in
    `.claude/agents/` / `.codex/agents/` / `.gemini/agents/`, with
    per-agent permission.
-
-Re-run after every `pip install -U ast-outline` (or
-`uv tool upgrade ast-outline`) to refresh the bundled snippet
-without overwriting your local edits.
 
 ## Manual — `ast-outline prompt`
 

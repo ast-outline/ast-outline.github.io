@@ -158,6 +158,9 @@ agent (Claude Code, Codex CLI, Gemini CLI, Cursor).
     Run `ast-outline setup-prompt` and follow its instructions.
     ```
 
+    *Re-run after every `ast-outline` upgrade — the bundled snippet
+    is refreshed in place, your local edits are preserved.*
+
 The agent walks you through:
 
 1. **Verify the CLI** — runs `ast-outline --version`. If missing,
