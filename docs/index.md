@@ -293,6 +293,32 @@ stdout from the command in the title bar.
         const APP_VERSION = "1.0.0"  L65
     ```
 
+=== ":simple-ruby: Ruby"
+
+    *Rails ActiveRecord-style model — `has_many` / `belongs_to` associations and `attr_accessor` surface as fields, mixins on the type header.*
+
+    ```ruby title="$ ast-outline app/models/user.rb"
+    # app/models/user.rb (52 lines, ~242 tokens, 1 type, 9 methods, 8 fields)
+    class User < ApplicationRecord  L8-50
+        MAX_NAME_LENGTH: field  L11
+        DEFAULT_ROLE: field  L12
+        [has_many] posts  L14
+        [belongs_to] company  L15
+        [accessor] name  L17
+        [accessor] email  L17
+        [reader] id  L18
+        # rdoc-style constructor doc.
+        def initialize(name, email)  L21-24
+        def display_name  L26-28
+        [static] def self.find_by_name(name)  L30-32
+        def <=>(other)  L35-37
+        def ==(other)  L39-41
+        def [](key)  L43-45
+        def []=(key, value)  L47-49
+    ```
+
+    Also recognised: `class << self` blocks, `alias` / `alias_method`, `private` / `protected` state machine (`private :foo, :bar` flips named methods retroactively), `Rakefile` / `Gemfile` (resolved by basename, no extension needed). The MRO clause `: ApplicationRecord, include Comparable, extend Searchable` shows superclass + mixins as one inheritance line in the digest.
+
 === ":simple-yaml: YAML"
 
     *Kubernetes Deployment — format auto-detected, sequence items use `[i]` paths.*
@@ -396,11 +422,11 @@ answer *"what methods exist here?"*.
     No index, no cache, no embeddings, no network. Always fresh,
     invisible to the repo.
 
-- :material-format-list-checks: **One tool, thirteen languages**
+- :material-format-list-checks: **One tool, fourteen languages**
 
     C#, C++ (incl. Unreal Engine), Python, TypeScript, JavaScript,
-    Java, Kotlin, Scala, Go, Rust, PHP, Markdown, YAML — same digest
-    format, same legend.
+    Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), Markdown,
+    YAML — same digest format, same legend.
 
 </div>
 
@@ -604,6 +630,7 @@ but it's a separate add-on, not a redesign.
 | Go         | `.go` |
 | Rust       | `.rs` |
 | PHP        | `.php`, `.phtml`, `.phps`, `.php8` |
+| Ruby       | `.rb`, `.rake`, `.gemspec`, `.ru`, `Rakefile`, `Gemfile` *(Rails associations recognised)* |
 | Markdown   | `.md`, `.markdown`, `.mdx`, `.mdown` |
 | YAML       | `.yaml`, `.yml` |
 

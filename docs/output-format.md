@@ -163,9 +163,10 @@ imports: require ABSPATH . WPINC . '/option.php' [+ 6 conditional includes]
   ...
 ```
 
-Currently surfaced by the **PHP**, **Python**, **Rust**, and
-**Scala** adapters. Java / Go / Kotlin / C# / TypeScript leave the
-counter at `0` — their import grammars allow only top-level imports.
+Currently surfaced by the **PHP**, **Python**, **Rust**, **Scala**,
+and **Ruby** adapters. Java / Go / Kotlin / C# / TypeScript / C++
+leave the counter at `0` — their import grammars allow only
+top-level imports.
 Treat the count as a hint to read the file directly when you need
 the full dependency picture.
 
