@@ -1,7 +1,8 @@
 # Commands
 
-`ast-outline` ships four subcommands. The default — running the binary
-with file/directory arguments — is `outline`.
+`ast-outline` ships five subcommands: `outline` (default — run the
+binary with file/directory arguments), `digest`, `show`,
+`setup-prompt`, and `prompt`.
 
 ## `ast-outline <paths…>` — outline
 
@@ -144,11 +145,63 @@ docstrings live inside the method body).
 
 ---
 
-## `ast-outline prompt`
+## `ast-outline setup-prompt` — automatic install via your agent (recommended)
+
+Print an install-time checklist for one-shot consumption by a coding
+agent (Claude Code, Codex CLI, Gemini CLI, Cursor). Inside your agent
+session, ask:
+
+> Run `ast-outline setup-prompt` and follow its instructions.
+
+The agent walks you through:
+
+1. **Verify the CLI** — runs `ast-outline --version`. If missing,
+   offers `uv tool install ast-outline` (recommended), `pipx install`,
+   or `pip install` inside the active venv. Can install on your
+   behalf with explicit consent.
+2. **Update check** — best-effort PyPI lookup for a newer release;
+   if found, surfaces the matching upgrade command
+   (`uv tool upgrade` / `pipx upgrade` / `pip install -U`) — never
+   auto-upgrades.
+3. **Persistent-context file** — picks the right target for your
+   tooling: `./AGENTS.md` is the cross-tool default (read by Codex
+   CLI, Claude Code via `@AGENTS.md` import, Gemini CLI with
+   `settings.json` config, and Cursor); `./CLAUDE.md` /
+   `./GEMINI.md` for single-vendor users; or the matching
+   `~/.<tool>/...` file for global scope. Appends the snippet
+   wrapped in `<!-- ast-outline:start --> ... <!-- ast-outline:end -->`
+   markers — re-runs upgrade the block in place. Diff-aware: if the
+   existing block differs from the fresh canonical (CLI upgrade or
+   manual edit), the agent shows the diff and asks before
+   overwriting.
+4. **Optional subagent patches** — looks for exploration-oriented
+   subagent files under `.claude/agents/` / `.codex/agents/` /
+   `.gemini/agents/` and inserts a small `## Tooling — ast-outline`
+   block in each, with per-agent permission.
+
+Cross-vendor universal — adapts to your shell (Unix /
+PowerShell / `cmd.exe`), to the conversation's human language, and
+to non-interactive harnesses (`codex exec`, `claude -p`, Gemini
+headless, scheduled CI restrict execution to read-only checks plus
+the AGENTS.md write).
+
+```bash
+# Manual pipe to clipboard if you want to read the checklist first:
+ast-outline setup-prompt | pbcopy   # macOS
+ast-outline setup-prompt | xclip -sel c   # Linux
+```
+
+The CLI does no file I/O itself — the active agent performs every
+edit using its native tools, so each change is reviewable before it
+lands.
+
+---
+
+## `ast-outline prompt` — manual install path
 
 Print the canonical AI-agent prompt snippet. Pipe it into your
-`CLAUDE.md` / `AGENTS.md` so the agent learns to use `ast-outline`
-before reading whole files:
+`AGENTS.md` / `CLAUDE.md` / `GEMINI.md` so the agent learns to use
+`ast-outline` before reading whole files:
 
 ```bash
 ast-outline prompt >> AGENTS.md
@@ -156,7 +209,11 @@ ast-outline prompt >> .claude/CLAUDE.md
 ast-outline prompt | pbcopy   # macOS clipboard
 ```
 
-See [AI agents](agents.md) for the full snippet and integration notes.
+This is the **manual** path — no agent involvement, you pick the
+target file. For the automated equivalent that picks the right file,
+runs version checks, and handles diff-aware upgrades, see
+`setup-prompt` above. See [AI agents](agents.md) for the full snippet
+and integration notes.
 
 ---
 

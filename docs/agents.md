@@ -1,21 +1,55 @@
 # AI agents
 
-This is the primary use case for `ast-outline`. Add the snippet below to
-your `CLAUDE.md`, `AGENTS.md`, subagent file, or any system prompt that
-steers a coding agent. Once it's there, the agent will reach for
-`ast-outline` before reading whole files.
+This is the primary use case for `ast-outline`. The agent learns about
+the tool from a short snippet in your repo's `AGENTS.md` / `CLAUDE.md`
+/ `GEMINI.md` (or whatever persistent-context file your CLI reads).
+Two paths to get the snippet there.
 
-## The prompt snippet
+## Automatic — `ast-outline setup-prompt` (recommended)
 
-The same snippet ships with the tool — `ast-outline prompt` prints it
-verbatim, so you can append it to your project's agent config without
-copying by hand:
+Inside Claude Code, Codex CLI, Gemini CLI, or Cursor, ask the agent:
+
+> Run `ast-outline setup-prompt` and follow its instructions.
+
+The agent reads a checklist from stdout and walks you through:
+
+1. Verify `ast-outline` is installed (offers to install via
+   `uv tool install` / `pipx` / `pip` if missing, with explicit
+   consent — never silently).
+2. Best-effort PyPI check for a newer release; surfaces the upgrade
+   command if available — never auto-upgrades.
+3. Pick the right target file: `./AGENTS.md` is the cross-tool
+   default (covers Codex CLI, Claude Code via `@AGENTS.md` import,
+   Gemini CLI with `settings.json` config, and Cursor); `./CLAUDE.md`
+   / `./GEMINI.md` for single-vendor users; or the matching
+   `~/.<tool>/...` file for global scope across all your projects.
+4. Append the canonical snippet wrapped in
+   `<!-- ast-outline:start --> ... <!-- ast-outline:end -->` markers.
+   Diff-aware on re-run: if the existing block differs from the
+   fresh canonical (CLI upgrade or your manual edit), the agent
+   shows the diff and asks before overwriting.
+5. Optionally patch existing exploration-oriented subagents in
+   `.claude/agents/` / `.codex/agents/` / `.gemini/agents/`, with
+   per-agent permission.
+
+Re-run after every `pip install -U ast-outline` (or
+`uv tool upgrade ast-outline`) to refresh the bundled snippet
+without overwriting your local edits.
+
+## Manual — `ast-outline prompt`
+
+The same snippet, no agent involvement — pipe it where you want:
 
 ```bash
 ast-outline prompt >> AGENTS.md
 ast-outline prompt >> .claude/CLAUDE.md
 ast-outline prompt | pbcopy   # macOS clipboard
 ```
+
+Use this when you don't have a coding-agent CLI handy, or want full
+control over file edits.
+
+## The snippet itself
 
 ??? quote "Snippet (copy-paste version)"
 
