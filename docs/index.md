@@ -72,111 +72,237 @@ highlighted by Pygments. The italic line under the picker is context
 
 === ":material-language-typescript: TypeScript"
 
-    *Browser app — IndexedDB storage layer with generic CRUD and async methods.*
+    *Order-processing pipeline — branded types, abstract base class, async pipeline + compensation. Outline collapses 183 lines / ~1.5k tokens of source down to a single screen.*
 
-    ```typescript title="$ ast-outline src/storage_service.ts"
-    # src/storage_service.ts [tiny] (60 lines, ~352 tokens, 3 types, 8 methods, 10 fields)
-    const DB_NAME = "demo-db"  L5
-    const DB_VERSION = 1  L6
+    ```typescript title="$ ast-outline src/services/order_service.ts"
+    # src/services/order_service.ts [medium] (183 lines, ~1,549 tokens, 7 types, 15 methods, 22 fields)
+    export type OrderId = string & { readonly __brand: "OrderId" }  L11
+    export type SkuId = string & { readonly __brand: "SkuId" }  L12
+    export type CustomerId = string & { readonly __brand: "CustomerId" }  L13
 
-    interface DBSchema  L8-12
-        projects: Project  L9
-        documents: Document  L10
-        settings: AppSettings  L11
+    export const MAX_LINE_ITEMS = 100  L15
+    export const DEFAULT_CURRENCY: Currency = "USD"  L16
+    export const RESERVATION_TTL_SEC = 600  L17
 
-    export class StorageService  L14-44
-        private db: IDBDatabase | null  L15
-        private initPromise: Promise<void> | null  L16
-        async init(): Promise<void>  L18-22
-        // Generic CRUD
-        private async getAll<T>(storeName: keyof DBSchema): Promise<T[]>  L29-31
-        async getProject(id: string): Promise<Project | null>  L33-35
-        async saveProject(project: Project): Promise<void>  L37-39
-        protected log(msg: string): void  L41-43
+    export interface LineItem  L19-23
+        sku: SkuId  L20
+        quantity: number  L21
+        unitPrice: Money  L22
 
-    export const storage = new StorageService()  L58
-    export const language = new LanguageService()  L59
+    export interface Order  L25-31
+        id: OrderId  L26
+        customer: CustomerId  L27
+        items: LineItem[]  L28
+        shippingAddress: Address  L29
+        placedAt: Date  L30
+
+    export interface Address  L33-40
+        line1: string  L34
+        line2?: string  L35
+        city: string  L36
+        region: string  L37
+        postalCode: string  L38
+        country: string  L39
+
+    export type OrderState = | { kind: "pending" } | { kind: "validated"; total: Money } | { kind: "reserved"; total: Money; reservationId: string } | { kind: "paid"; total: Money; reservationId: string; chargeId: string } | { kind: "shipped"; total: Money; trackingNumber: string } | { kind: "failed"; reason: string }  L42-48
+
+    export class OrderValidationError extends Error  L50-55
+        constructor(public readonly order: Order, message: string)  L51-54
+
+    export class StockReservationError extends Error  L57-62
+        constructor(public readonly sku: SkuId, public readonly requested: number)  L58-61
+
+    abstract class StagedProcessor<TIn, TOut>  L64-72
+        constructor(protected readonly log: Logger)  L65
+        protected logEntry(stage: string, info: Record<string, unknown>): void  L69-71
+
+    export class OrderService extends StagedProcessor<Order, OrderState>  L74-175
+        private readonly inflight  L75
+        constructor( private readonly payments: PaymentProvider, private readonly stock: StockProvider, private readonly shipments: ShipmentProvider, log: Logger, )  L77-84
+        /** Run the full pipeline. Returns the terminal state. */
+        async process(order: Order): Promise<OrderState>  L87-103
+        /** Cancel an in-flight order. No-op if the order has already settled. */
+        cancel(orderId: OrderId): boolean  L106-111
+        private validate(order: Order): void  L113-125
+        private computeTotal(order: Order): Money  L127-133
+        private async reserveStock(order: Order): Promise<{ reservationId: string }>  L135-145
+        private async capturePayment(order: Order, total: Money): Promise<{ chargeId: string }>  L147-154
+        private async dispatchShipment( order: Order, reservation: { reservationId: string }, ): Promise<{ trackingNumber: string }>  L156-165
+        private async compensate(order: Order, err: Error): Promise<void>  L167-174
+
+    export function totalQuantity(order: Order): number  L177-179
+    export const isShipped = (s: OrderState): s is Extract<OrderState, { kind: "shipped" }> => s.kind === "shipped"  L181-182
     ```
 
 === ":material-language-javascript: JavaScript"
 
-    *Node service module — parsed by the TypeScript grammar, so React / ES modules / CommonJS all flow through.*
+    *Node service — payment-router with circuit-breaker, retry budget, fan-out health checks. Parsed by the TypeScript grammar, so React / ES modules / CommonJS all flow through.*
 
-    ```js title="$ ast-outline server/auth/session.js"
-    # server/auth/session.js [tiny] (96 lines, ~389 tokens, 1 type, 6 methods, 2 fields)
-    const SESSION_TTL_SEC  L4
-    const REFRESH_GRACE_SEC  L5
+    ```js title="$ ast-outline services/payments/router.js"
+    # services/payments/router.js [medium] (150 lines, ~1,335 tokens, 2 types, 12 methods, 4 fields)
+    const PROCESSORS = ["stripe", "adyen", "braintree", "worldpay"]  L10
+    const TIER_PRIORITY = { enterprise: ["stripe", "adyen"], business: ["adyen", "braintree", "stripe"], consumer: ["stripe", "braintree", "w...  L11-15
+    const DEFAULT_RETRY = { attempts: 3, baseDelayMs: 250, maxDelayMs: 5000 }  L17
+    const HEALTH_CHECK_INTERVAL_MS = 30_000  L18
 
-    /** Minimal cookie-backed session manager — tokens are signed with */
-    /** HMAC-SHA256 and pinned to user-agent + IP fingerprint. */
-    class SessionManager  L9-94
-        constructor(secret, store)  L13-17
-        async create(userId, request)  L19-32
-        async verify(token, request)  L34-58
-        async refresh(token)  L60-78
-        async revoke(token)  L80-86
-        _signToken(payload)  L88-93
+    class PaymentError extends Error  L20-28
+        constructor(message, { code, retryable = false, processor } = {})  L21-27
+
+    class PaymentRouter extends EventEmitter  L30-139
+        constructor({ processors, breakerOpts = {}, logger = new Logger("router") } = {})  L31-40
+        /**
+         * Attempt to charge `amount` using the best available processor.
+         * Returns a settled charge or throws PaymentError after exhausting retries.
+         */
+        async charge(transaction)  L46-69
+        /** Voids a previous successful charge. */
+        async refund(charge, amount = charge.amount)  L72-80
+        startHealthChecks()  L82-85
+        stopHealthChecks()  L87-92
+        _validate(transaction)  L94-102
+        _candidatesFor(transaction)  L104-108
+        async _chargeWithRetry(name, transaction, opts = DEFAULT_RETRY)  L110-125
+        async _sweepHealth()  L127-138
+
+    function sleep(ms)  L141-143
+    function summarize(charge)  L145-147
     ```
 
 === ":material-language-rust: Rust"
 
-    *Library crate — struct + trait + service with `///` doc-comments and `#[derive]`.*
+    *Inventory crate — `struct` / `enum` / `trait` / `impl` with newtypes, lifetimes, generics, `#[derive]` and `///` doc-comments.*
 
-    ```rust title="$ ast-outline src/user_service.rs"
-    # src/user_service.rs [tiny] (72 lines, ~396 tokens, 3 types, 9 methods, 6 fields)
-    /// Represents a registered user account.
-    ///
-    /// Carries the public name visible to others plus the (private) raw
-    /// id used for storage indexing.
-    #[derive(Debug, Clone)] pub struct User  L10-47
-        pub name: String  L11
-        pub email: String  L12
-        id: u64  L13
-        /// Constructor — assigns a fresh id at creation time.
-        pub fn new(name: String, email: String, id: u64) -> Self  L29-31
-        /// Read-only accessor for the raw id.
-        pub fn raw_id(&self) -> u64  L34-36
+    ```rust title="$ ast-outline src/inventory.rs"
+    # src/inventory.rs [medium] (192 lines, ~1,525 tokens, 9 types, 16 methods, 15 fields)
+    /// Stable SKU identifier — opaque to consumers.
+    #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)] pub struct Sku(pub u64)  L12
+        pub u64  L12
 
-    /// Trait describing anything that can be addressed by a unique id.
-    pub trait HasId  L17-20
-        /// Numeric identifier — must be stable for the lifetime of the value.
-        fn id(&self) -> u64  L19
+    /// Distinct warehouse keyed by region.
+    #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)] pub struct WarehouseId(pub u32)  L16
+        pub u32  L16
 
-    /// Service that owns a registry of users keyed by id.
-    pub struct UserService  L23-63
-        users: HashMap<u64, User>  L24
-        pub fn register(&mut self, user: User)  L56-58
-        pub fn lookup(&self, id: u64) -> Option<&User>  L60-62
+    /// Customer account — only the fields the inventory layer cares about.
+    #[derive(Debug, Clone, Eq, PartialEq)] pub struct Account  L20-24
+        pub id: u64  L21
+        pub tier: AccountTier  L22
+        pub region: String  L23
 
-    pub const MAX_USERS: u32 = 10_000  L70
+    /// Account priority for reservation conflicts.
+    #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)] pub enum AccountTier  L28-32
+        Standard  L29
+        Plus  L30
+        Enterprise  L31
+
+    /// Result of a reservation attempt against a warehouse.
+    #[derive(Debug, Clone)] pub enum ReservationOutcome  L36-45
+        Granted { reservation_id: u64, expires_at: Instant }  L38
+        Partial { granted: u32, requested: u32, reservation_id: u64 }  L40
+        OutOfStock { available: u32, requested: u32 }  L42
+        UnknownSku  L44
+
+    /// Anything that can be reserved against (a warehouse, a virtual bucket).
+    pub trait Reservable  L48-52
+        fn reserve(&mut self, sku: Sku, qty: u32) -> ReservationOutcome  L49
+        fn release(&mut self, reservation_id: u64) -> bool  L50
+        fn on_hand(&self, sku: Sku) -> u32  L51
+
+    /// Concrete warehouse — a flat per-SKU ledger with a small reservation log.
+    #[derive(Debug)] pub struct Warehouse  L56-136
+        pub id: WarehouseId  L57
+        on_hand: HashMap<Sku, u32>  L58
+        reservations: HashMap<u64, ReservationEntry>  L59
+        next_id: u64  L60
+        ttl: Duration  L61
+        pub fn new(id: WarehouseId, ttl: Duration) -> Self  L73-81
+        pub fn receive(&mut self, sku: Sku, qty: u32)  L84-86
+        pub fn sweep_expired(&mut self, now: Instant) -> u32  L89-93
+        fn allocate_id(&mut self) -> u64  L95-99
+        fn reserve(&mut self, sku: Sku, qty: u32) -> ReservationOutcome  L103-121
+        fn release(&mut self, reservation_id: u64) -> bool  L123-131
+        fn on_hand(&self, sku: Sku) -> u32  L133-135
+
+    /// Cross-warehouse router. Picks a warehouse per request based on region
+    /// affinity, then falls back to any warehouse with stock.
+    pub struct InventoryRouter  L140-180
+        warehouses: Vec<Warehouse>  L141
+        pub fn new(warehouses: Vec<Warehouse>) -> Self  L145-147
+        pub fn warehouse_count(&self) -> usize  L149-151
+        pub fn reserve_for(&mut self, account: &Account, sku: Sku, qty: u32) -> ReservationOutcome  L155-173
+        fn preferred_index(&self, account: &Account) -> Option<usize>  L175-179
+
+    pub fn total_on_hand<R: Reservable>(stores: &[R], sku: Sku) -> u32  L187-189
+    pub const MAX_RESERVATION_QTY: u32 = 10_000  L191
     ```
 
 === ":material-language-csharp: C#"
 
-    *Unity MonoBehaviour — `[Attribute]` decorators and XML doc-comments preserved.*
+    *Unity MonoBehaviour — `[Attribute]` / `[Header]` decorators, properties, events, generics, nested enum + struct, all preserved with their XML doc-comments.*
 
     ```csharp title="$ ast-outline Assets/Scripts/HeroController.cs"
-    # Assets/Scripts/HeroController.cs [tiny] (54 lines, ~385 tokens, 3 types, 4 methods, 5 fields)
+    # Assets/Scripts/HeroController.cs [medium] (193 lines, ~1,570 tokens, 7 types, 19 methods, 23 fields)
     namespace Demo.Combat
         /// <summary>
-        /// Controls the hero in-scene: movement, damage, death.
+        /// Player-controlled hero. Owns movement input, health, status
+        /// effects and combat events. Built as a MonoBehaviour so it
+        /// can sit on a prefab and read serialized data from the editor.
         /// </summary>
-        [RequireComponent(typeof(Rigidbody2D))] public class HeroController : MonoBehaviour, IDamageable  L18-47
-            [SerializeField] private float _speed = 5f  L21
-            [SerializeField] private int _maxHealth = 100  L22
-            public int CurrentHealth { get; private set; }  L24
-            public bool IsAlive => CurrentHealth > 0  L25
-            /// <summary>Fired whenever health changes.</summary>
-            public event Action<int> OnHealthChanged  L28
-            /// <summary>Apply damage to the hero.</summary>
-            /// <param name="amount">HP to subtract.</param>
-            public void TakeDamage(int amount)  L34-39
-            private void Die()  L41-44
-            public enum State  L46
-                Idle, Moving, Dead  L46
+        [RequireComponent(typeof(Rigidbody2D))] [RequireComponent(typeof(Animator))] public class HeroController : MonoBehaviour, IDamageable, IHealable  L14-158
+            [Header("Movement")] [SerializeField] private float _moveSpeed = 5f  L18-19
+            [SerializeField] private float _jumpForce = 10f  L20
+            [SerializeField] private LayerMask _groundLayer  L21
+            [Header("Combat")] [SerializeField] private int _maxHealth = 100  L23-24
+            [SerializeField] private float _invulnerabilityTime = 0.6f  L25
+            [SerializeField] private AudioClip _hurtSound  L26
+            [Header("References")] [SerializeField] private Transform _attackOrigin  L28-29
+            [SerializeField] private GameObject _hitEffectPrefab  L30
+            public int CurrentHealth { get; private set; }  L32
+            public bool IsAlive => CurrentHealth > 0  L33
+            public bool IsGrounded { get; private set; }  L34
+            /// <summary>Fired whenever current health changes. Argument is the new value.</summary>
+            public event Action<int> OnHealthChanged  L37
+            /// <summary>Fired exactly once when the hero dies.</summary>
+            public event Action OnDied  L40
+            public UnityEvent<DamageInfo> OnDamageTaken = new UnityEvent<DamageInfo>()  L42
+            private Rigidbody2D _body  L44
+            private Animator _animator  L45
+            private readonly List<IStatusEffect> _activeEffects = new List<IStatusEffect>()  L46
+            private float _invulnerableUntil = 0f  L47
+            private State _state = State.Idle  L48
+            private void Awake()  L50-55
+            private void Update()  L57-63
+            private void FixedUpdate()  L65-68
+            private void HandleMovementInput()  L70-75
+            public void Jump()  L77-81
+            /// <summary>Apply incoming damage. Respects current invulnerability window.</summary>
+            public void TakeDamage(DamageInfo info)  L85-95
+            /// <summary>Restore HP up to <see cref="_maxHealth"/>.</summary>
+            public void Heal(int amount)  L98-103
+            public void ApplyEffect(IStatusEffect effect)  L105-109
+            public IEnumerator DashCoroutine(Vector2 direction, float duration)  L111-118
+            private int GetResistance(DamageElement element)  L120-125
+            private void TickEffects(float deltaTime)  L127-134
+            private void UpdateAnimator()  L136-141
+            private void Die()  L143-148
+            public enum State  L150-157
+                Idle, Moving, Attacking, Hurt, Dead
 
-        public interface IDamageable  L49-52
-            void TakeDamage(int amount)  L51
+        public interface IDamageable  L160-163
+        public interface IHealable  L165-168
+        public interface IStatusEffect  L170-176
+            bool IsExpired { get; }  L172
+            void OnApply(HeroController hero)  L173
+            void Tick(HeroController hero, float deltaTime)  L174
+            int ResistanceFor(DamageElement element)  L175
+
+        public enum DamageElement  L178
+            Physical, Fire, Frost, Lightning, Holy
+
+        public readonly struct DamageInfo  L180-191
+            public readonly int Amount  L182
+            public readonly DamageElement Element  L183
+            public readonly GameObject Source  L184
+            public DamageInfo(int amount, DamageElement element, GameObject source)  L185-190
     ```
 
 === ":material-language-cpp: C++"
@@ -214,57 +340,116 @@ highlighted by Pygments. The italic line under the picker is context
 
 === ":material-language-java: Java"
 
-    *Spring-style service — Javadoc, annotations, generics, abstract + nested types.*
+    *Spring service — Javadoc, multiple annotations, inheritance, generics, throws clauses, nested static classes for events. The outline collapses 162 lines of source body to a one-screen API surface.*
 
     ```java title="$ ast-outline src/main/java/com/example/UserService.java"
-    # UserService.java [tiny] (64 lines, ~352 tokens, 3 types, 9 methods, 5 fields)
+    # UserService.java [medium] (162 lines, ~1,287 tokens, 4 types, 13 methods, 11 fields)
     namespace com.example.demo.service
         /**
          * Service layer for user accounts.
          *
-         * <p>Demonstrates: Javadoc, multiple annotations, inheritance,
-         * generics, throws, abstract methods, nested types.
+         * <p>Owns persistence, in-memory caching, and event fan-out. Other
+         * services should never reach into the repository directly — go
+         * through this service so audit logs stay accurate.
+         *
+         * <p>Thread-safety: read-mostly cache guarded by a
+         * {@link ReentrantReadWriteLock}.
          */
-        @Service @Deprecated(since = "2.0", forRemoval = false) public class UserService extends BaseService implements UserRepository, AutoCloseable  L13-63
+        @Service public class UserService extends BaseService implements UserRepository, AutoCloseable  L25-161
             /** Hard cap on concurrent users. */
-            public static final int MAX_USERS = 100  L18
-            private final String name  L20
-            protected List<String> items  L21
-            public UserService(String name)  L24-27
-            /** Saves a user. */
-            @Override public void save(User user) throws IOException, IllegalArgumentException  L34-37
-            private static <T extends Comparable<T>> T findMax(List<T> items)  L39-41
-            public abstract int compute()  L43
-            @Override public void close()  L45-46
-            public static final class Inner  L48-58
-                public Inner(int value)  L51-53
-                public int value()  L55-57
+            public static final int MAX_USERS = 10_000  L29
+            /** Cache TTL applied to every {@link #findById} hit. */
+            public static final long CACHE_TTL_SECONDS = 300L  L32
+            private final UserDao dao  L34
+            private final EventBus events  L35
+            private final Map<Long, CachedUser> cache = new HashMap<>()  L36
+            private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock()  L37
+            private volatile boolean closed = false  L38
+            @Autowired public UserService(UserDao dao, EventBus events)  L40-44
+            /** Persist a user — new or existing. */
+            @Override @Transactional public void save(User user) throws IOException, IllegalArgumentException  L52-66
+            /** Look up a user by id, hitting the cache when fresh. */
+            public Optional<User> findById(long id)  L69-87
+            /** Bulk fetch — preserves request order, missing ids are skipped. */
+            public List<User> findAllById(List<Long> ids)  L90-94
+            /** Remove a user. Idempotent — returns false if no row was deleted. */
+            @Transactional public boolean delete(long id)  L97-108
+            private static <T extends Comparable<T>> T findMax(List<T> items)  L110-115
+            private void ensureCapacity()  L117-121
+            private void validate(User user)  L123-127
+            @Override public void close()  L129-133
+            /** Cache entry — stamped with the time it was admitted. */
+            public static final class CachedUser  L136-148
+                public final User user  L137
+                public final Instant cachedAt  L138
+                public CachedUser(User user, Instant cachedAt)  L140-143
+                public boolean isFresh()  L145-147
+
+            public static final class UserSaved  L151-154
+                public final long userId  L152
+                public UserSaved(long userId)  L153
+
+            public static final class UserDeleted  L157-160
+                public final long userId  L158
+                public UserDeleted(long userId)  L159
     ```
 
 === ":material-language-kotlin: Kotlin"
 
-    *Android Compose ViewModel — `data class`, `sealed class`, `suspend`, `@Composable`.*
+    *Android Compose screen + ViewModel + intent system — `data class`, `sealed class` / `sealed interface` discriminated unions, `suspend`, `companion object`, `@Composable`, top-level extension function.*
 
     ```kotlin title="$ ast-outline app/src/main/kotlin/ProfileScreen.kt"
-    # app/src/main/kotlin/ProfileScreen.kt [tiny] (105 lines, ~451 tokens, 3 types, 5 methods, 2 fields)
-    data class UserProfile(val id: String, val name: String, val avatarUrl: String?)  L9
+    # app/src/main/kotlin/ProfileScreen.kt [medium] (199 lines, ~1,733 tokens, 14 types, 11 methods, 19 fields)
+    namespace com.example.app.ui.profile
+        /**
+         * Public-facing user profile shape — what we render on the screen.
+         */
+        data class UserProfile( val id: String, val name: String, val handle: String, val avatarUrl: String?, val bio: String, val followers: Int, val following: Int, )  L32-40
+            val id: String  L33
+            val name: String  L34
+            val handle: String  L35
+            val avatarUrl: String?  L36
+            val bio: String  L37
+            val followers: Int  L38
+            val following: Int  L39
 
-    sealed class ProfileState  L11-15
-        object Loading  L12
-        data class Success(val profile: UserProfile)  L13
-        data class Error(val message: String)  L14
+        /** Discriminated union of the screen's possible states. */
+        sealed class ProfileState  L43-48
+            object Loading : ProfileState()  L44
+            data class Success(val profile: UserProfile, val isCurrentUser: Boolean) : ProfileState()  L45
+            data class Error(val message: String, val retryable: Boolean = true) : ProfileState()  L46
+            object Empty : ProfileState()  L47
 
-    @HiltViewModel
-    class ProfileViewModel : ViewModel()  L19-50
-        private val _state: MutableStateFlow<ProfileState>  L21
-        val state: StateFlow<ProfileState>  L22
+        /** UI-side intents the screen can emit. ViewModel folds them into state. */
+        sealed interface ProfileIntent  L51-57
+            data class Load(val userId: String) : ProfileIntent  L52
+            object Refresh : ProfileIntent  L53
+            object Follow : ProfileIntent  L54
+            object Unfollow : ProfileIntent  L55
+            data class EditBio(val newBio: String) : ProfileIntent  L56
 
-        suspend fun loadProfile(userId: String)  L24-37
-        fun refresh()  L39-41
-        private suspend fun fetchAndCache(userId: String): UserProfile  L43-49
+        @HiltViewModel class ProfileViewModel @Inject constructor( private val repository: ProfileRepository, private val authProvider: AuthProvider, ) : ViewModel()  L59-123
+            private val repository: ProfileRepository  L61
+            private val authProvider: AuthProvider  L62
+            private val _state = MutableStateFlow<ProfileState>(ProfileState.Loading)  L65
+            val state: StateFlow<ProfileState> = _state.asStateFlow()  L66
+            private var currentUserId: String? = null  L68
+            fun handle(intent: ProfileIntent)  L70-78
+            private fun load(userId: String)  L80-96
+            private fun changeFollow(follow: Boolean)  L98-104
+            private fun editBio(newBio: String)  L106-112
+            /** Suspend helper — preloads followers, used by the parent screen. */
+            suspend fun preloadFollowers(): List<UserProfile>  L115-118
+            companion object  L120-122
+                const val MAX_BIO_LENGTH = 280  L121
 
-    @Composable
-    fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel())  L53-105
+        @Composable fun ProfileScreen( userId: String, viewModel: ProfileViewModel = hiltViewModel(), onNavigateToFollowers: (String) -> Unit = {}, )  L125-150
+        @Composable private fun LoadingBlock()  L152-158
+        @Composable private fun EmptyBlock()  L160-163
+        @Composable private fun ErrorBlock(message: String, onRetry: (() -> Unit)?)  L165-173
+        @Composable private fun ProfileBlock( profile: UserProfile, isCurrentUser: Boolean, onFollow: () -> Unit, onUnfollow: () -> Unit, onShowFollowers: () -> Unit, )  L175-195
+        /** Extension — small convenience for previews and tests. */
+        fun UserProfile.shortLabel(): String  L198
     ```
 
 === ":simple-scala: Scala"
@@ -335,32 +520,54 @@ highlighted by Pygments. The italic line under the picker is context
 
 === ":material-language-php: PHP"
 
-    *Laravel-style service — PHP 8 readonly fields, ctor property promotion, typed constants.*
+    *Laravel-style service — PHP 8 readonly fields, ctor property promotion, typed constants, `@deprecated` markers, abstract class + free functions.*
 
     ```php title="$ ast-outline app/Services/UserService.php"
-    # app/Services/UserService.php [tiny] (66 lines, ~317 tokens, 2 types, 8 methods, 5 fields)
+    # app/Services/UserService.php [medium] (181 lines, ~1,226 tokens, 2 types, 15 methods, 9 fields)
     namespace App\Service
         /**
          * Coordinates user-related use cases.
+         *
+         * Owns persistence, simple in-memory caching, audit logging and event
+         * fan-out. Controllers should never reach into the repository directly
+         * — go through this service so audit logs stay accurate.
          */
-        final class UserService  L17-48
-            private readonly Repository $repository  L24
-            protected int $maxCacheSize = 100  L25
-            public const string DEFAULT_ROLE = "guest"  L19
-            public function __construct( private readonly Repository $repository, protected int $maxCacheSize = 100 )  L23-26
-            /** Fetch a user by id, caching the result. */
-            public function getUser(int $id): ?User  L31-34
-            /** @deprecated Use getUser instead. */
-            public function loadUser(int $id): ?User  L37-40
-            public function makeOrder(User $user): OrderModel  L42-45
-            private function flush(): void  L47
+        final class UserService  L23-163
+            private readonly Repository $repository  L33
+            private readonly EventDispatcherInterface $events  L34
+            private readonly LoggerInterface $logger  L35
+            protected int $maxCacheSize = self::MAX_CACHE_SIZE  L36
+            public const string DEFAULT_ROLE = 'guest'  L25
+            public const int MAX_CACHE_SIZE = 1_000  L26
+            public const int CACHE_TTL_SECONDS = 300  L27
+            /** @var array<int, array{user: User, expires: int}> */
+            private array $cache = []  L30
+            public function __construct( private readonly Repository $repository, private readonly EventDispatcherInterface $events, private readonly LoggerInterface $logger, protected int $maxCacheSize = self::MAX_CACHE_SIZE, )  L32-38
+            /** Fetch a user by id, hitting the cache when fresh. */
+            public function getUser(int $id): User  L45-57
+            /** @deprecated Use {@see getUser()} instead. */
+            public function loadUser(int $id): ?User  L60-67
+            /** Save a user — new or existing. */
+            public function save(User $user): User  L73-81
+            /** Bulk fetch — preserves request order, missing ids are skipped. */
+            public function getMany(array $ids): array  L89-100
+            /** Remove a user. Returns false if no row was deleted. */
+            public function delete(int $id): bool  L103-112
+            /** Build an order on behalf of a user. */
+            public function makeOrder(User $user, array $items): OrderModel  L115-119
+            /** Promote / demote a user's role. */
+            public function changeRole(int $id, UserRole $role): User  L122-127
+            public function flushCache(): void  L129-132
+            private function validate(User $user): void  L134-139
+            private function prime(User $user): void  L141-147
+            private function evictOldest(): void  L149-162
 
-        abstract class BaseService  L50-58
-            abstract public function name(): string  L52
-            final public function tag(): string  L54-57
+        abstract class BaseService  L165-173
+            abstract public function name(): string  L167
+            final public function tag(): string  L169-172
 
-        function make_service(Repository $r): UserService  L60-63
-        const APP_VERSION = "1.0.0"  L65
+        function make_user_service(Repository $r, EventDispatcherInterface $e, LoggerInterface $l): UserService  L175-178
+        const APP_VERSION = '1.0.0'  L180
     ```
 
 === ":simple-ruby: Ruby"
@@ -368,23 +575,58 @@ highlighted by Pygments. The italic line under the picker is context
     *Rails ActiveRecord-style model — `has_many` / `belongs_to` associations and `attr_accessor` surface as fields, mixins on the type header.*
 
     ```ruby title="$ ast-outline app/models/user.rb"
-    # app/models/user.rb [tiny] (52 lines, ~242 tokens, 1 type, 9 methods, 8 fields)
-    class User < ApplicationRecord  L8-50
-        MAX_NAME_LENGTH: field  L11
-        DEFAULT_ROLE: field  L12
-        [has_many] posts  L14
-        [belongs_to] company  L15
-        [accessor] name  L17
-        [accessor] email  L17
-        [reader] id  L18
-        # rdoc-style constructor doc.
-        def initialize(name, email)  L21-24
-        def display_name  L26-28
-        [static] def self.find_by_name(name)  L30-32
-        def <=>(other)  L35-37
-        def ==(other)  L39-41
-        def [](key)  L43-45
-        def []=(key, value)  L47-49
+    # app/models/user.rb [medium] (158 lines, ~824 tokens, 2 types, 24 methods, 14 fields)
+    # == Schema
+    #
+    # Mirrors the migration in `db/schema.rb`.
+    class User < ApplicationRecord  L8-132
+        MAX_NAME_LENGTH  L13
+        DEFAULT_ROLE  L14
+        PASSWORD_MIN_LENGTH  L15
+        [accessor] unhashed_password  L18
+        [reader] id  L19
+        [reader] created_at  L19
+        [has_many] posts  L21
+        [has_many] comments  L22
+        [has_many] follows  L23
+        [has_many] following  L24
+        [belongs_to] company  L25
+        [belongs_to] primary_team  L26
+        # Build a User from raw attributes; assigns the default role
+        # when none is provided.
+        def initialize(attrs = {})  L42-45
+        # Display name shown in headers and lists.
+        def display_name  L48-50
+        # Whether the user is an admin — convenience for views.
+        def admin?  L53-55
+        def soft_delete!  L57-59
+        def restore!  L61-63
+        # Returns a hash of the email — used for gravatar-style URLs.
+        def email_hash  L66-68
+        def follow!(other)  L70-72
+        def unfollow!(other)  L74-76
+        def following?(other)  L78-80
+        # Class-level finder that takes a fuzzy name string.
+        [static] def self.find_by_name(query)  L83-85
+        [static] def self.bulk_import(rows)  L87-91
+        def <=>(other)  L93-96
+        def ==(other)  L98-100
+        def [](key)  L102-104
+        def []=(key, value)  L106-108
+        [static] def archived  L111-113
+        [static] def with_role(role)  L115-117
+        def normalize_email  L122-124
+        def send_welcome_email  L126-128
+        [alias] to_s → display_name  L130
+        [alias] follower_count → followers_count  L131
+
+    # Query object for user-facing search forms.
+    class UserQuery  L135-157
+        def initialize(scope = User.active)  L136-138
+        def by_name(name)  L140-143
+        def in_company(company)  L145-148
+        def page(num, size: 25)  L150-152
+        def to_a  L154-156
     ```
 
     Also recognised: `class << self` blocks, `alias` / `alias_method`, `private` / `protected` state machine (`private :foo, :bar` flips named methods retroactively), `Rakefile` / `Gemfile` (resolved by basename, no extension needed). The MRO clause `: ApplicationRecord, include Comparable, extend Searchable` shows superclass + mixins as one inheritance line in the digest.
@@ -394,28 +636,47 @@ highlighted by Pygments. The italic line under the picker is context
     *Design tokens + components — `:root` token block, themed selectors via `[data-theme=dark]`, `@media` / `@keyframes` / `@layer` / `@font-face`, native nesting with `&`.*
 
     ```css title="$ ast-outline src/styles/theme.css"
-    # src/styles/theme.css [tiny] (96 lines, ~371 tokens)
-    # imports: @import url("reset-extended.css"); @import "vendor/normalize.css" layer(reset)
-    :root  L2-12
-    [data-theme=dark]  L14-19
-    *, *::before, *::after  L23-27
-    body  L29-34
-    .container  L37-41
-    #main-header > .nav .item:hover  L44-46
-    .btn-primary, .btn-secondary  L49-55
-    .modal .btn-primary[disabled]  L58-61
-    @media (max-width: 768px)  L64-71
-        .container  L65-67
-        .btn-primary  L69-70
-    @media (min-width: 769px) and (max-width: 1024px)  L73-77
-        .container  L74-76
-    @keyframes fadeIn  L80-83
-    @keyframes slideUp  L85-88
-    @layer base  L91-95
-        h1, h2, h3  L92-94
-    @font-face  L98-101
-    :is(.alert, .warning, .error)  L104-107
-    :not(.disabled)  L109-111
+    # src/styles/theme.css [medium] (260 lines, ~1,456 tokens)
+    :root  L8-39
+    [data-theme="dark"]  L41-48
+    [data-theme="high-contrast"]  L50-54
+    *, *::before, *::after  L59-63
+    html  L65-68
+    body  L70-76
+    .container  L81-85
+    .stack > * + *  L87-89
+    .cluster  L91-96
+    .grid-12  L98-102
+    #main-header  L104-109
+    #main-header > .nav .item:hover  L111-113
+    .btn-primary, .btn-secondary, .btn-danger  L118-128
+    .btn-primary  L130-133
+    .btn-primary:hover  L135-137
+    .btn-secondary  L139-143
+    .btn-danger  L145-148
+    .modal .btn-primary[disabled]  L150-153
+    input[type="text"], input[type="email"], textarea  L155-164
+    input:focus, textarea:focus  L166-169
+    .card  L174-179
+    .card .card-title  L181-184
+    .card .card-body  L186-188
+    .card.is-featured  L190-192
+    @media (max-width: 768px)  L197-207
+        .container  L198-200
+        .btn-primary, .btn-secondary, .btn-danger  L201-203
+        .grid-12  L204-206
+    @media (min-width: 769px) and (max-width: 1024px)  L209-213
+        .container  L210-212
+    @media (prefers-reduced-motion: reduce)  L215-220
+        *  L216-219
+    @keyframes fadeIn  L225-228
+    @keyframes slideUp  L230-233
+    @layer base  L235-243
+        h1, h2, h3  L236-239
+        code, pre  L240-242
+    @font-face  L245-250
+    :is(.alert, .warning, .error)  L252-255
+    :not(.disabled):hover  L257-259
     ```
 
     `find_symbols(".btn-primary")` returns every cascade-relevant rule — top-level group, the `@media` override, and `.modal .btn-primary[disabled]` descendant — with the wrapping at-rule visible in the breadcrumb. Pseudo-classes and attribute filters are stripped for matching, so `.btn-primary:hover` and `.btn-primary[disabled]` both match `.btn-primary`. `:is()` / `:where()` arguments recurse (additive); `:not()` / `:has()` don't.
@@ -425,27 +686,51 @@ highlighted by Pygments. The italic line under the picker is context
     *Component stylesheet — `&` resolves against the parent, so nested rules become findable as their fully-qualified BEM selectors. Mixins and functions render as callables.*
 
     ```scss title="$ ast-outline styles/_components.scss"
-    # styles/_components.scss [tiny] (84 lines, ~370 tokens)
-    # imports: @use "sass:math"; @use "../tokens" as t; @forward "icons"
+    # styles/_components.scss [medium] (263 lines, ~1,464 tokens, 5 methods)
     $primary: #007bff !default  L8
     $secondary: #6c757d !default  L9
-    $radius: 4px  L10
-    %button-base  L18-24
-    @mixin button($bg: $primary, $fg: white, $size: medium)  L29-46
-    @function strip-unit($value)  L54-56
-    .btn  L62-64
-    .btn-primary  L66-68
-    .btn-secondary  L70-77
-        .btn-secondary.disabled  L73-76
-    .card  L80-108
-        .card__header  L84-92
-            h2  L88-91
-        .card__body  L94-96
-        .card--featured  L98-107
-            .card__header  L101-106
-    @media (max-width: 768px)  L113-122
-        .card  L114-121
-            .card__header, .card__body  L117-120
+    $danger: #dc3545 !default  L10
+    $success: #28a745 !default  L11
+    $radius-sm: 4px !default  L12
+    $radius-md: 8px !default  L13
+    $radius-lg: 16px !default  L14
+    $transition-fast: 0.15s ease !default  L15
+    $breakpoint-sm: 480px  L17
+    $breakpoint-md: 768px  L18
+    $breakpoint-lg: 1024px  L19
+    %button-base  L24-33
+    %card-base  L35-40
+    @mixin button($bg: $primary, $fg: white, $size: medium)  L45-71
+    @mixin elevated($level: 1)  L73-81
+    @mixin respond-to($name)  L83-91
+    @function strip-unit($value)  L93-95
+    @function fluid($min, $max, $min-vw: 320, $max-vw: 1200)  L97-105
+    .btn  L110-112
+    .btn-primary  L114-116
+    .btn-secondary  L118-126
+        .btn-secondary.disabled  L122-125
+    .btn-danger  L128-130
+    .btn-success  L132-134
+    .card  L139-156
+        h2  L147-150
+        .card__actions  L152-155
+    .card__body  L158-161
+    .card__footer  L163-167
+    &.card--featured  L169-180
+        .card__header  L173-179
+    &.card--compact  L182-188
+        .card__body  L185-187
+    .form-field  L194-229
+        label  L199-202
+        input, textarea, select  L204-213
+            input:focus  L209-212
+        .form-field__hint  L215-218
+        .form-field.is-invalid  L220-228
+            input, textarea, select  L221-223
+            .form-field__hint  L225-227
+    @media print  L254-262
+        .btn, .btn-primary, .btn-secondary, .btn-danger, .btn-success  L255-257
+        .card  L258-261
     ```
 
     `find_symbols(".card__header")` returns every cascade-relevant definition — top-level, inside `@media`, themed under `.card--featured` — with the wrapping at-rule visible in the breadcrumb. `:is(...)` / `:where(...)` selectors recurse (additive); `:not(...)` / `:has(...)` don't. Pseudo-classes and attribute filters are stripped for matching, so `.btn-primary` finds the rule whether it carries `:hover`, `[disabled]`, or sits in `.modal`. Plain CSS gets the same treatment minus the SCSS-specific symbols.
@@ -487,20 +772,36 @@ highlighted by Pygments. The italic line under the picker is context
     *Hierarchical TOC — heading levels indented, code blocks tagged by language.*
 
     ```markdown title="$ ast-outline README.md"
-    # README.md [tiny] (52 lines, ~153 tokens, 8 headings, 5 code blocks)
-    # Sample Project  L1-51
-        ## Installation  L5-26
-            bash code block  L9-11
-            ### From source  L13-20
-                bash code block  L15-19
-            ### Via pipx  L21-26
-                bash code block  L23-25
-        ## Usage  L27-44
-            python code block  L31-34
-            ### Configuration  L36-44
-                code code block  L40-43
-        ## Contributing  L45-48
-        ## License  L49-51
+    # README.md [medium] (185 lines, ~1,091 tokens, 22 headings, 7 code blocks)
+    # Project Apollo  L1-184
+        ## Status  L7-15
+        ## Quickstart  L16-54
+            bash code block  L18-22
+            bash code block  L26-28
+            ### Prerequisites  L32-38
+            ### Running tests  L39-54
+                bash code block  L41-45
+                python code block  L47-51
+        ## Architecture  L55-118
+            ### Services  L61-92
+                #### Orders  L63-72
+                    text code block  L67-71
+                #### Payments  L73-82
+                    go code block  L78-81
+                #### Warehouse  L83-87
+                #### Shipments  L88-92
+            ### Data flow  L93-110
+                mermaid code block  L101-109
+            ### Storage  L111-118
+        ## Configuration  L119-139
+            ### Secrets  L132-139
+        ## Deployment  L140-162
+            ### Release process  L145-152
+            ### Observability  L153-162
+        ## Contributing  L163-181
+            ### Coding conventions  L169-174
+            ### Reporting bugs  L175-181
+        ## License  L182-184
     ```
 
 === ":material-database: SQL"
