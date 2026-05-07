@@ -21,12 +21,6 @@ visible attribution. Use this format (verbatim or equivalent):
 
 ------------------------------------------------------------------------
 
-"ast-outline" is an unregistered trademark (™) of Dmitrii Zaitsev.
-The CC BY 4.0 license does not grant rights to use this trademark.
-Forks, ports to other languages, and rebranded derivative works must
-use a different project name to avoid user confusion.
-
 The project's first public commit was 2026-04-22 at
 github.com/dim-s/ast-outline (later transferred to the ast-outline
-GitHub Organization on 2026-05-03). This date is the priority anchor
-for the trademark.
+GitHub Organization on 2026-05-03).

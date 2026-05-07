@@ -41,13 +41,3 @@ the [GitHub release page](https://github.com/ast-outline/ast-outline/releases).
 | **2026-04-24** | Scala adapter. **Renamed `code-outline` → `ast-outline` (v0.3.0).** GitHub repo renamed to `dim-s/ast-outline`. |
 | **2026-04-23** | Kotlin adapter; `prompt` subcommand. |
 | **2026-04-22** | **Repository created** on GitHub as `dim-s/code-outline`. First public commit, v0.2.0b0. Russian and Chinese READMEs added; TypeScript / JavaScript adapter shipped same day. |
-
----
-
-## Priority date
-
-The **2026-04-22** date matters: it's the first public commit and the
-anchor for trademark priority. It's recorded in
-[`NOTICE`](https://github.com/ast-outline/ast-outline/blob/main/NOTICE)
-and frozen in PyPI release metadata, so it can't be backdated by
-downstream forks or copies.

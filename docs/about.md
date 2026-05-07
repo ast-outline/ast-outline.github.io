@@ -51,25 +51,6 @@ derivative work).
 
 ---
 
-## Trademark
-
-**ast-outline™** is an unregistered trademark of Dmitrii Zaitsev
-(dim-s), used to identify the original project at
-<https://github.com/ast-outline/ast-outline>. Apache License 2.0 §6
-explicitly excludes any grant of trademark rights.
-
-**Forks, language ports, and rebranded distributions must use a
-different name** to avoid user confusion. "Inspired by ast-outline" or
-"based on ast-outline" wording in your README is fine and encouraged;
-using `ast-outline` itself as your project / package / binary name is
-not.
-
-If you maintain a published package called `ast-outline` on any
-registry (crates.io, npm, PyPI, Homebrew, etc.) that is not the
-project at the URL above, please rename it.
-
----
-
 ## Contributing
 
 Issues and pull requests are welcome at the

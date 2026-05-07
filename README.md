@@ -42,7 +42,7 @@ mkdocs.yml         MkDocs Material config
   deploy.yml       Build + deploy to Pages on push to main
 
 LICENSE            CC BY 4.0 (full canonical text)
-NOTICE             Attribution + trademark statement
+NOTICE             Attribution statement
 ```
 
 ## License
@@ -52,9 +52,6 @@ Commons Attribution 4.0 International License** ([CC BY 4.0](LICENSE)).
 
 Reuse of any non-trivial portion requires visible attribution. See
 `LICENSE` and `NOTICE` for the canonical terms.
-
-The CC BY 4.0 license does not grant rights to the **ast-outline™**
-trademark — see `NOTICE` for details.
 
 ---
 
