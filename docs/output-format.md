@@ -1,8 +1,9 @@
 # Output format
 
-`ast-outline` has two output modes: **outline** (per-file, detailed)
-and **digest** (multi-file, compact). Both are designed to be
-**parseable cold by an AI agent** — no out-of-band reference doc
+`ast-outline` has three output modes: **outline** (per-file, detailed),
+**digest** (multi-file, compact), and **grep** (matches with
+enclosing scope and a kind classification). All three are designed to
+be **parseable cold by an AI agent** — no out-of-band reference doc
 needed.
 
 ## Outline format
@@ -58,6 +59,101 @@ markdown-only batch (whose digest contains no callables, kinds,
 markers, or inheritance) emits no legend at all — there is nothing
 non-obvious to explain. The legend is one line, intentionally — easy
 to scan once and drop into a prompt.
+
+---
+
+## Grep format
+
+`grep` returns matches **annotated with their enclosing class /
+function** and a **kind classification**, so a single call gives the
+agent enough scope to act without follow-up reads.
+
+```text
+# src/ast_outline/adapters/python.py (4 matches)
+
+## imports
+  > L24: from .base import count_parse_errors [import]
+
+## matches
+class PythonAdapter  L41-93
+    def parse(self, path: Path) -> ParseResult  L45-93 [def]
+        > L47: tree = _PARSER.parse(src)
+        > L88: error_count=count_parse_errors(tree.root_node),
+
+# 5 matches in comments/strings hidden — pass --include-noise to see
+```
+
+Anatomy:
+
+| Element | Meaning |
+| --- | --- |
+| `# <path> (<N> match[es])` | File header. One per file with at least one match. Singular `match` for `N=1`. |
+| `## imports` | Section header. Emitted only when imports contain a match. |
+| `## matches` | Section header. Emitted only when non-import code contains a match. |
+| `class …  L<a>-<b>` / `def …  L<a>-<b>` | Scope frame. Mirrors `outline` indentation — the enclosing class / function chain is reconstructed from the AST so the agent reads which class / method a match lives in without re-opening the file. |
+| `> L<n>: <code>` | A match line. Indented one level deeper than its scope frame. Whitespace inside `<code>` is preserved verbatim from the source. |
+| `[def]` | Trailing tag on the declaration line itself when the symbol is **defined** there (not just mentioned). |
+| `[import]` | Trailing tag on a match inside an `import` / `use` / `using` / `require` statement — including multi-line block forms (Python `from x import (\n  Y,\n)`, Go `import (...)`, Rust `use foo::{...}`, etc., classified via AST, not line-prefix). |
+| `[comment]` / `[string]` | Trailing tags for noise matches. **Only surface with `--include-noise`** (or `--kind comment` / `--kind string`, which auto-enables noise). |
+| *(no tag)* | Calls and bare references. The line shape — identifier-followed-by-`(` or not — distinguishes them, so an explicit `[call]` / `[ref]` tag would be redundant. |
+
+The empty-section rule keeps output dense: a file whose only hits are
+imports renders just the `## imports` block, no `## matches` header.
+
+### Noise filter footer
+
+When the default filter swallows matches inside comments / strings, a
+trailer documents what was hidden so the agent never silently sees a
+partial result set:
+
+```text
+# 5 matches in comments/strings hidden — pass --include-noise to see
+```
+
+Pass `--include-noise` to surface them with `[comment]` / `[string]`
+tags inline. With `--kind comment` / `--kind string` this happens
+automatically.
+
+### Truncation footer (`-m` / `--max-count`)
+
+When `-m N` caps per-file matches, every truncated file gets an
+explicit footer — partial results are never silent:
+
+```text
+# truncated — 3 more matches in this file (raise --max-count to see)
+```
+
+`-c` (counts) and `-l` (paths-only) report the **capped** count,
+matching POSIX `grep -c`.
+
+### Alternate output shapes
+
+`-l` and `-c` replace the structured form with one line per file:
+
+```text
+# -l (--files-with-matches) — paths only, zero-count files skipped
+src/ast_outline/adapters/python.py
+src/ast_outline/adapters/typescript.py
+
+# -c (--count) — `path:N`, zero-count files skipped
+src/ast_outline/adapters/python.py:4
+src/ast_outline/adapters/typescript.py:6
+```
+
+Both operate on the AST-aware base, so counts and file lists exclude
+docstring / comment noise (unless `--include-noise` is set).
+
+### Empty result
+
+```text
+# note: no matches for 'pattern'
+```
+
+Printed to **stdout** with **exit code 0** — non-zero exits would
+break parallel `bash` batches in agent harnesses, so user-facing
+failures (no match, file not found, bad arg) stick to the
+`rc=0` / `# note:` convention. Real internal crashes still propagate
+normally.
 
 ---
 
