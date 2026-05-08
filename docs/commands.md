@@ -200,6 +200,15 @@ Patterns combine via OR-alternation in one walk — saves N startup
 costs vs running grep three times. The first pattern is positional;
 extras come via `-e/--expression` (repeatable).
 
+You can also use `-e` for the **first** pattern (no positional at all)
+— matches POSIX `grep -e PAT PATH` and `rg -e PAT PATH` muscle memory:
+
+```bash
+ast-outline grep -e User.save src/                   # POSIX-style
+ast-outline grep -e User.save -e User.load src/      # all via -e
+ast-outline grep --expression=User.save src/         # equals form
+```
+
 ### Filter by classification: `--kind`
 
 Eliminates the most common post-filter step ("show me only
