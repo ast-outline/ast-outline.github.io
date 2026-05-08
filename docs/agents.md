@@ -59,77 +59,87 @@ control over file edits.
     ```markdown
     ## Code exploration — prefer `ast-outline` over full reads
 
-    For `.cs`, `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, `.hh`, `.py`,
-    `.pyi`, `.ts`, `.tsx`, `.js`, `.jsx`, `.java`, `.kt`, `.kts`,
-    `.scala`, `.sc`, `.go`, `.rs`, `.php`, `.phtml`, `.rb`, `.rake`,
-    `.gemspec`, `.css`, `.scss`, `.sql`, `.md`, and `.yaml`/`.yml`
-    files, read structure with `ast-outline` before opening the full
-    file.
+    For `.cs`, `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, `.hh`, `.py`, `.pyi`,
+    `.ts`, `.tsx`, `.js`, `.jsx`, `.java`, `.kt`, `.kts`, `.scala`, `.sc`,
+    `.go`, `.rs`, `.php`, `.phtml`, `.rb`, `.rake`, `.gemspec`, `.css`,
+    `.scss`, `.sql`, `.md`, and `.yaml`/`.yml` files, read structure with
+    `ast-outline` before opening full contents.
 
     Pick the smallest of these that answers your question — they're a
     broad-to-narrow menu, not a sequence; skip straight to `show` when
     you already know the symbol:
 
-    1. **Unfamiliar directory** — `ast-outline digest <paths…>`: a
-       one-page map of every file's types and public methods. Each
-       file is tagged with a size label — `[tiny]` / `[medium]` /
-       `[large]` / `[huge]` — plus `[broken]` if parse errors clipped
-       the outline. `[huge]` files (≥100k tokens) collapse to
-       header-only in the digest; call `ast-outline outline <path>` on
-       them when you need the full structure.
+    1. **Unfamiliar directory** — `ast-outline digest <paths…>`: one-page map
+       of every file's types and public methods. Each file is tagged with a
+       size label — `[tiny]` / `[medium]` / `[large]` / `[huge]` — plus
+       `[broken]` when parse errors may have left the outline partial.
+       `[huge]` files (≥100k tokens) collapse to header-only in the digest;
+       call `ast-outline outline <path>` on them when you need full structure.
 
-    2. **File-level structure** — `ast-outline <paths…>`: signatures
-       with line ranges, no bodies (2–10× smaller than a full read on
-       non-trivial files). If the header carries `# WARNING: N parse
-       errors`, the outline is incomplete — read the affected region
-       directly.
+    2. **File-level shape** — `ast-outline <paths…>`: signatures with line
+       ranges, no bodies (2–10× smaller than a full read on non-trivial
+       files). A `# WARNING: N parse errors` line in the header means the
+       outline is partial — read the source for the affected region.
 
-    3. **One method / type / markdown heading / yaml key** —
+    3. **One method, type, markdown heading, or yaml key** —
        `ast-outline show <file> <Symbol>`. Suffix matching: `TakeDamage`
-       picks one method; `User` returns the full body of a type — class,
-       struct, interface, trait, enum (especially useful when a file
-       holds several types); disambiguate with `Player.TakeDamage` if
-       there's ambiguity. Multiple at once:
-       `ast-outline show Player.cs TakeDamage Heal Die`. Markdown
-       symbols are heading text, matched case-insensitive substring:
-       `"installation"` hits `"2.1 Installation (macOS / Linux)"`.
-       YAML symbols are dot-separated key paths
-       (`spec.containers[0].image`) — `show` matches **keys**, not
-       values; for free-text search inside values use `grep`.
+       for one method; `User` for an entire type — class, struct, interface,
+       trait, enum (whole body, useful when a file holds several types);
+       `Player.TakeDamage` when ambiguous. Multiple at once:
+       `ast-outline show Player.cs TakeDamage Heal Die`.
+       For markdown, the symbol is heading text and matching is
+       case-insensitive substring — `"installation"` finds
+       `"2.1 Installation (macOS / Linux)"`. For yaml, the symbol is a
+       dotted key path (`spec.containers[0].image`) — `show` matches keys,
+       not values, so for free-text search inside values use `grep`.
        For css/scss, the symbol is a selector token (`.btn-primary`,
        `$var`) — pseudos and attribute filters are stripped, so
-       `.btn-primary` finds the rule even when it carries `:hover`
-       or nests in `.modal`.
+       `.btn-primary` finds the rule even when it carries `:hover` or
+       nests in `.modal`.
        For sql, the symbol is a table or column name (`users`,
        `users.email`) — `show users` returns the table definition,
        `show users.email` returns one column line.
        Add `--signature` to any of the above to return header only
-       (docs + attrs + signature, no body) — useful after `digest`,
-       when you have the name and want the contract, not the
-       implementation.
+       (docs + attrs + signature, no body) — useful after `digest`, when
+       you have the name and want the contract, not the implementation.
 
-    Both `outline` and `digest` accept multiple paths in a single call
-    (mix files and directories, mix languages). Both renderers append
-    `: Base, Trait` inheritance to type headers, so you see the
-    hierarchy without a separate query.
+    4. **Where a symbol appears** —
+       `ast-outline grep <pattern> <paths…>`: matches grouped by enclosing
+       class/function. Definitions are tagged `[def]`, imports `[import]`;
+       calls and refs carry no tag (inferable from `(` after symbol).
+       Use for "where is X defined", "who calls Y", "is Z dead code" —
+       scope in the output spares follow-up reads. Comments and strings
+       filtered. Batch via repeatable `-e`:
+       `ast-outline grep User.save -e User.load -e User.delete src/`.
+       Narrow by classification with `--kind def|call|ref|import` (also
+       accepts `--kind def,call`) — drops the post-filter step when you
+       only want definitions, only call sites, etc.
+       POSIX flags `-w` (whole word), `-l` (paths only), `-c` (counts),
+       `-m N` (cap per file) work as in `grep` / `rg`. For non-symbol
+       patterns use your default search strategy.
 
-    When you need to know **what a file pulls in** or **where a
-    referenced type lives**, pass `--imports` to `outline` / `digest`.
-    Each file gets an extra `imports:` line listing its `import` /
-    `use` / `using` statements verbatim — `from .core import X`,
-    `use foo::Bar`, `import { X } from './foo'`, `use App\Foo`,
-    `require_once 'config.php'`. Read that line, then call
-    `outline` / `show` on the source file directly — no `grep`
-    needed to find definitions. Skip `--imports` for routine
-    structural reads — it adds one line per file.
+    `outline` and `digest` accept multiple paths in one call (files and
+    directories, mixed languages OK) — batch instead of looping. Type
+    headers in both renderers carry inheritance as `: Base, Trait`, so the
+    shape of class hierarchies is visible without a separate query.
+
+    When you need to know **what a file pulls in** or **where a referenced
+    type / function comes from**, add `--imports` to `outline` or `digest`.
+    The file header gets an `imports:` line listing every
+    `import` / `use` / `using` statement verbatim in the language's native
+    syntax — `from .core import X`, `use foo::Bar`,
+    `import { X } from './foo'`, `use App\Foo`, `require_once 'config.php'`,
+    `require "json"`.
+    Read the imports, then call `outline` / `show` on the source file
+    instead of grepping for the definition. Skip the flag for routine
+    structure reads — it adds one line per file.
 
     A trailing `[+ N conditional includes]` on the imports line means
-    N more dependencies live inside `if` / `try` / loop / function
-    bodies — read the file directly when you need the full
-    dependency picture.
+    N more dependencies live inside `if` / `try` / loop / function bodies
+    — read the file directly when you need the full dependency picture.
 
-    Fall back to a full read only when `show`'s body isn't enough
-    context. `ast-outline help` for the full flag list.
+    Fall back to a full read only when you need context beyond the body
+    `show` returned. `ast-outline help` for flags.
     ```
 
 ---

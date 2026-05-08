@@ -961,11 +961,18 @@ answer *"what methods exist here?"*.
   <td class="yes">yes</td>
 </tr>
 <tr>
-  <td>Find a pattern (<code>if x &amp;&amp; y</code>)</td>
+  <td>"Where is <code>User.save</code> called from?" (with scope)</td>
+  <td class="meh">flat hits</td>
+  <td class="no">no</td>
+  <td class="meh">need a query</td>
+  <td class="yes">yes (grep)</td>
+</tr>
+<tr>
+  <td>Find a structural pattern (<code>if $X &amp;&amp; $Y</code>)</td>
   <td class="meh">regex</td>
   <td class="no">no</td>
   <td class="yes">yes</td>
-  <td class="no">overview only</td>
+  <td class="no">no</td>
 </tr>
 <tr>
   <td>Fixed cost regardless of repo size</td>
@@ -977,9 +984,11 @@ answer *"what methods exist here?"*.
 </tbody>
 </table>
 
-`ast-outline` and `ast-grep` are siblings: **`ast-grep` searches**
-code structurally, **`ast-outline` overviews** it. They compose well
-— use `digest` for the map, `ast-grep` for cross-file pattern hunts.
+Naming inspired by [`ast-grep`](https://github.com/ast-grep/ast-grep)
+— both tools build on tree-sitter but answer different questions.
+`ast-grep` rewrites code with structural patterns (`if $X && $Y`);
+`ast-outline` maps and searches code at the symbol level for human
+or agent reading. They pipe together cleanly when needed.
 
 ---
 

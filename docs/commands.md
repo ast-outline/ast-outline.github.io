@@ -145,6 +145,135 @@ docstrings live inside the method body).
 
 ---
 
+## `ast-outline grep <pattern> <paths…>` — structural code search
+
+A code-search command that returns matches **annotated with their
+enclosing class/function** and a **kind classification** (`[def]`,
+`[import]`; calls and refs render untagged because the line shape —
+identifier-followed-by-`(` or not — makes them obvious). Comments and
+string literals are filtered out by default.
+
+```bash
+ast-outline grep User.save src/
+```
+
+Sample output:
+
+```
+# src/payments/processor.py (4 matches)
+
+## imports
+  > L3: from .models import User [import]
+
+## matches
+class PaymentProcessor  L12-180
+    def commit(self, tx)  L45-78
+        > L48: user.save()
+        > L67: user.save()
+    def refund(self, tx)  L90-120
+        > L98: user.save()
+```
+
+**Why a separate command — `grep` / `rg` already exist.**
+Regular `grep` returns flat `path:line:content` rows. To answer
+"where is `User.save` actually used in this codebase" an agent has to
+run the grep, then **open every interesting file** and read enough
+surrounding lines to understand which class / function contains each
+match. `ast-outline grep` collapses that into one call: scope and
+kind are in the output, no follow-up reads needed to learn "this is
+the `commit` method in `PaymentProcessor`".
+
+For an LLM agent, the single most expensive thing after a `grep` is
+the cascade of follow-up `Read` calls. This command is built so the
+*first call* contains enough structural information that the agent
+can usually decide what to do next — invoke `show` on a specific
+method, plan a refactor, or conclude the symbol is unused — without
+re-reading source files.
+
+### Multi-pattern via `-e` (POSIX `grep` / `rg` style)
+
+```bash
+ast-outline grep User.save -e User.load -e User.delete src/
+```
+
+Patterns combine via OR-alternation in one walk — saves N startup
+costs vs running grep three times. The first pattern is positional;
+extras come via `-e/--expression` (repeatable).
+
+### Filter by classification: `--kind`
+
+Eliminates the most common post-filter step ("show me only
+definitions of X" / "only call sites").
+
+```bash
+ast-outline grep --kind def User src/                # only definitions
+ast-outline grep --kind def,call save src/           # def + call (skip refs/imports)
+ast-outline grep --kind import User src/             # where User is imported
+```
+
+Accepts `def`, `call`, `ref`, `import`, `comment`, `string`. Both
+repeated (`--kind def --kind call`) and comma-separated
+(`--kind def,call`) forms work. `comment` / `string` auto-enable
+`--include-noise` — they'd otherwise be filtered out before the kind
+filter ever sees them.
+
+### POSIX-style flags
+
+Familiar from `grep` / `rg`, all operate on the AST-aware base so
+counts and file lists exclude docstring noise:
+
+| Flag | Behavior |
+|------|----------|
+| `-w` / `--word` | Whole-word match (`\b...\b` boundaries — `save` no longer matches `save_user` / `_save`) |
+| `-l` / `--files-with-matches` | Output paths only — for "where does X exist" exists-checks |
+| `-c` / `--count` | `path:N` per file, skips zero-count files |
+| `-m N` / `--max-count N` | Cap visible matches per file. Truncated files get a `# truncated — N more...` footer so partial results are never silent |
+| `-i` / `--case-insensitive` | Case-insensitive match |
+| `--regex` | Treat patterns as regular expressions instead of literal substrings |
+
+### Regex auto-detect
+
+Patterns containing unambiguous regex syntax (`\|`, `\d`, `\w`, `\s`,
+`\b`, `(?:`, bare `|`) auto-promote to regex with a `# note:`
+documenting the promotion. `\|` is normalized to `|` before compile
+(BRE → ERE — Python's `re` reads `\|` as a literal pipe, opposite of
+grep). Ambiguous metachars (`.`, `*`, `+`, `?`, `[`, `^`, `$`) never
+auto-promote — they have legitimate literal interpretations in code
+— but emit a `# hint:` on zero matches suggesting `--regex`.
+
+### Other flags
+
+| Flag | Behavior |
+|------|----------|
+| `--include-noise` | Include matches inside comments / strings (filtered by default) |
+| `--no-ignore` | Disable `.gitignore` / `.ignore` filtering |
+
+### Multi-line / block-form imports
+
+Tree-sitter knows where each import statement starts and ends, so
+inner symbols inside multi-line forms classify correctly as
+`[import]` — not `[ref]` or `[string]`:
+
+| Language | Example |
+|----------|---------|
+| Go       | `import (\n  "fmt"\n  "strings"\n)` |
+| Python   | `from foo import (\n  Bar,\n  Baz,\n)` (top-level + inside if/try AND inside function/class bodies) |
+| TypeScript | `import {\n  A,\n  B\n} from './mod'` |
+| Rust     | `use foo::{\n  Bar,\n  Baz,\n}` |
+| PHP      | `use App\{\n  Foo,\n  Bar,\n}` |
+| Scala    | `import foo.{\n  A,\n  B\n}` |
+
+For C++, the AST distinguishes `using namespace std;` /
+`using std::vector;` (imports — bring names into scope) from
+`using my_int = int;` (type alias — declaration, NOT import). C# 10+
+`global using` is also recognized as `[import]`.
+
+Not a replacement for ripgrep on non-symbol patterns (TODO comments,
+log strings, free-text in docs) — fall back to `rg` for those. This
+command is built for code-symbol queries.
+
+---
+
 ## `ast-outline setup-prompt` — automatic install via your agent (recommended)
 
 Print an install-time checklist for one-shot consumption by a coding
