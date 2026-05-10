@@ -99,7 +99,7 @@ control over file edits.
        For sql, the symbol is a table or column name (`users`,
        `users.email`) — `show users` returns the table definition,
        `show users.email` returns one column line.
-       Add `--signature` to any of the above to return header only
+       Add `--signature` to `show` (only there) to return header only
        (docs + attrs + signature, no body) — useful after `digest`, when
        you have the name and want the contract, not the implementation.
 
