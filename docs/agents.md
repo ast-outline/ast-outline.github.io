@@ -75,6 +75,8 @@ control over file edits.
        `[broken]` when parse errors may have left the outline partial.
        `[huge]` files (≥100k tokens) collapse to header-only in the digest;
        call `ast-outline outline <path>` on them when you need full structure.
+       Tune density with `--format=names|compact|default|wide` (alias
+       `--oneline`=`names`) — `wide` adds private members and fields.
 
     2. **File-level shape** — `ast-outline <paths…>`: signatures with line
        ranges, no bodies (2–10× smaller than a full read on non-trivial

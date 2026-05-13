@@ -73,6 +73,50 @@ Each file gets a header with a **size label** (`[tiny]` / `[medium]` /
 `[large]`) and a `[broken]` tag when parse errors clip the outline. See
 [Output format](output-format.md) for the full reference.
 
+### `--format=<level>` / `--oneline`
+
+Four detail levels matching four agent task archetypes:
+
+| Level | Per-file shape | Use case |
+| --- | --- | --- |
+| `names` | one line per file — `name.py [size]: A, B, C` (top-level symbols only) | repo orientation: pick a file to drill into |
+| `compact` | hierarchy minus per-file counters, `L<a>-<b>` line ranges, blank lines, `# no declarations` markers | module-structure questions |
+| `default` | full hierarchy (v0.8.x output) | surgical `Read --offset N` workflow |
+| `wide` | default + private members + fields + uncapped methods | one-file deep dives |
+
+`--oneline` is an alias for `--format=names` (`git log --oneline` style).
+Default is `default` — back-compat with every existing skill that parses
+digest output.
+
+```bash
+ast-outline digest src/                       # default
+ast-outline digest src/ --oneline             # broad scan, 1 line/file
+ast-outline digest src/ --format=compact      # tight hierarchy
+ast-outline digest src/Foo.cs --format=wide   # everything for one file
+```
+
+`names` extends to non-code languages: markdown surfaces top-level
+H1 headings, single-doc YAML surfaces top-level keys, multi-doc YAML
+surfaces per-doc separator captions (`--- doc 1 of 3 — ConfigMap …`),
+CSS/SCSS surfaces the flat selector list. `[huge]` files (>100k tokens)
+collapse to a header-only line with no symbol list — same as their
+default-format behavior.
+
+**Preset overrides** — explicit `--include-private`, `--include-fields`,
+and `--max-members` win over the preset's defaults (kubectl-style
+silent override). Useful for fine-tuning without learning a new flag:
+
+```bash
+ast-outline digest src/ --format=wide --max-members 5   # wide, but cap lists
+ast-outline digest src/ --oneline --include-private     # names + private syms
+```
+
+`--imports` composes with every format including `names`, adding an
+indented `imports: …` line per file. Files filtered to zero visible
+symbols (e.g. all-private modules under `names`) are hidden; if every
+file in the batch collapses, an explicit `# note: all files hidden …`
+replaces the empty stream.
+
 ### `--imports`
 
 Same as for `outline` — adds an `imports:` line per file.

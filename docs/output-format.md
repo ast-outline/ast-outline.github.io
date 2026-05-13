@@ -60,6 +60,79 @@ markers, or inheritance) emits no legend at all — there is nothing
 non-obvious to explain. The legend is one line, intentionally — easy
 to scan once and drop into a prompt.
 
+### Format presets (`--format`)
+
+The four levels (`names`, `compact`, `default`, `wide`) trade detail
+for density. Same source file rendered under each:
+
+**`--format=names`** (alias `--oneline`) — one line per file, top-level
+symbols only:
+
+```text
+src/Combat/
+  Player.cs [medium]: Player, IDamageable
+  Enemy.cs [tiny]: Enemy
+```
+
+Files with no public top-level symbols are hidden. Markdown surfaces
+H1 headings, YAML surfaces top-level keys, CSS/SCSS surfaces flat
+selectors. `[huge]` files emit a header-only line (no trailing `:`).
+
+**`--format=compact`** — hierarchy without per-file counters, line
+ranges, or blank paragraph breaks:
+
+```text
+# legend: name()=callable, : Base, …=inheritance
+src/Combat/
+  Player.cs [medium] (1247 lines, ~9,212 tokens)
+    class Player : Entity, IDamageable
+      TakeDamage(), Heal(), Die() [3 overloads]
+      Update() [override], FixedUpdate() [override]
+  Enemy.cs [tiny] (84 lines, ~620 tokens)
+    class Enemy : Entity
+      PatrolTo(), Attack() [async], Despawn()
+```
+
+Inheritance, decorators, modifiers, and size labels all survive —
+they carry semantic weight. Files with no declarations are hidden
+entirely (no `# no declarations` marker).
+
+**`--format=default`** — the v0.8.x output, unchanged:
+
+```text
+# legend: name()=callable, name [kind]=non-callable, [N overloads]=N callables share name, L<a>-<b>=line range, : Base, …=inheritance
+src/Combat/
+  Player.cs [medium] (1247 lines, ~9,212 tokens, 1 types, 6 methods, 3 fields)
+    class Player : Entity, IDamageable  L12-198
+      TakeDamage(), Heal(), Die() [3 overloads]
+      Update() [override], FixedUpdate() [override]
+      cooldowns [property]
+
+  Enemy.cs [tiny] (84 lines, ~620 tokens, 1 types, 3 methods)
+    class Enemy : Entity  L8-72
+      PatrolTo(), Attack() [async], Despawn()
+```
+
+**`--format=wide`** — default + private members + fields + uncapped
+method lists (preset shortcut for `--include-private --include-fields
+--max-members ∞`):
+
+```text
+# legend: …
+src/Combat/
+  Player.cs [medium] (1247 lines, ~9,212 tokens, 1 types, 6 methods, 3 fields)
+    class Player : Entity, IDamageable  L12-198
+      TakeDamage(), Heal(), Die() [3 overloads]
+      Update() [override], FixedUpdate() [override], _refreshCooldowns()
+      cooldowns [property], _maxHealth [field], _lastTickAt [field]
+```
+
+**Overrides** — explicit `--include-private`, `--include-fields`, and
+`--max-members` win over the preset's defaults. `--format=wide --max-
+members 5` truncates long member lists while keeping wide's private +
+fields; `--oneline --include-private` adds `_private` symbols to the
+names output.
+
 ---
 
 ## Grep format
