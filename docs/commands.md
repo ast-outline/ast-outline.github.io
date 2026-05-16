@@ -311,6 +311,7 @@ auto-promote — they have legitimate literal interpretations in code
 |------|----------|
 | `--include-noise` | Include matches inside comments / strings (filtered by default) |
 | `--no-ignore` | Disable `.gitignore` / `.ignore` filtering |
+| `--exclude GLOB` | Skip paths matching gitwildmatch GLOB (repeatable; `.gitignore` syntax; `!` negates; anchored at project root; applies even with `--no-ignore`). See the `--exclude` section under [Directory walks](#exclude-glob-narrow-the-walk-inline). |
 
 ### Multi-line / block-form imports
 
@@ -562,8 +563,8 @@ parent dir would have been pruned in a directory walk.
 
 For the rare case when you want to outline a default-pruned subtree
 without editing any ignore files (`.gitignore`/`.ignore`/the
-hardcoded list), pass `--no-ignore`. It works on `outline` and
-`digest`:
+hardcoded list), pass `--no-ignore`. It works on `outline`,
+`digest`, and `grep`:
 
 ```bash
 ast-outline digest node_modules/our-fork --no-ignore
@@ -573,10 +574,56 @@ ast-outline outline .venv/lib/python3.12/site-packages/somepkg --no-ignore
 When set, the walker only filters by supported extension —
 `.gitignore`, `.ignore`, and the hardcoded defaults are all
 disabled. The `# note: ignored …` line is also omitted (since
-nothing was filtered).
+nothing the auto-filter would have caught was filtered).
 
-This is **the** escape hatch — there's no `--exclude`,
-`--include`, or per-rule disable flags. One switch, on/off.
+`--no-ignore` and `--exclude` (below) target different axes:
+`--no-ignore` silences the **automatic** filter; `--exclude` is the
+**user's explicit voice** and keeps applying even under `--no-ignore`.
+Both useful together — e.g. `--no-ignore --exclude secret/` walks
+every dir except the one you named.
+
+### `--exclude <glob>` — narrow the walk inline
+
+When you want to keep `.gitignore` / `.ignore` honored but add a few
+patterns just for this call — without touching files — use
+`--exclude GLOB` (`.gitignore`-syntax, repeatable). Works on
+`outline`, `digest`, and `grep`:
+
+```bash
+ast-outline digest src/ --exclude tests/ --exclude '*.gen.*'
+ast-outline outline src/ --exclude vendor/
+ast-outline grep User.save src/ --exclude tests/
+```
+
+- **Repeatable** — pass the flag multiple times to add patterns; they
+  combine additively, same as if you'd added several lines to a
+  `.gitignore`.
+- **`.gitignore` syntax** — full gitwildmatch grammar: directory
+  patterns with trailing `/`, file globs (`*.gen.py`), `**` for
+  any-depth, and `!pattern` for negation.
+- **Anchored at the project root**, like a top-level `.gitignore` —
+  `--exclude src/generated/` resolves identically no matter where you
+  invoke from, because patterns aren't reinterpreted against cwd.
+- **Survives `--no-ignore`** — explicit user intent isn't silenced by
+  the auto-filter switch.
+- **Layers above the auto-filter** — a bare `--exclude '!node_modules/'`
+  re-includes a default-filtered dir on a single line (the three-line
+  git escape idiom isn't needed because `--exclude` sits one frame
+  higher than `.gitignore` defaults).
+- **Explicit file inputs bypass it** — same rule as `.gitignore`:
+  pointing at a file is explicit intent, the file is processed.
+- **Bad pattern → `# note:` line** — malformed gitwildmatch
+  (`!` alone, trailing backslash) surfaces as
+  `# note: invalid --exclude pattern: …` with `rc=0`, honoring the
+  LLM-friendly contract.
+
+When `--exclude` contributes to ignored-dir pruning, the existing
+`# note: ignored …` line widens its source list — so an agent
+debugging "where did my folder go" sees its own flag named:
+
+```text
+# note: ignored 3 dirs (__pycache__, generated, tests) via .gitignore/.ignore + defaults + --exclude — pass --no-ignore to disable
+```
 
 ---
 
