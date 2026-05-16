@@ -146,6 +146,17 @@ ast-outline show Player.cs Player.TakeDamage
 case-insensitive for Markdown headings**. For YAML, the symbol is a
 dot-separated key path (`spec.containers[0].image`).
 
+For Markdown headings, inline-markdown decoration — backticks
+(`` ` ``), asterisks (`*`), underscores (`_`), tildes (`~`) — is
+stripped from both the heading title and the query before comparing,
+so ``` `useState` — when to reach for it ``` resolves whether the
+query keeps the backticks or drops them. Numbered prefixes (`1.`,
+`4.2`) are also tolerated: querying the meaningful core of a numbered
+heading works the same as passing the full `outline`-printed form.
+The guiding rule is *anything `outline` prints under a `##` header
+should resolve as a symbol in `show`* — regardless of how the agent
+normalized the title.
+
 `show` matches **keys**, not value text — use `grep`/`rg` for free-text
 search inside values.
 
