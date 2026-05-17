@@ -632,6 +632,25 @@ highlighted by Pygments. The italic line under the picker is context
 
     Also recognised: `class << self` blocks, `alias` / `alias_method`, `private` / `protected` state machine (`private :foo, :bar` flips named methods retroactively), `Rakefile` / `Gemfile` (resolved by basename, no extension needed). The MRO clause `: ApplicationRecord, include Comparable, extend Searchable` shows superclass + mixins as one inheritance line in the digest.
 
+=== ":simple-lua: Lua"
+
+    *Neovim plugin — the classic `local M = {} ... return M` module shape with `M.setup(opts)`, instance methods via the `:` syntax, and `require` imports.*
+
+    ```lua title="$ ast-outline plugin/init.lua"
+    # plugin/init.lua [tiny] (52 lines, ~310 tokens, 1 method, 4 fields)
+    --- Plugin entry — gets loaded by Neovim on `require("myplugin")`.
+    function M.setup(opts)  L14-22
+    function M.run()  L24-27
+    -- Internal helper, not exposed.
+    function _validate(opts)  L30-32
+    M.config  L4-7
+    M.DEFAULT_KEYMAP  L9
+    function State:tick()  L40-44
+    function State:reset()  L46-48
+    ```
+
+    Notable rules: `function M.foo()` (dot) is `KIND_FUNCTION`; `function M:bar()` (colon) is `KIND_METHOD` — the colon is Lua's source-true marker for implicit `self`. Metamethods (`__add`, `__index`, `__tostring`, …) all classify as `KIND_OPERATOR` regardless of declaration shape, so `--kind operator` isolates every protocol declaration. `local function foo()` is private (`local` IS the language's private scope); names starting with `_` (and not `__name__` metamethods) are also private. Direct-return-table modules (`return { foo = function() end, V = 1 }`) walk the returned fields. `require "x"` / `require("x")` / `local Y = require("x")` register as imports — calls inside function bodies are conditional and bump `[+ N conditional includes]`. Long-bracket comments `--[[ ]]` / `--[==[ ]==]` and long strings `[[ ]]` / `[=[ ]=]` ride in `noise_regions` so grep filters matches inside them.
+
 === ":material-language-css3: CSS"
 
     *Design tokens + components — `:root` token block, themed selectors via `[data-theme=dark]`, `@media` / `@keyframes` / `@layer` / `@font-face`, native nesting with `&`.*
@@ -911,9 +930,9 @@ answer *"what methods exist here?"*.
 - :material-format-list-checks: **One tool, every major language**
 
     C#, C++ (incl. Unreal Engine), Python, TypeScript, JavaScript,
-    Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), CSS, SCSS,
-    SQL (PostgreSQL primary), Markdown, YAML — same digest format,
-    same legend.
+    Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), Lua, CSS,
+    SCSS, SQL (PostgreSQL primary), Markdown, YAML — same digest
+    format, same legend.
 
 </div>
 
@@ -1180,6 +1199,7 @@ but it's a separate add-on, not a redesign.
 | Rust       | `.rs` |
 | PHP        | `.php`, `.phtml`, `.phps`, `.php8` |
 | Ruby       | `.rb`, `.rake`, `.gemspec`, `.ru`, `Rakefile`, `Gemfile` *(Rails associations recognised)* |
+| Lua        | `.lua`, `.wlua` *(vanilla 5.1–5.4; `function M:foo` → method, metamethods → operator; covers Neovim configs, LÖVE games, OpenResty / Nginx, Redis scripts)* |
 | CSS        | `.css` |
 | SCSS       | `.scss` *(mixins, functions, variables, placeholders; `&` resolves against parent)* |
 | SQL        | `.sql` *(tables w/ columns, views, types, enums, functions, procedures, triggers, indexes, sequences, schemas, domains; PostgreSQL primary, MySQL/SQLite usable)* |

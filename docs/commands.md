@@ -43,7 +43,8 @@ A trailing `[+ N conditional includes]` on the imports line means
 the file has more dependencies inside `if` / `try` / loop / function
 bodies (PHP `require_once` in if-fallbacks, Python lazy `import` for
 circular-deps avoidance, Rust fn-local `use`, Scala method-scoped
-`import`). See [Output format → Conditional / dynamic imports](output-format.md#conditional-dynamic-imports).
+`import`, Lua `require(...)` inside a function body). See
+[Output format → Conditional / dynamic imports](output-format.md#conditional-dynamic-imports).
 
 ---
 

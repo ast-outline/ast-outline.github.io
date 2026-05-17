@@ -363,11 +363,84 @@ imports: require ABSPATH . WPINC . '/option.php' [+ 6 conditional includes]
 ```
 
 Currently surfaced by the **PHP**, **Python**, **Rust**, **Scala**,
-and **Ruby** adapters. Java / Go / Kotlin / C# / TypeScript / C++
-leave the counter at `0` — their import grammars allow only
-top-level imports.
+**Ruby**, and **Lua** adapters. Java / Go / Kotlin / C# / TypeScript /
+C++ leave the counter at `0` — their import grammars allow only
+top-level imports. Lua is the latest entry: `require` is a runtime
+function call, so anything inside a function body / `if` / loop is
+counted but not listed; top-level `require "x"` / `require("x")` /
+`local Y = require("x")` are all static.
 Treat the count as a hint to read the file directly when you need
 the full dependency picture.
+
+---
+
+## Lua adapter quirks
+
+Lua has no classes, no namespace keyword, no visibility modifiers —
+all module / class / public-API structure is convention over plain
+tables. The adapter stays close to syntax instead of guessing
+structure: each declaration is emitted at the file's top level with
+the qualifier baked into the `name` (`M.foo`, `M:bar`,
+`ns.deep.nested.helper`), flat like the Python adapter. No synthetic
+`KIND_NAMESPACE` wrapping — agents read the file's `return X`
+statement themselves.
+
+| Source shape | Kind | Visibility |
+| --- | --- | --- |
+| `function foo()` (top-level global) | `function` | public |
+| `local function foo()` | `function` | private |
+| `function M.foo()` | `function` | public |
+| `function M:bar()` *(colon = implicit `self`)* | **`method`** | public |
+| `function M.__add()` / `M.__add = function() end` | **`operator`** | public |
+| `M.foo = function() end` | `function` | public |
+| `M.CONST = 42` | `field` | public |
+| `local x = 1` | `field` | private |
+| `local x = function() end` | `function` | private |
+| `M._helper = function() end` *(underscore convention)* | `function` | private |
+| `return { foo = function() end, V = 1 }` *(direct-return-table module)* | each field emitted at top level | per name |
+
+**Metamethod set** (all → `KIND_OPERATOR`, regardless of declaration
+shape): `__add`, `__sub`, `__mul`, `__div`, `__mod`, `__pow`,
+`__unm`, `__idiv`, `__band`, `__bor`, `__bxor`, `__bnot`, `__shl`,
+`__shr`, `__eq`, `__lt`, `__le`, `__concat`, `__len`, `__call`,
+`__index`, `__newindex`, `__tostring`, `__metatable`, `__pairs`,
+`__name`, `__close`, `__gc`, `__mode`. The underscore prefix is
+part of a language-level protocol (Python-dunder analogue), NOT a
+private-name convention — visibility stays public.
+
+**Lua 5.4 attributes** `<const>` / `<close>` ride in
+`Declaration.attrs` as source-true text.
+
+**`require` imports** preserve source-true form. `require "x"`
+(bare string-arg) stays bare; `require("x")` keeps its parens. The
+`local Y = require("x")` shape — common Lua idiom — is recognised
+as a static import (the WHOLE statement byte range goes into
+`import_regions` so grep promotes the full line to `[import]`
+despite the `local` prefix). Runtime `require` calls inside function
+bodies / `if` / loops bump the conditional counter.
+
+**Long-bracket comments** (`--[[ ]]`, `--[==[ ]==]` at any `=`
+level) and **long-bracket strings** (`[[ ]]`, `[=[ ]=]`) span
+multiple lines, so the line-prefix heuristics in `grep` can't
+classify matches inside them. The adapter writes their byte ranges
+into `noise_regions`, where the same noise-filter path used for
+Python docstrings / multi-line strings handles them. Matches inside
+classify as `[comment]` / `[string]` and disappear from the default
+code view; `--include-noise` brings them back.
+
+**What's NOT done in v1:**
+
+- **Luau (`.luau`, Roblox's typed dialect)** — vanilla
+  `tree-sitter-lua` produces ERROR nodes on Luau's type
+  annotations (`x: number`, `function f<T>(): U`, `export type`).
+  Symbol semantics are the same, so the v0.9.1+ path is a
+  suffix-dispatch branch on a separate `tree-sitter-luau` parser.
+- **`setmetatable`-based inheritance.** No syntactic anchor — only
+  convention (`Child.__index = Parent`, `setmetatable(Child,
+  {__index = Parent})`, `class("Foo", Bar)` via middleclass /
+  30log). v1 leaves `bases = []`. The `__index` assignment lands
+  as `KIND_OPERATOR`, so the relationship is still surfaced; the
+  agent reads it directly.
 
 ---
 
