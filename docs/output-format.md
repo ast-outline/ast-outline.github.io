@@ -444,6 +444,63 @@ code view; `--include-noise` brings them back.
 
 ---
 
+## TypeScript / JavaScript callback blocks
+
+Modern TS/JS expresses a lot of structure through *function calls that
+take a callback* rather than language-level declarations: test suites
+(`describe` / `it` / `test`), Pinia setup-stores (`defineStore`), and
+any in-house DSL of the same shape. The adapter recognises these as
+`block` declarations and descends into the callback body — without
+this, a test file outlines as empty and a setup-store dumps its whole
+callback into one signature line.
+
+The rule is **structural, not a hard-coded list of framework names** —
+a call is a block when (1) its callee is a plain identifier, (2) its
+last argument is a function literal, and (3) its first argument is a
+string-literal label. The label names the block.
+
+```text
+# initialState.spec.ts [tiny] (75 lines, ~478 tokens)
+describe('Testing: initial state')                          L7-74
+    const useCounter = defineStore('counter', {…})          L8-15
+    function factory(options?: TestingOptions)              L29-39
+    it('can set an initial state')                          L41-49
+    it('can provide objects')                               L51-60
+```
+
+In `digest` a top-level block renders like a type — a `block <label>`
+header with member tokens for the nested cases:
+
+```text
+  initialState.spec.ts [tiny] (75 lines, ~478 tokens)
+    block Testing: initial state  L7-74
+      factory(), 'can set an initial state' [block], 'can provide objects' [block]
+```
+
+Block labels are quoted in digest member tokens and in `--format=names`
+— a test description is free text and may contain commas, which the
+comma-separated token list would otherwise mis-split. `show` extracts a
+block by its label (`show file.spec.ts 'can provide objects'`), and
+`grep` shows blocks in match scope chains (`describe('...') > it('...')`).
+
+**Body elision.** A field whose value embeds a function or method body
+renders with the body collapsed to `{…}` — the outline shows the
+declaration's shape, never implementation code:
+
+```text
+const incrementDay = action((date: string) => {…})          L33-39
+```
+
+**Not recognised** — a pure shape rule cannot avoid these: a
+member-expression callee (`QUnit.test(...)`, Playwright
+`test.describe(...)`) is excluded the same way `arr.map` / `el.on` are,
+so bare-global test frameworks (vitest / jest / mocha / jasmine / ava /
+tape / node:test) work but `QUnit.`-namespaced calls do not; a bare
+`addEventListener('x', fn)` is structurally identical to `it('x', fn)`
+and is treated as a block.
+
+---
+
 ## Errors and broken outlines
 
 When tree-sitter recovers from syntax errors, the outline is kept
