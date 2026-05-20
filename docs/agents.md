@@ -62,7 +62,7 @@ control over file edits.
     For `.cs`, `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, `.hh`, `.py`, `.pyi`,
     `.ts`, `.tsx`, `.js`, `.jsx`, `.java`, `.kt`, `.kts`, `.scala`, `.sc`,
     `.go`, `.rs`, `.php`, `.phtml`, `.rb`, `.rake`, `.gemspec`, `.lua`,
-    `.css`, `.scss`, `.sql`, `.md`, and `.yaml`/`.yml` files, read
+    `.swift`, `.css`, `.scss`, `.sql`, `.md`, and `.yaml`/`.yml` files, read
     structure with `ast-outline` before opening full contents.
 
     Pick the smallest of these that answers your question — they're a
