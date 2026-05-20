@@ -312,7 +312,7 @@ auto-promote — they have legitimate literal interpretations in code
 |------|----------|
 | `--include-noise` | Include matches inside comments / strings (filtered by default) |
 | `--no-ignore` | Disable `.gitignore` / `.ignore` filtering |
-| `--exclude GLOB` | Skip paths matching gitwildmatch GLOB (repeatable; `.gitignore` syntax; `!` negates; anchored at project root; applies even with `--no-ignore`). See the `--exclude` section under [Directory walks](#exclude-glob-narrow-the-walk-inline). |
+| `--exclude GLOB` | Skip paths matching gitwildmatch GLOB (repeatable; `.gitignore` syntax; `!` negates; anchored at project root; applies even with `--no-ignore`). See the `--exclude` section under [Directory walks](#-exclude-glob-narrow-the-walk-inline). |
 
 ### Multi-line / block-form imports
 
@@ -417,6 +417,68 @@ target file. For the automated equivalent that picks the right file,
 runs version checks, and handles diff-aware upgrades, see
 `setup-prompt` above. See [AI agents](agents.md) for the full snippet
 and integration notes.
+
+---
+
+## JSON output
+
+Every structural command — `outline`, `digest`, `grep`, `show` —
+accepts `--json`, which swaps the text output for a single JSON
+document. The text format stays the default (it is deliberately
+token-dense for LLM agents and free to change between releases);
+`--json` exists for **programmatic** consumers — editor plugins, CI
+gates, scripts — that need a stable, parseable contract.
+
+```bash
+ast-outline outline src/ --json
+ast-outline digest src/ --json | jq '.summary'
+ast-outline grep User.save src/ --json
+ast-outline show Player.cs TakeDamage --json
+```
+
+Every document is wrapped in a fixed envelope and carries a
+`schema_version` so a consumer can detect a breaking change:
+
+```json
+{
+  "tool": "ast-outline",
+  "schema_version": 1,
+  "command": "digest",
+  "root": "src",
+  "notes": [],
+  "summary": { "files": 12, "types": 30, "methods": 120, "fields": 40 },
+  "files": [ /* one object per parsed file */ ]
+}
+```
+
+**Lossless by design.** In `--json` mode every content-filtering flag
+is ignored — `--no-private` / `--no-fields` / `--no-docs` /
+`--no-attrs` / `--no-lines` (outline), `--format` / `--include-private`
+/ `--include-fields` / `--max-members` / `--oneline` (digest),
+`--no-doc` / `--view` (show), `-l` / `-c` (grep). JSON always emits the
+complete IR — private declarations, all fields, no member caps — and
+the consumer filters itself. Flags that select *which files* to
+process (`--no-ignore`, `--exclude`, `--glob`) still apply.
+
+**Errors stay valid JSON.** A user-facing failure (path not found, bad
+argument, unsupported extension) is emitted as an `error` object
+instead of a `# note:` line, so stdout is always parseable — the
+exit-0 contract is preserved:
+
+```json
+{
+  "tool": "ast-outline",
+  "schema_version": 1,
+  "command": "outline",
+  "error": { "notes": ["path not found: does/not/exist"] }
+}
+```
+
+A zero-result search (`grep` with no matches, a file with no
+declarations) is a valid empty document, **not** an error.
+
+See [Output format → JSON output](output-format.md#json-output) for
+the full per-field schema.
 
 ---
 

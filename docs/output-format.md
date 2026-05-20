@@ -572,3 +572,117 @@ In `digest`, the file gets a `[broken]` tag:
 
 When you see `[broken]`, treat the outline as best-effort and read
 the affected region directly with `Read` / `show`.
+
+---
+
+## JSON output
+
+The `--json` flag (on `outline`, `digest`, `grep`, `show`) replaces the
+text format above with a single JSON document. See
+[Commands → JSON output](commands.md#json-output)
+for the rationale and flag semantics; this section is the per-field
+schema reference.
+
+### Envelope
+
+Every document — success or error — is wrapped identically:
+
+```json
+{ "tool": "ast-outline", "schema_version": 1, "command": "<cmd>", ... }
+```
+
+`schema_version` is an integer, currently `1`. It is bumped only on a
+**breaking** change (a renamed, removed or retyped field); additive
+optional fields do not bump it. All fields are always present — empty
+lists as `[]`, empty strings as `""` — so consumers never need
+defensive `.get()` calls.
+
+### Declaration object
+
+The recursive node shared by `outline`, `digest` and (as `enclosing_path`
+entries) `grep`:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `kind` | string | canonical kind (`class`, `method`, `function`, `rule`, `heading`, …) |
+| `name` | string | identifier, not qualified |
+| `signature` | string | rendered signature line, no body |
+| `visibility` | string | `public` / `protected` / `private` / `internal` / `""` |
+| `native_kind` | string | source-language keyword when it diverges from `kind` (Rust `trait`, …); `""` otherwise |
+| `bases` | string[] | base classes / interfaces / traits |
+| `attrs` | string[] | decorators / annotations / attributes |
+| `docs` | string[] | doc-comment lines, verbatim |
+| `docs_inside` | bool | `true` → docs belong after the signature (Python docstrings) |
+| `start_line`, `end_line` | int | 1-based, inclusive |
+| `start_byte`, `end_byte`, `doc_start_byte` | int | byte offsets, for source slicing |
+| `match_names` | string[] | alternative names search can match (multi-selector CSS rules) |
+| `children` | Declaration[] | nested declarations |
+
+### File object
+
+One per parsed file, in `outline.files[]` and `digest.files[]`:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `path` | string | relative to `root` in `digest`; as given in `outline` |
+| `language` | string | adapter language name |
+| `line_count` | int | |
+| `error_count` | int | tree-sitter ERROR + MISSING nodes; `> 0` means a partial outline |
+| `tokens_estimate` | int | approximate BPE token count |
+| `size` | string | `tiny` / `medium` / `large` / `huge` |
+| `counts` | object | `{types, methods, fields, headings, code_blocks}` |
+| `imports` | string[] | source-true import statements |
+| `conditional_imports_count` | int | imports skipped because not at static top level |
+| `import_regions` | object[] | `{start, end}` byte ranges of import declarations |
+| `noise_regions` | object[] | `{start, end, kind}` ranges of multi-line strings / block comments (`kind`: `string` / `comment`) |
+| `declarations` | Declaration[] | top-level nodes |
+
+### Command payloads
+
+- **`outline`** — `{ "notes": [], "files": [<file>...] }`
+- **`digest`** — adds `root` (common ancestor directory) and
+  `summary` (`{files, types, methods, fields}`).
+- **`grep`** — `{ "root", "notes": [], "summary", "files": [...] }`
+  where each file is
+  `{path, language, matches: [...], filtered_count, truncated_count}`
+  and each match is
+  `{line, column, line_content, kind, enclosing_path: [{kind, name}...]}`.
+  `summary` is `{total_matches, files_with_matches, filtered_count,
+  truncated_count, kind_counts}`.
+- **`show`** — `{ "file", "notes": [], "results": [...] }` with one
+  entry per requested symbol:
+  `{query, matches: [{qualified_name, kind, start_line, end_line,
+  ancestor_signatures, signature, source}...]}`. A not-found symbol is
+  an entry with an empty `matches` list; an ambiguous name has several.
+
+`notes` carries non-fatal advisories (an ignored-directory note, a
+regex auto-promotion) — the JSON equivalent of the `# note:` lines the
+text mode prints alongside a successful result.
+
+### Error object
+
+A user-facing failure replaces the payload with a single `error`
+object; the process still exits `0`:
+
+```json
+{
+  "tool": "ast-outline",
+  "schema_version": 1,
+  "command": "digest",
+  "error": {
+    "notes": ["unrecognized arguments: --no-private"],
+    "hint": "`--no-private` is a flag of `outline`, not `digest`"
+  }
+}
+```
+
+`error.notes` is always present (one or more messages); `error.hint`
+is optional. A zero-result search is **not** an error — it is a normal
+document with an empty `files` / `matches` array.
+
+### Lossless guarantee
+
+In `--json` mode the output always carries the complete IR. Content
+filters (`--no-private`, `--format`, `--max-members`, `--view`,
+`-l` / `-c`, …) are ignored — the consumer filters the JSON itself.
+Unicode identifiers are emitted unescaped (`ensure_ascii=False`).
