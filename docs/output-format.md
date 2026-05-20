@@ -501,6 +501,56 @@ and is treated as a block.
 
 ---
 
+## Ruby callback blocks
+
+Ruby expresses a large amount of structure through *method calls that
+take a block* rather than through `def` / `class` / `module`: RSpec
+suites (`describe` / `context` / `it`), Rake tasks (`task :build do`),
+route maps (`namespace :admin do` / `resources :users do`),
+`ActiveSupport::Concern`'s `concerning`, and any in-house DSL of the
+same shape. The adapter recognises these as `block` declarations and
+descends into the block body — without it an RSpec spec file outlines
+as "no declarations".
+
+The rule is **structural, not a hard-coded list of framework names** —
+a block-bearing `call` (`do...end` or `{...}`) becomes a block when
+(1) its callee is a plain identifier and (2) its first argument is a
+string or symbol label. A *constant* first argument is intentionally
+not a label: `assert_raises(ArgumentError) { ... }` is structurally
+identical to `describe User do`, so a constant is too weak a
+discriminator.
+
+```text
+# user_spec.rb [tiny] (22 lines, ~114 tokens)
+let(:user)                                       L4
+describe "#full_name"                            L6-16
+    it "joins first and last"                    L7-9
+    context "when last name is blank"            L11-15
+        it "returns just the first name"         L12-14
+```
+
+**Transparent descent.** A block-bearing call whose callee is *not* a
+plain identifier — a member call such as `RSpec.describe User do` (the
+modern RSpec entry point) or `Rails.application.routes.draw do` — is
+not itself a block, but its body is still walked so the
+plain-identifier blocks nested inside it surface. Without this a modern
+`RSpec.describe` spec file would still outline as empty.
+
+In `digest` a block renders like a type — a `block <label>` header with
+member tokens for the nested cases, labels quoted:
+
+```text
+  user_spec.rb [tiny] (22 lines, ~114 tokens)
+    block #full_name  L6-16
+      'joins first and last' [block], 'when last name is blank' [block]
+```
+
+`show` extracts a block by its label (`show user_spec.rb '#full_name'`)
+and `grep` shows blocks in match scope chains — the same as for the
+TypeScript adapter above.
+
+---
+
 ## Errors and broken outlines
 
 When tree-sitter recovers from syntax errors, the outline is kept
