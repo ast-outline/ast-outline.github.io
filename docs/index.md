@@ -651,6 +651,38 @@ highlighted by Pygments. The italic line under the picker is context
 
     Notable rules: `function M.foo()` (dot) is `KIND_FUNCTION`; `function M:bar()` (colon) is `KIND_METHOD` — the colon is Lua's source-true marker for implicit `self`. Metamethods (`__add`, `__index`, `__tostring`, …) all classify as `KIND_OPERATOR` regardless of declaration shape, so `--kind operator` isolates every protocol declaration. `local function foo()` is private (`local` IS the language's private scope); names starting with `_` (and not `__name__` metamethods) are also private. Direct-return-table modules (`return { foo = function() end, V = 1 }`) walk the returned fields. `require "x"` / `require("x")` / `local Y = require("x")` register as imports — calls inside function bodies are conditional and bump `[+ N conditional includes]`. Long-bracket comments `--[[ ]]` / `--[==[ ]==]` and long strings `[[ ]]` / `[=[ ]=]` ride in `noise_regions` so grep filters matches inside them.
 
+=== ":simple-swift: Swift"
+
+    *A typical service file — a `Codable` struct, a raw-valued `enum`, a `protocol`, a `@MainActor` class conforming to it, and an `extension` adding publisher-based API.*
+
+    ```swift title="$ ast-outline Sources/UserService.swift"
+    # Sources/UserService.swift [tiny] (69 lines, ~423 tokens, 5 types, 8 methods, 8 fields)
+    # imports: import Foundation; import Combine
+    /// User data model
+    public struct User: Codable, Identifiable  L5-9
+        public let id: UUID  L6
+        public var name: String  L7
+        public var email: String  L8
+    /// User service protocol
+    public protocol UserServiceProtocol  L19-23
+        func getUser(byId id: UUID) async throws -> User  L20
+        func saveUser(_ user: User) async throws  L21
+        var currentUser: User? { get }  L22
+    /// Concrete user service implementation
+    @available(iOS 15, *) @MainActor public final class UserService: UserServiceProtocol  L26-50
+        @Published public private(set) var currentUser: User?  L29-30
+        public init(apiClient: URLSession = .shared)  L35-37
+        public func getUser(byId id: UUID) async throws -> User  L39-41
+        static func shared() -> UserService  L47-49
+    /// Extension for publisher-based API
+    extension UserService  L53-57
+        func fetchUsers() -> AnyPublisher<[User], Error>  L54-56
+    /// Type alias for callback
+    public typealias UserCallback = (Result<User, Error>) -> Void  L60
+    ```
+
+    Notable rules: `struct` / `enum` / `protocol` / `actor` each map to their own kind; an `extension` surfaces as a type group so its members stay attached to the type they augment. `init` / `deinit` become constructor / destructor, `subscript` an indexer. Default visibility is `internal`; `private` / `fileprivate` are honoured, and protocol members are implicitly public. Attributes (`@MainActor`, `@available`, `@Published`) ride along in the signature, generics and protocol conformance are preserved, and `///` doc comments attach to the following declaration. `import` lines are collected; structural `grep` treats `//` / `///` matches as noise.
+
 === ":material-language-css3: CSS"
 
     *Design tokens + components — `:root` token block, themed selectors via `[data-theme=dark]`, `@media` / `@keyframes` / `@layer` / `@font-face`, native nesting with `&`.*
@@ -930,9 +962,9 @@ answer *"what methods exist here?"*.
 - :material-format-list-checks: **One tool, every major language**
 
     C#, C++ (incl. Unreal Engine), Python, TypeScript, JavaScript,
-    Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), Lua, CSS,
-    SCSS, SQL (PostgreSQL primary), Markdown, YAML — same digest
-    format, same legend.
+    Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), Lua,
+    Swift, CSS, SCSS, SQL (PostgreSQL primary), Markdown, YAML — same
+    digest format, same legend.
 
 </div>
 
@@ -1200,6 +1232,7 @@ but it's a separate add-on, not a redesign.
 | PHP        | `.php`, `.phtml`, `.phps`, `.php8` |
 | Ruby       | `.rb`, `.rake`, `.gemspec`, `.ru`, `Rakefile`, `Gemfile` *(Rails associations recognised)* |
 | Lua        | `.lua`, `.wlua` *(vanilla 5.1–5.4; `function M:foo` → method, metamethods → operator; covers Neovim configs, LÖVE games, OpenResty / Nginx, Redis scripts)* |
+| Swift      | `.swift` *(structs, enums, protocols, extensions, actors; generics & protocol conformance)* |
 | CSS        | `.css` |
 | SCSS       | `.scss` *(mixins, functions, variables, placeholders; `&` resolves against parent)* |
 | SQL        | `.sql` *(tables w/ columns, views, types, enums, functions, procedures, triggers, indexes, sequences, schemas, domains; PostgreSQL primary, MySQL/SQLite usable)* |

@@ -586,12 +586,15 @@ pre.ast-console__out code {
   font-size: 0.85em;
 }
 
-/* Per-language accent — drives icon color, hover, active. Order matches
-   the markdown source: 1 Python, 2 TypeScript, 3 JavaScript, 4 Rust,
-   5 C#, 6 C++, 7 Java, 8 Kotlin, 9 Scala, 10 Go, 11 PHP, 12 Ruby,
-   13 CSS, 14 SCSS, 15 YAML, 16 Markdown. Inserting a language between
-   existing tabs shifts subsequent indexes — keep this list and the
-   markdown source in sync. */
+/* Per-language accent — drives icon color, hover, active. Order MUST
+   match the tab order of the `.ast-langs` tab-set in index.md:
+   1 Python, 2 TypeScript, 3 JavaScript, 4 Rust, 5 C#, 6 C++, 7 Java,
+   8 Kotlin, 9 Scala, 10 Go, 11 PHP, 12 Ruby, 13 Lua, 14 Swift,
+   15 CSS, 16 SCSS, 17 YAML, 18 Markdown, 19 SQL. Inserting a language
+   between existing tabs shifts every subsequent index — when you add
+   a tab, update this list AND the two :checked blocks below, in
+   lockstep, or the trailing tabs lose their accent and active fill
+   (this is what silently broke the SQL tab when Lua was added). */
 .ast-langs .tabbed-labels > label:nth-child(1)  { --ast-lang-accent: #3776ab; }
 .ast-langs .tabbed-labels > label:nth-child(2)  { --ast-lang-accent: #2b7489; }
 .ast-langs .tabbed-labels > label:nth-child(3)  { --ast-lang-accent: #ca8a04; }
@@ -604,11 +607,13 @@ pre.ast-console__out code {
 .ast-langs .tabbed-labels > label:nth-child(10) { --ast-lang-accent: #00add8; }
 .ast-langs .tabbed-labels > label:nth-child(11) { --ast-lang-accent: #777bb4; }
 .ast-langs .tabbed-labels > label:nth-child(12) { --ast-lang-accent: #cc342d; }
-.ast-langs .tabbed-labels > label:nth-child(13) { --ast-lang-accent: #1572b6; }
-.ast-langs .tabbed-labels > label:nth-child(14) { --ast-lang-accent: #cf649a; }
-.ast-langs .tabbed-labels > label:nth-child(15) { --ast-lang-accent: #6e7681; }
-.ast-langs .tabbed-labels > label:nth-child(16) { --ast-lang-accent: #4a90e2; }
-.ast-langs .tabbed-labels > label:nth-child(17) { --ast-lang-accent: #336791; }
+.ast-langs .tabbed-labels > label:nth-child(13) { --ast-lang-accent: #000080; }
+.ast-langs .tabbed-labels > label:nth-child(14) { --ast-lang-accent: #f05138; }
+.ast-langs .tabbed-labels > label:nth-child(15) { --ast-lang-accent: #1572b6; }
+.ast-langs .tabbed-labels > label:nth-child(16) { --ast-lang-accent: #cf649a; }
+.ast-langs .tabbed-labels > label:nth-child(17) { --ast-lang-accent: #6e7681; }
+.ast-langs .tabbed-labels > label:nth-child(18) { --ast-lang-accent: #4a90e2; }
+.ast-langs .tabbed-labels > label:nth-child(19) { --ast-lang-accent: #336791; }
 
 /* Icon picks up the language accent in the default state. mkdocs-material
    inlines the SVG without an explicit `fill` attribute, so without the
@@ -642,7 +647,7 @@ pre.ast-console__out code {
    label isn't a direct sibling of any input). Instead we count the
    `:checked` input by `:nth-child` and reach across to the label at
    the same ordinal inside `.tabbed-labels` via `~`. One rule per
-   ordinal — N=17 today, expand the list when adding more languages. */
+   ordinal — N=19 today, expand the list when adding more languages. */
 .md-typeset .ast-langs .tabbed-set > input:nth-child(1):checked ~ .tabbed-labels > label:nth-child(1),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > label:nth-child(2),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > label:nth-child(3),
@@ -659,7 +664,9 @@ pre.ast-console__out code {
 .md-typeset .ast-langs .tabbed-set > input:nth-child(14):checked ~ .tabbed-labels > label:nth-child(14),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(15):checked ~ .tabbed-labels > label:nth-child(15),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16),
-.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) {
+.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) {
   border-color: var(--ast-lang-accent);
   color: #fff;
   background: var(--ast-lang-accent);
@@ -721,7 +728,13 @@ pre.ast-console__out code {
 .md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji svg path,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji svg path {
+.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18) .twemoji svg,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) .twemoji svg,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) .twemoji svg path {
   color: #fff;
   fill: #fff;
 }

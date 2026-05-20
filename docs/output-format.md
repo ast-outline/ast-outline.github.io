@@ -364,8 +364,8 @@ imports: require ABSPATH . WPINC . '/option.php' [+ 6 conditional includes]
 
 Currently surfaced by the **PHP**, **Python**, **Rust**, **Scala**,
 **Ruby**, and **Lua** adapters. Java / Go / Kotlin / C# / TypeScript /
-C++ leave the counter at `0` — their import grammars allow only
-top-level imports. Lua is the latest entry: `require` is a runtime
+C++ / Swift leave the counter at `0` — their import grammars allow
+only top-level imports. Lua is the latest entry: `require` is a runtime
 function call, so anything inside a function body / `if` / loop is
 counted but not listed; top-level `require "x"` / `require("x")` /
 `local Y = require("x")` are all static.
