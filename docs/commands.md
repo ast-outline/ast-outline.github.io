@@ -457,14 +457,31 @@ Every document is wrapped in a fixed envelope and carries a
 }
 ```
 
-**Lossless by design.** In `--json` mode every content-filtering flag
-is ignored — `--no-private` / `--no-fields` / `--no-docs` /
-`--no-attrs` / `--no-lines` (outline), `--format` / `--include-private`
-/ `--include-fields` / `--max-members` / `--oneline` (digest),
-`--no-doc` / `--view` (show), `-l` / `-c` (grep). JSON always emits the
-complete IR — private declarations, all fields, no member caps — and
-the consumer filters itself. Flags that select *which files* to
-process (`--no-ignore`, `--exclude`, `--glob`) still apply.
+**`--json` is a pure encoding switch.** It changes *how* the output is
+serialized, not *what* it contains — the convention `rg --json`,
+`kubectl -o json`, and `eslint --format json` all follow. So the
+content-filtering flags apply to JSON exactly as they apply to the text
+output:
+
+| Flag | Command | Effect on JSON |
+| --- | --- | --- |
+| `--no-private` / `--no-fields` / `--no-docs` / `--no-attrs` | outline | filter the `declarations` tree |
+| `--include-private` / `--include-fields` | digest | filter the `declarations` tree |
+| `--view` / `--no-doc` | show | trim each match's `source` field |
+| `--no-ignore` / `--exclude` / `--glob`, grep query flags | all | select which files / matches — apply as always |
+
+Flags that pick a *text layout* have no JSON equivalent (JSON has no
+layout) and do not affect `--json` output: `--no-lines` and `--imports`
+(outline), the `--format` preset's layout dimension and `--max-members`
+cap (digest), `-l` / `-c` (grep). A `--format` preset's *content*
+settings still apply — so `--format=wide --json` differs from
+`--format=default --json` (wide adds private members + fields), while
+`--format=names`/`compact`/`default` produce identical JSON because
+they share the same content and differ only in text layout.
+
+Because `digest` itself defaults to a public-API map (private members
+and fields hidden), `digest --json` does too — pass `--include-private`
+/ `--include-fields` (or `--format=wide`) for the complete tree.
 
 **Errors stay valid JSON.** A user-facing failure (path not found, bad
 argument, unsupported extension) is emitted as an `error` object

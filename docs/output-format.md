@@ -687,9 +687,26 @@ object; the process still exits `0`:
 is optional. A zero-result search is **not** an error — it is a normal
 document with an empty `files` / `matches` array.
 
-### Lossless guarantee
+### `--json` is an encoding switch
 
-In `--json` mode the output always carries the complete IR. Content
-filters (`--no-private`, `--format`, `--max-members`, `--view`,
-`-l` / `-c`, …) are ignored — the consumer filters the JSON itself.
+`--json` changes *how* the output is serialized, not *what* it
+contains. Content-filtering flags apply to the JSON exactly as they
+apply to the text output:
+
+- `outline` — `--no-private` / `--no-fields` / `--no-docs` /
+  `--no-attrs` prune the `declarations` tree.
+- `digest` — `--include-private` / `--include-fields` (and the content
+  settings a `--format` preset resolves to) prune it. `digest --json`
+  defaults to the public-API map, just like `digest` itself.
+- `show` — `--view` / `--no-doc` trim each match's `source`.
+
+These filters thin arrays and empty sub-lists — they never change the
+*shape*, so a JSON-Schema validation passes regardless.
+
+Flags that select a *text layout* have no JSON equivalent and do **not**
+affect `--json` output: `--no-lines` and `--imports` (outline), the
+`--format` layout dimension and `--max-members` cap (digest), `-l` /
+`-c` (grep). Two `--format` presets that share the same content (e.g.
+`names` and `compact`) therefore produce identical JSON.
+
 Unicode identifiers are emitted unescaped (`ensure_ascii=False`).
