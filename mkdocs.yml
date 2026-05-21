@@ -1,9 +1,8 @@
 site_name: ast-outline
 site_description: >-
-  Fast, AST-based structural outline for source files across many programming
-  languages (Python, TypeScript, Java, Go, Rust, C#, Swift, and more). Built
-  for AI coding agents that should read the shape of a file before reading the
-  whole thing.
+  ast-outline lets AI coding agents pull exactly the code context they need —
+  a repo skeleton, a file outline, or one symbol — instead of reading whole
+  files. A stateless, tree-sitter-based CLI.
 site_url: https://ast-outline.github.io/
 site_author: Dmitrii Zaitsev (dim-s)
 copyright: >-
@@ -107,14 +106,15 @@ plugins:
   # can ingest the docs without parsing the themed HTML.
   - llmstxt:
       markdown_description: >-
-        ast-outline is a fast, AST-based command-line tool that prints the
-        structural outline of a source file — classes, methods, fields and
-        signatures with line numbers, but no method bodies. Output is 2–10×
-        smaller than the source. It exists so AI coding agents (Claude Code,
-        Cursor, Codex CLI, Gemini CLI) can read the *shape* of a file, or of
-        a whole repository, before reading anything in full. It parses many
-        programming languages via tree-sitter, including Python, TypeScript,
-        Java, Go, Rust, C# and Swift.
+        ast-outline lets AI coding agents pull exactly the code context they
+        need — a whole-repo skeleton, a single file's outline, or one symbol's
+        body — instead of reading whole files into the model. The result:
+        cheaper, faster agent runs that don't drown in large codebases. One
+        stateless, tree-sitter-based CLI does it all — map a repo (`digest`),
+        outline a file (`outline`), extract a symbol (`show`), structural-grep
+        for usages (`grep`), and trace imports. It parses many programming
+        languages, including Python, TypeScript, Java, Go, Rust, C# and Swift,
+        and is built for Claude Code, Cursor, Codex CLI and Gemini CLI.
       full_output: llms-full.txt
       sections:
         Documentation:

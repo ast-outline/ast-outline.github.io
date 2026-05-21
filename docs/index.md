@@ -1,9 +1,8 @@
 ---
 description: >-
-  ast-outline is a fast, AST-based CLI that prints the structural outline of
-  source files — classes, methods and signatures with line numbers, no method
-  bodies. Output is 2–10× smaller than the source. Install it and wire it into
-  your AI coding agent.
+  ast-outline lets AI coding agents pull exactly the code context they need —
+  a repo skeleton, a file outline, or one symbol — instead of reading whole
+  files. A stateless, tree-sitter-based CLI.
 hide:
   - navigation
   - toc
@@ -14,12 +13,16 @@ hide:
 <h1 class="ast-hero__title"><span class="ast-hero__bracket">[</span>ast-outline<span class="ast-hero__bracket">]</span></h1>
 
 <p class="ast-hero__tagline">
-A CLI that prints the <strong>structural outline</strong> of a source
-file — classes, methods, signatures with line numbers,
-<strong>no method bodies</strong>. Output is
-<strong>2–10× smaller than the source</strong>, built for AI coding
-agents (Claude Code, Cursor, Codex CLI) that scan a repo before reading
-any file in full.
+Your <strong>AI coding agent</strong> reads whole files to understand
+code. <code>ast-outline</code> lets it pull <strong>exactly what it
+needs</strong> — a whole-repo skeleton, a file's structure, or a single
+symbol's body — instead of reading files in full. Runs come out
+<strong>cheaper and faster</strong>, and don't drown in large codebases.
+</p>
+
+<p class="ast-hero__toolkit">
+One stateless CLI: map a repo · outline a file · show a symbol ·
+structural-grep for usages · trace imports.
 </p>
 
 <div class="ast-hero__cta" markdown>

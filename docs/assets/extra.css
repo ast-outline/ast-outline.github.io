@@ -92,9 +92,20 @@
 .ast-hero__tagline {
   font-size: 1rem;
   max-width: 42rem;
-  margin: 0.45rem auto 0.85rem;
+  margin: 0.45rem auto 0.6rem;
   color: var(--md-default-fg-color--light);
   line-height: 1.5;
+}
+
+/* Layer-2 sub-line under the tagline — names the toolkit breadth in a
+   lighter monospace register so it reads as secondary to the wedge. */
+.ast-hero__toolkit {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  max-width: 42rem;
+  margin: 0 auto 0.85rem;
+  color: var(--md-default-fg-color--light);
+  line-height: 1.6;
 }
 
 .ast-hero__cta {
