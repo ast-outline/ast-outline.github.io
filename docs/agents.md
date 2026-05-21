@@ -1,3 +1,10 @@
+---
+description: >-
+  How to wire ast-outline into AI coding agents — Claude Code, Cursor, Codex
+  CLI and Gemini CLI — so they outline a file or repository before reading it
+  in full.
+---
+
 # AI agents
 
 This is the primary use case for `ast-outline`. The agent learns about

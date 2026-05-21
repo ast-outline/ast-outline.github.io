@@ -1,8 +1,9 @@
 site_name: ast-outline
 site_description: >-
-  Fast, AST-based structural outline for source files (C#, Python, TypeScript,
-  Java, Kotlin, Scala, Go, Rust, Markdown, YAML). Built for AI coding agents
-  that should read the shape of a file before reading the whole thing.
+  Fast, AST-based structural outline for source files across many programming
+  languages (Python, TypeScript, Java, Go, Rust, C#, Swift, and more). Built
+  for AI coding agents that should read the shape of a file before reading the
+  whole thing.
 site_url: https://ast-outline.github.io/
 site_author: Dmitrii Zaitsev (dim-s)
 copyright: >-
@@ -15,6 +16,7 @@ docs_dir: docs
 
 theme:
   name: material
+  custom_dir: overrides
   language: en
   logo: assets/logo.svg
   favicon: assets/favicon.svg
@@ -100,6 +102,29 @@ extra_css:
 
 plugins:
   - search
+  # Generates /llms.txt (curated index) and /llms-full.txt (whole docs as
+  # one Markdown file) per the llmstxt.org convention, so LLM/AI crawlers
+  # can ingest the docs without parsing the themed HTML.
+  - llmstxt:
+      markdown_description: >-
+        ast-outline is a fast, AST-based command-line tool that prints the
+        structural outline of a source file — classes, methods, fields and
+        signatures with line numbers, but no method bodies. Output is 2–10×
+        smaller than the source. It exists so AI coding agents (Claude Code,
+        Cursor, Codex CLI, Gemini CLI) can read the *shape* of a file, or of
+        a whole repository, before reading anything in full. It parses many
+        programming languages via tree-sitter, including Python, TypeScript,
+        Java, Go, Rust, C# and Swift.
+      full_output: llms-full.txt
+      sections:
+        Documentation:
+          - index.md: Overview, installation and quick start.
+          - commands.md: Full CLI reference — every subcommand, flag and option.
+          - agents.md: Wiring ast-outline into AI coding agents.
+          - output-format.md: The outline, digest and grep output formats.
+        About:
+          - about.md: License and attribution.
+          - history.md: Release history and changelog.
 
 nav:
   - Home: index.md

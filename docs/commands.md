@@ -1,3 +1,9 @@
+---
+description: >-
+  Complete ast-outline CLI reference: the outline, digest, show, setup-prompt
+  and prompt subcommands, every flag and option, with examples.
+---
+
 # Commands
 
 `ast-outline` ships five subcommands: `outline` (default — run the

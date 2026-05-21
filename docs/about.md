@@ -1,3 +1,9 @@
+---
+description: >-
+  License, attribution and ownership of ast-outline: Apache 2.0 for the source
+  code, CC BY 4.0 for the documentation. Both permissive.
+---
+
 # License & attribution
 
 Copyright © 2026 **Dmitrii Zaitsev** (GitHub:

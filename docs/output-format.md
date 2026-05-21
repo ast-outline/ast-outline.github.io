@@ -1,3 +1,10 @@
+---
+description: >-
+  The ast-outline output formats explained — outline (per-file, detailed),
+  digest (multi-file, compact) and grep (matches with enclosing scope),
+  including digest markers and size labels. All parseable cold by an AI agent.
+---
+
 # Output format
 
 `ast-outline` has three output modes: **outline** (per-file, detailed),

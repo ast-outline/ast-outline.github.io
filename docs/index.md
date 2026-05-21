@@ -1,4 +1,9 @@
 ---
+description: >-
+  ast-outline is a fast, AST-based CLI that prints the structural outline of
+  source files — classes, methods and signatures with line numbers, no method
+  bodies. Output is 2–10× smaller than the source. Install it and wire it into
+  your AI coding agent.
 hide:
   - navigation
   - toc

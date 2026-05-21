@@ -1,3 +1,9 @@
+---
+description: >-
+  Release history and changelog for ast-outline — a timeline of versions and
+  notable changes.
+---
+
 # Project history
 
 A timeline of releases and notable events. The full record lives in

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{#-
+  Theme override. Injects schema.org JSON-LD into every page <head> so
+  search engines and LLM/AI crawlers get unambiguous, machine-readable
+  facts about the project. See AGENTS.md → "LLM / AI-crawler friendliness".
+
+  Deliberately carries no version number, install count or language
+  count: those go stale. The version lives in the changelog and on PyPI.
+-#}
+
+{% block extrahead %}
+  {{ super() }}
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ast-outline",
+    "url": "https://ast-outline.github.io/",
+    "description": "Documentation for ast-outline, an AST-based structural-outline CLI built for AI coding agents.",
+    "inLanguage": "en",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "author": {
+      "@type": "Person",
+      "name": "Dmitrii Zaitsev",
+      "alternateName": "dim-s",
+      "url": "https://github.com/dim-s"
+    }
+  }
+  </script>
+
+  {% if page.is_homepage %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ast-outline",
+    "alternateName": "ast-outline CLI",
+    "description": "ast-outline is a fast, AST-based command-line tool that prints the structural outline of a source file — classes, methods, fields and signatures with line numbers, but no method bodies. Output is 2-10x smaller than the source. Built so AI coding agents can read the shape of a file, or of a whole repository, before reading anything in full.",
+    "applicationCategory": "DeveloperApplication",
+    "applicationSubCategory": "Static-analysis / code-navigation CLI",
+    "operatingSystem": "macOS, Linux, Windows",
+    "url": "https://ast-outline.github.io/",
+    "downloadUrl": "https://pypi.org/project/ast-outline/",
+    "installUrl": "https://pypi.org/project/ast-outline/",
+    "softwareHelp": "https://ast-outline.github.io/commands/",
+    "codeRepository": "https://github.com/ast-outline/ast-outline",
+    "programmingLanguage": "Python",
+    "runtimePlatform": "Python 3",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Dmitrii Zaitsev",
+      "alternateName": "dim-s",
+      "url": "https://github.com/dim-s"
+    },
+    "keywords": "AST, code outline, structural outline, static analysis, AI coding agents, Claude Code, Cursor, Codex CLI, Gemini CLI, code navigation, token reduction, tree-sitter",
+    "featureList": [
+      "Prints classes, methods, fields and signatures with line numbers, without method bodies",
+      "Output is 2-10x smaller than the source file",
+      "Parses many programming languages via tree-sitter (Python, TypeScript, Java, Go, Rust, C#, Swift and more)",
+      "Multi-file digest mode for whole-repository overviews",
+      "Structural grep that reports the enclosing scope and a kind classification",
+      "Optional --json machine-readable output with a stable schema"
+    ],
+    "sameAs": [
+      "https://github.com/ast-outline/ast-outline",
+      "https://pypi.org/project/ast-outline/"
+    ]
+  }
+  </script>
+  {% endif %}
+{% endblock %}

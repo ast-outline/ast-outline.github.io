@@ -1,3 +1,12 @@
+# robots.txt — ast-outline documentation
+#
+# All crawlers are welcome, including AI/LLM crawlers (GPTBot, ClaudeBot,
+# PerplexityBot, Google-Extended, etc.). The rule below permits them all.
+#
+# Machine-readable entry points for LLMs and AI agents:
+#   https://ast-outline.github.io/llms.txt       — curated index
+#   https://ast-outline.github.io/llms-full.txt  — full docs, one Markdown file
+
 User-agent: *
 Allow: /
 
