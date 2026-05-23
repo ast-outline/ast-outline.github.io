@@ -864,6 +864,45 @@ highlighted by Pygments. The italic line under the picker is context
         ## License  L182-184
     ```
 
+=== ":material-language-html5: HTML"
+
+    *A typical landing page — `<head>` zone with metadata and asset imports, semantic `<body>` structure (header / main / sections / footer), a FAQ with collapsed `<details>`, and a signup form. Elements render as CSS-selector tokens so the agent uses one selector grammar across HTML, CSS, and SCSS — `show landing.html '#hero'` reads exactly like `show theme.css '#hero'`.*
+
+    ```html title="$ ast-outline landing.html"
+    # landing.html [tiny] (62 lines, ~487 tokens, 33 elements)
+    html[lang=en]
+        head
+            meta[name=description content=Pre-reading layer for AI coding agents]
+            title
+            [import] link[rel=stylesheet href=/css/main.css]
+            [import] link[rel=icon href=/favicon.svg type=image/svg+xml]
+            [import] script[src=/js/analytics.js defer]
+        body
+            header.site-nav
+                a.logo[href=/]
+                nav
+                    a[href=#features]
+                    a[href=#pricing]
+            main
+                section#hero
+                    h1: Pull exactly the context you need
+                    a.cta[href=#install]
+                section#features
+                    h2: Why teams switch
+                    h3: Faster reads
+                    h3: Sharper answers
+                    h3: No daemon
+                section#faq
+                    h2: Frequently asked
+                    details ×6
+            footer.site-footer
+            form#newsletter[action=/subscribe method=post]
+                input[name=email type=email required]
+                button[type=submit]
+    ```
+
+    Notable rules: every element renders as a CSS-selector token (`tag`, `tag#id`, `tag.cls1.cls2`, `tag[attr=val …]`) — the same shape `show` expects, so the outline line and the lookup command share a vocabulary. Headings `<h1>`–`<h6>` carry a 60-char text preview. Bare `<div>` / `<span>` / `<p>` / `<li>` / `<tr>` (no id, no class, no significant attribute) are dropped from the outline but their meaningful descendants float up to the parent's depth — real-world templates have 5-10 wrapping containers per visible block, listing each one inflates the outline to no signal. `<svg>` / `<math>` render the root only (inline icon paths aren't CSS-addressable). Three or more consecutive bare `<details>` siblings collapse to one `details ×N` line so FAQ pages don't dominate the outline with identical leaves. `<link rel=stylesheet|preload|prefetch|modulepreload|icon|manifest>` and `<script src=…>` are surfaced three ways: the signature gets an `[import]` prefix, they appear in the `--imports` listing, and grep classifies matches inside their byte range as `[import]` automatically. Inline `<script>` / `<style>` bodies and `<!-- comments -->` ride in `noise_regions` so grep filters them by default. Templated HTML (Jinja `{% if %}`, Vue / Svelte raw templates, PHP `<?php`) gets a partial outline via ERROR-node recovery instead of a blank one.
+
 === ":material-database: SQL"
 
     *Order-processing module — schema + audit trigger + two views + business-logic functions. The source is 95 lines; outline is 50 (1.9× by lines, 1.5× by chars). Tables keep all columns verbatim; PL/pgSQL function bodies, view `SELECT`s, and trigger timing/event details get stripped — agents see the schema shape and the function contracts, not the implementation.*
@@ -1244,6 +1283,7 @@ but it's a separate add-on, not a redesign.
 | CSS        | `.css` |
 | SCSS       | `.scss` *(mixins, functions, variables, placeholders; `&` resolves against parent)* |
 | SQL        | `.sql` *(tables w/ columns, views, types, enums, functions, procedures, triggers, indexes, sequences, schemas, domains; PostgreSQL primary, MySQL/SQLite usable)* |
+| HTML       | `.html`, `.htm` *(elements rendered as CSS-selector tokens — `section#hero`, `form[action=/x]`; `<link rel=stylesheet>` / `<script src>` collected as imports; `<script>`/`<style>`/`<!-- -->` filtered from grep; ERROR-node recovery for templated HTML — Jinja, Vue, Handlebars get a partial outline instead of blank)* |
 | Markdown   | `.md`, `.markdown`, `.mdx`, `.mdown` |
 | YAML       | `.yaml`, `.yml` |
 

@@ -558,6 +558,177 @@ TypeScript adapter above.
 
 ---
 
+## HTML adapter format
+
+HTML elements render as **CSS-selector tokens**, not as `<tag>`-style
+HTML. The form and the shape `show` expects are identical, so the
+outline line and the lookup command share a vocabulary.
+
+### Selector form
+
+The signature is built in a strict order:
+
+1. `tag` — always present, lowercase
+2. `#id` — appended if the element carries an `id` attribute
+3. `.cls1.cls2…` — every class in source order (duplicates removed)
+4. `[attr=val attr2=val2 …]` — significant attributes (per-tag whitelist),
+   in source order, space-separated, no quotes around the value
+5. Heading-text preview (`: text`) — appended for `<h1>`–`<h6>`, truncated
+   to 60 characters
+
+Examples:
+
+| Source | Signature |
+| --- | --- |
+| `<section id="hero">` | `section#hero` |
+| `<button class="btn primary" disabled>` | `button.btn.primary[disabled]` |
+| `<input name="email" type="email" required>` | `input[name=email type=email required]` |
+| `<link rel="stylesheet" href="/css/main.css">` | `[import] link[rel=stylesheet href=/css/main.css]` |
+| `<h1 class="hero">Pull exactly the context you need</h1>` | `h1.hero: Pull exactly the context you need` |
+| `<button value="Save changes" type="submit">` | `button[type=submit value="Save changes"]` |
+
+The significant-attribute whitelist is **tight by design** — `<input>`
+promotes `type`/`name`/`required`/`value`/`placeholder` and friends,
+`<link>` promotes `rel`/`href`/`media`/`as`/`type`/`hreflang`, `<form>`
+promotes `action`/`method`/`name`/`enctype`. ARIA, `data-*`, `style`,
+and class-only attributes don't make it into the bracket — they'd
+inflate the selector without addressing signal.
+
+### Attribute quoting
+
+Values containing whitespace, a closing bracket, or a quote get
+wrapped in `"…"` with backslash-escaped inner quotes:
+
+| Source | Bracketed form |
+| --- | --- |
+| `<button value="Save changes">` | `[value="Save changes"]` |
+| `<a href="/api/items?ids=[1,2,3]">` | `[href="/api/items?ids=[1,2,3]"]` |
+
+The quoted form is valid CSS attribute-selector syntax — `show "[value=\"Save changes\"]"`
+works in stylesheets too — so selectors round-trip without losing
+information.
+
+### Drop-bare rule
+
+Bare wrappers — `<div>` / `<span>` / `<p>` / `<li>` / `<tr>` / `<td>` /
+`<th>` / `<dt>` / `<dd>` / `<br>` / `<hr>` / `<wbr>` / `<option>` /
+`<ul>` / `<ol>` / `<dl>` / `<tbody>` / `<thead>` / `<tfoot>` /
+`<picture>` etc. — without `id`, `class`, or a significant attribute are
+**not emitted** in the outline. Their meaningful descendants **float
+up** to the parent's depth. A modern template wraps every visible
+element in 5-10 nondescript `<div>`s; listing each one would inflate
+the outline to no signal. The lifted-children rule preserves the
+structure of meaningful descendants without the noise floors.
+
+Inline text-styling tags (`<b>`, `<i>`, `<em>`, `<strong>`, `<u>`,
+`<s>`, `<small>`, `<sub>`, `<sup>`, `<mark>`, `<kbd>`, `<code>`,
+`<var>`, `<samp>`, `<cite>`, `<q>`, `<abbr>`, `<dfn>`, `<time>`,
+`<ruby>`, `<rt>`, `<rp>`, `<bdi>`, `<bdo>`) are **never emitted**,
+even with id/class — they carry zero outline signal.
+
+### SVG / MathML collapse
+
+`<svg>` and `<math>` render the **root element only**. Inline SVG icons
+typically contain 30-50 `<path>` / `<rect>` / `<circle>` children that
+aren't CSS-addressable the way HTML elements are; outlining each one
+would dominate the file's surface for zero browsable benefit. The root
+keeps its selector form (`svg.logo`) so `show svg.logo` still works.
+
+### `<details>` run collapse
+
+Three or more consecutive sibling `<details>` elements with no
+significant attributes collapse to one synthetic line:
+
+```text
+section#faq
+    h2: Frequently asked
+    details ×6           L45-50
+```
+
+A `<details class="advanced">` mid-run breaks the collapse because it
+carries real signal. FAQ pages otherwise dominate the outline with
+identical leaves.
+
+### Imports
+
+`<link rel="…">` with one of `stylesheet`, `preload`, `prefetch`,
+`modulepreload`, `icon`, `manifest`, `shortcut` AND `<script src="…">`
+surface as imports — three ways:
+
+- The element's signature gets an `[import]` prefix in the outline.
+- The element appears in `ParseResult.imports`, so `--imports` lists it.
+- The element's byte range goes into `import_regions`, so `grep`
+  classifies matches inside the tag (a URL fragment, an asset name) as
+  `[import]` automatically.
+
+Inline `<script>` (no `src`) — including `<script type="module">` with
+import statements — is **content**, not an import. The body lands in
+`noise_regions` (kind `"string"`); `grep --include-noise` surfaces
+matches inside it.
+
+`<base href="…">` is **not** classified as an import — it sets the
+document base URL for relative URLs, semantically different from
+pulling an external resource.
+
+### Noise / grep filtering
+
+- `<script>` and `<style>` element bodies → `noise_regions` (kind
+  `"string"`). `grep` filters matches inside them by default.
+- HTML comments `<!-- … -->` → `noise_regions` (kind `"comment"`).
+
+Pass `--include-noise` to `grep` to surface filtered matches.
+
+### Templated HTML recovery
+
+Jinja `{% if %}…{% endif %}`, Vue/Svelte raw templates, Handlebars
+`{{#if}}`, PHP `<?php …?>` — tree-sitter-html doesn't parse these and
+wraps the document in ERROR nodes. When the top-level walk produces
+no declarations because of this, a one-pass recovery walks into the
+ERROR subtree to surface any well-formed elements inside. Templated
+files get a partial outline instead of a blank one; the `# WARNING`
+header still surfaces the parse errors.
+
+```text
+# templates/post.html [tiny] (23 lines, ~111 tokens, 9 elements)
+header.auth-bar  L4-7
+    a[href=/account]
+    a[href=/logout]
+
+header.anon-bar  L9-11
+    a[href=/login]
+
+main  L14-21
+    article  L15-20
+        h1: {{ post.title }}
+        section#body  L17-19
+```
+
+Both `{% if %}` and `{% else %}` branches surface as parallel siblings,
+even though the parser couldn't tell them apart syntactically.
+
+### Show round-trip
+
+The outline line and the `show` argument share the selector vocabulary:
+
+```bash
+# Outline says:
+section#hero
+
+# show accepts every reachable form:
+ast-outline show page.html '#hero'
+ast-outline show page.html section
+ast-outline show page.html section#hero
+ast-outline show page.html 'section#hero.primary[disabled]'   # compound
+ast-outline show page.html '[rel=stylesheet]'                 # attribute only
+```
+
+Pseudo-classes and descendant combinators (`section .item`, `section > a`,
+`.btn:hover`) are **not supported** — use the tag/id/class/attribute
+form the outline shows. Combinator-style queries split into multiple
+tokens and won't match.
+
+---
+
 ## Errors and broken outlines
 
 When tree-sitter recovers from syntax errors, the outline is kept

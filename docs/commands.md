@@ -105,7 +105,10 @@ ast-outline digest src/Foo.cs --format=wide   # everything for one file
 `names` extends to non-code languages: markdown surfaces top-level
 H1 headings, single-doc YAML surfaces top-level keys, multi-doc YAML
 surfaces per-doc separator captions (`--- doc 1 of 3 — ConfigMap …`),
-CSS/SCSS surfaces the flat selector list. `[huge]` files (>100k tokens)
+CSS/SCSS surfaces the flat selector list, HTML surfaces page
+landmarks (top-level body children — `header.site-nav`, `main`,
+`section#hero`, `form#newsletter` — `html` / `head` / `body` chrome
+is hidden as it's identical on every page). `[huge]` files (>100k tokens)
 collapse to a header-only line with no symbol list — same as their
 default-format behavior.
 
@@ -151,7 +154,10 @@ ast-outline show Player.cs Player.TakeDamage
 
 **Symbol matching is suffix + case-sensitive for code**, **substring +
 case-insensitive for Markdown headings**. For YAML, the symbol is a
-dot-separated key path (`spec.containers[0].image`).
+dot-separated key path (`spec.containers[0].image`). For CSS / SCSS /
+HTML, the symbol is a CSS-selector token (`.btn-primary`, `#hero`,
+`section#hero`, `[rel=stylesheet]`) — same vocabulary across the three
+adapters.
 
 For Markdown headings, inline-markdown decoration — backticks
 (`` ` ``), asterisks (`*`), underscores (`_`), tildes (`~`) — is
