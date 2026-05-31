@@ -133,7 +133,7 @@ Same as for `outline` — adds an `imports:` line per file.
 
 ---
 
-## `ast-outline show <file> <symbol…>`
+## `ast-outline show <file|dir> <symbol…>`
 
 Print the **full source** of one or more declarations from a file —
 suffix-matched, AST-accurate.
@@ -172,6 +172,53 @@ normalized the title.
 
 `show` matches **keys**, not value text — use `grep`/`rg` for free-text
 search inside values.
+
+### Directory target — find + show in one call
+
+Point `show` at a **directory** instead of a file and it locates the
+symbol's definition(s) under that directory itself, then prints the
+body — no separate `grep <symbol> <dir> --kind def` to find the file
+first. This collapses the most common two-call pattern into one:
+
+```bash
+# Old: two calls
+ast-outline grep MailSpec Assets/Scripts/App/Mail --kind def   # find the file
+ast-outline show Assets/Scripts/App/Mail/MailSpec.cs MailSpec  # then read it
+
+# New: one call
+ast-outline show Assets/Scripts/App/Mail MailSpec
+```
+
+The outcome depends on how many definitions carry that name:
+
+- **One definition** → its body, preceded by a note naming where it
+  was found:
+
+  ```text
+  # note: found 'MailSpec' (class) in Assets/Scripts/App/Mail/MailSpec.cs
+  # Assets/Scripts/App/Mail/MailSpec.cs:10-42  App.Mail.MailSpec  (class)
+  ...body...
+  ```
+
+- **Several definitions** (same name across files) → **all** bodies are
+  printed (a directory `show` is still a `show`), preceded by a count
+  note; each body header carries its own path:
+
+  ```text
+  # note: 3 definitions of 'MailSpec' across 3 files — all shown below
+  ```
+
+- **No match** → a `# note: symbol not found` line, plus a
+  `# hint: did you mean: …?` suggestion when a close name exists (the
+  same edit-distance recovery `grep` uses). Exit code is still **0**.
+
+The directory walk reuses `grep`'s file collection, so it **honors
+`.gitignore` / `.ignore`** by default; pass `--no-ignore` to search
+ignored folders or `--exclude GLOB` to prune extra paths (these two
+flags bite only on a directory target — a single-file `show` reads
+exactly the file given). All other `show` flags (`--signature`,
+`--no-doc`, `--view`, `--json`) apply to the located file(s). A
+plain file target is unchanged.
 
 ### Header-only output: `--signature` / `--view signature`
 
@@ -565,6 +612,32 @@ exit-0 contract is preserved:
 
 A zero-result search (`grep` with no matches, a file with no
 declarations) is a valid empty document, **not** an error.
+
+**`show` over a directory** uses a slightly different envelope: the
+top-level locator is `directory` (not `file`), and because a single
+query can resolve to definitions in several files, **each match carries
+its own `file`** field. A not-found symbol is an entry with an empty
+`matches` list; the did-you-mean suggestion rides in the top-level
+`notes`:
+
+```json
+{
+  "tool": "ast-outline",
+  "schema_version": 1,
+  "command": "show",
+  "directory": "Assets/Scripts/App/Mail",
+  "notes": [],
+  "results": [
+    {
+      "query": "MailSpec",
+      "matches": [
+        { "qualified_name": "App.Mail.MailSpec", "kind": "class",
+          "file": "Assets/Scripts/App/Mail/MailSpec.cs", "source": "..." }
+      ]
+    }
+  ]
+}
+```
 
 See [Output format → JSON output](output-format.md#json-output) for
 the full per-field schema.

@@ -263,6 +263,37 @@ behavior behind each line.
 
 ---
 
+## Show format
+
+`show <file> <symbol>` prints each match as a `#`-prefixed header line
+(`# <path>:<start>-<end>  <qualified-name>  (<kind>)`), an optional
+`# in:` breadcrumb of the enclosing scope, then the body.
+
+When `show` is pointed at a **directory** it first locates the symbol's
+definition(s) under it (see
+[`show` directory target](commands.md#ast-outline-show-filedir-symbol)),
+and emits a leading `# note:` that says where it landed:
+
+```text
+# one definition found — names the file (the value a second `grep` would have produced)
+# note: found 'MailSpec' (class) in Assets/Scripts/App/Mail/MailSpec.cs
+
+# several definitions of the same name — all bodies follow, each header carries its own path
+# note: 3 definitions of 'MailSpec' across 3 files — all shown below
+
+# nothing matched — a close name in scope is offered (same did-you-mean as grep)
+# note: symbol not found: MailSpc in Assets/Scripts/App/Mail
+# hint: did you mean: MailSpec (class)?
+```
+
+The `found …` and `N definitions …` notes are text-mode only — in
+`--json` the locator is the per-match `file` field, so they would be
+redundant. The `symbol not found` / did-you-mean information **does**
+ride the JSON `notes` array, so a programmatic consumer still sees the
+suggestion. Every outcome exits **0**.
+
+---
+
 ## Size labels
 
 Both **outline** and **digest** stamp each file with a categorical
