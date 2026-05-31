@@ -204,13 +204,22 @@ The outcome depends on how many definitions carry that name:
   ...body...
   ```
 
-- **Several definitions** (same name across files) → **all** bodies are
-  printed (a directory `show` is still a `show`), preceded by a count
-  note; each body header carries its own path:
+- **Several definitions** (same name across files, or several
+  declarations) → **no body is printed**. `show` keeps a single-shape
+  contract: when it prints content that content is always source code;
+  when it can't (an ambiguous symbol), it prints a `# note:` pointer and
+  no code — never a mix. The note lists the candidate locations and asks
+  you to re-run against one file:
 
   ```text
-  # note: 3 definitions of 'MailSpec' across 3 files — all shown below
+  # note: 3 definitions of 'MailSpec' — re-run with one of: Mail/MailSpec.cs:10 (class), Admin/MailSpec.cs:22 (class), Tests/MailSpec.cs:5 (class)
   ```
+
+  This matches how agents disambiguate in practice — pick one definition
+  (or a named subset), don't read all N at once. There is no `--all`
+  flag: to read a body, re-run `show <file> <symbol>` against the file
+  you want. *(Changed in v1.3.2 — v1.3.0/v1.3.1 dumped every body under
+  an `… all shown below` note.)*
 
 - **No match** → a `# note: symbol not found` line, plus a
   `# hint: did you mean: …?` suggestion when a close name exists (the

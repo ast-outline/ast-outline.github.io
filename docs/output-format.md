@@ -275,11 +275,11 @@ locates the symbol's definition(s) under that scope (see
 and emits a leading `# note:` that says where it landed:
 
 ```text
-# one definition found — names the file (the value a second `grep` would have produced)
+# one definition found — names the file (the value a second `grep` would have produced), body follows
 # note: found 'MailSpec' (class) in Assets/Scripts/App/Mail/MailSpec.cs
 
-# several definitions of the same name — all bodies follow, each header carries its own path
-# note: 3 definitions of 'MailSpec' across 3 files — all shown below
+# several definitions — NO body; the note lists candidates to re-run against
+# note: 3 definitions of 'MailSpec' — re-run with one of: Mail/MailSpec.cs:10 (class), Admin/MailSpec.cs:22 (class), Tests/MailSpec.cs:5 (class)
 
 # nothing matched — a close name in scope is offered (same did-you-mean as grep)
 # note: symbol not found: MailSpc in Assets/Scripts/App/Mail
@@ -289,13 +289,25 @@ and emits a leading `# note:` that says where it landed:
 # note: no files match glob: Assets/Scripts/**/*.kt
 ```
 
-The `found …` and `N definitions …` notes are text-mode only — in
-`--json` the locator is the per-match `file` field, so they would be
-redundant. The `symbol not found` / did-you-mean information **does**
-ride the JSON `notes` array, so a programmatic consumer still sees the
-suggestion. The multi-file JSON envelope carries both a `directory` and
-a `glob` field (always present, exactly one non-empty) so the consumer
-can tell which scope form produced the result. Every outcome exits **0**.
+`show` keeps a **single-shape contract**: when it prints *content* that
+content is always source code; when it can't — an ambiguous symbol
+defined in several places — it prints a `# note:` pointer and no code,
+never a mix. So one definition prints its body, while several print only
+the candidate-list note above. *(Changed in v1.3.2 — earlier versions
+dumped every body under an `… all shown below` note.)*
+
+The `found …` note is text-mode only — in `--json` the locator is the
+per-match `file` field, so it would be redundant. The multi-definition
+case is structured in JSON too: the result is flagged `ambiguous: true`
+and its `matches` become **body-less candidate locators** (`file`,
+`kind`, `qualified_name`, `start_line`, `end_line` — no `source`), with
+the re-run guidance echoed in the `notes` array; a one-definition result
+is `ambiguous: false` with a full match (including `source`). The
+`symbol not found` / did-you-mean information also rides the JSON
+`notes` array. The multi-file JSON envelope carries both a `directory`
+and a `glob` field (always present, exactly one non-empty) so the
+consumer can tell which scope form produced the result. Every outcome
+exits **0**.
 
 ---
 
