@@ -133,7 +133,7 @@ Same as for `outline` — adds an `imports:` line per file.
 
 ---
 
-## `ast-outline show <file|dir> <symbol…>`
+## `ast-outline show <file|dir|glob> <symbol…>`
 
 Print the **full source** of one or more declarations from a file —
 suffix-matched, AST-accurate.
@@ -173,20 +173,24 @@ normalized the title.
 `show` matches **keys**, not value text — use `grep`/`rg` for free-text
 search inside values.
 
-### Directory target — find + show in one call
+### Directory / glob target — find + show in one call
 
-Point `show` at a **directory** instead of a file and it locates the
-symbol's definition(s) under that directory itself, then prints the
-body — no separate `grep <symbol> <dir> --kind def` to find the file
-first. This collapses the most common two-call pattern into one:
+Point `show` at a **directory** (or a quoted **glob**) instead of a
+file and it locates the symbol's definition(s) under that scope itself,
+then prints the body — no separate `grep <symbol> <dir> --kind def` to
+find the file first. This collapses the most common two-call pattern
+into one:
 
 ```bash
 # Old: two calls
 ast-outline grep MailSpec Assets/Scripts/App/Mail --kind def   # find the file
 ast-outline show Assets/Scripts/App/Mail/MailSpec.cs MailSpec  # then read it
 
-# New: one call
+# New: one call — directory
 ast-outline show Assets/Scripts/App/Mail MailSpec
+
+# New: one call — quoted glob (quote it so the shell keeps `**` literal)
+ast-outline show "Assets/Scripts/**/*.cs" MailSpec
 ```
 
 The outcome depends on how many definitions carry that name:
@@ -211,14 +215,21 @@ The outcome depends on how many definitions carry that name:
 - **No match** → a `# note: symbol not found` line, plus a
   `# hint: did you mean: …?` suggestion when a close name exists (the
   same edit-distance recovery `grep` uses). Exit code is still **0**.
+- **A glob that matches no files** → `# note: no files match glob: …`
+  (exit 0). A plain non-glob path that doesn't exist still gets the
+  precise `# note: file not found` — the glob branch only triggers on a
+  path carrying `*`, `?`, or `[`.
 
-The directory walk reuses `grep`'s file collection, so it **honors
+A **directory** search reuses `grep`'s file collection, so it **honors
 `.gitignore` / `.ignore`** by default; pass `--no-ignore` to search
 ignored folders or `--exclude GLOB` to prune extra paths (these two
 flags bite only on a directory target — a single-file `show` reads
-exactly the file given). All other `show` flags (`--signature`,
-`--no-doc`, `--view`, `--json`) apply to the located file(s). A
-plain file target is unchanged.
+exactly the file given). A **glob** is expanded literally — it shows
+exactly the files the pattern matches, with **no** ignore-filtering
+(you already narrowed via the pattern), so `--no-ignore` / `--exclude`
+are no-ops for a glob target. All other `show` flags (`--signature`,
+`--no-doc`, `--view`, `--json`) apply to the located file(s). A plain
+file target is unchanged.
 
 ### Header-only output: `--signature` / `--view signature`
 
@@ -613,12 +624,14 @@ exit-0 contract is preserved:
 A zero-result search (`grep` with no matches, a file with no
 declarations) is a valid empty document, **not** an error.
 
-**`show` over a directory** uses a slightly different envelope: the
-top-level locator is `directory` (not `file`), and because a single
-query can resolve to definitions in several files, **each match carries
-its own `file`** field. A not-found symbol is an entry with an empty
-`matches` list; the did-you-mean suggestion rides in the top-level
-`notes`:
+**`show` over a directory or glob** uses a slightly different envelope:
+the top-level locator is split across two always-present fields —
+`directory` (set for a directory target) and `glob` (set for a glob
+target), exactly one non-empty — instead of `file`, and because a
+single query can resolve to definitions in several files, **each match
+carries its own `file`** field. A not-found symbol is an entry with an
+empty `matches` list; the did-you-mean suggestion rides in the
+top-level `notes`:
 
 ```json
 {
@@ -626,6 +639,7 @@ its own `file`** field. A not-found symbol is an entry with an empty
   "schema_version": 1,
   "command": "show",
   "directory": "Assets/Scripts/App/Mail",
+  "glob": "",
   "notes": [],
   "results": [
     {
@@ -638,6 +652,9 @@ its own `file`** field. A not-found symbol is an entry with an empty
   ]
 }
 ```
+
+For a glob target the same shape applies with `directory` empty and
+`glob` carrying the pattern (e.g. `"glob": "Assets/Scripts/**/*.cs"`).
 
 See [Output format → JSON output](output-format.md#json-output) for
 the full per-field schema.

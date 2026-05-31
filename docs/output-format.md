@@ -269,9 +269,9 @@ behavior behind each line.
 (`# <path>:<start>-<end>  <qualified-name>  (<kind>)`), an optional
 `# in:` breadcrumb of the enclosing scope, then the body.
 
-When `show` is pointed at a **directory** it first locates the symbol's
-definition(s) under it (see
-[`show` directory target](commands.md#ast-outline-show-filedir-symbol)),
+When `show` is pointed at a **directory** or a quoted **glob** it first
+locates the symbol's definition(s) under that scope (see
+[`show` directory / glob target](commands.md#ast-outline-show-filedirglob-symbol)),
 and emits a leading `# note:` that says where it landed:
 
 ```text
@@ -284,13 +284,18 @@ and emits a leading `# note:` that says where it landed:
 # nothing matched — a close name in scope is offered (same did-you-mean as grep)
 # note: symbol not found: MailSpc in Assets/Scripts/App/Mail
 # hint: did you mean: MailSpec (class)?
+
+# a glob that matched no files at all
+# note: no files match glob: Assets/Scripts/**/*.kt
 ```
 
 The `found …` and `N definitions …` notes are text-mode only — in
 `--json` the locator is the per-match `file` field, so they would be
 redundant. The `symbol not found` / did-you-mean information **does**
 ride the JSON `notes` array, so a programmatic consumer still sees the
-suggestion. Every outcome exits **0**.
+suggestion. The multi-file JSON envelope carries both a `directory` and
+a `glob` field (always present, exactly one non-empty) so the consumer
+can tell which scope form produced the result. Every outcome exits **0**.
 
 ---
 
