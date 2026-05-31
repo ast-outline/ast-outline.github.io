@@ -235,6 +235,32 @@ failures (no match, file not found, bad arg) stick to the
 `rc=0` / `# note:` convention. Real internal crashes still propagate
 normally.
 
+A bare "no matches" is rarely the whole story. Depending on *why* the
+search came up empty, one follow-up line is appended (at most one, so
+the output stays scannable) to make the next call correct rather than
+a blind retry. All ride the same `rc=0` / stdout convention:
+
+```text
+# searched a literal "<keyword> Identifier" → keyword stripped, narrowed to def
+# note: searched 'ItemSoundFamily' as a definition (stripped leading 'enum')
+
+# --kind narrowed to zero, but the pattern matched under other kinds
+# hint: --kind call excluded 3 matches (3 ref) — retry with --kind call,ref or drop --kind
+
+# pattern looked literal but carries regex-like syntax
+# hint: pattern 'Bind.*Save' contains regex-like syntax … — if you meant regex, retry with --regex
+
+# a true no-match whose pattern is close to a real symbol in scope
+# hint: did you mean: MissSortPile (class), MissSortPileGroup (class)?
+```
+
+The `# note: searched … (stripped leading '<keyword>')` line is the one
+form that also rides the **JSON** `notes` array (it documents a query
+rewrite that applies in both modes); the `# hint:` follow-ups are
+interactive text-mode nudges and are omitted from JSON. See
+[Empty-result recovery](commands.md#empty-result-recovery) for the
+behavior behind each line.
+
 ---
 
 ## Size labels

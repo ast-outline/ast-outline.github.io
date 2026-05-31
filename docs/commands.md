@@ -318,6 +318,66 @@ grep). Ambiguous metachars (`.`, `*`, `+`, `?`, `[`, `^`, `$`) never
 auto-promote — they have legitimate literal interpretations in code
 — but emit a `# hint:` on zero matches suggesting `--regex`.
 
+### Empty-result recovery
+
+An empty `grep` is the most expensive miss for an agent — the usual
+next move is a blind retry (reword the pattern, drop a flag, or
+abandon the tool for raw `rg` / file reads). Three heuristics make the
+*first* call land, or hand back enough to make the second call
+correct rather than another guess. None of them fire under explicit
+`--regex` (you mean exactly what you typed), and each prints a
+`# note:` / `# hint:` line — never a non-zero exit.
+
+**Leading definition-keyword stripping.** Agents habitually paste the
+source keyword they'd *write* in front of a symbol. As a literal
+substring that misbehaves — on `public enum ItemSoundFamily {` the
+match starts on `enum`, not the name, so it classifies as a `ref` and
+a `--kind def` narrow drops it. When a single literal pattern is
+`<keyword> Identifier`, the keyword is stripped, the identifier is
+searched, and (if you gave no explicit `--kind`) the search auto-narrows
+to `def`:
+
+```bash
+ast-outline grep "enum ItemSoundFamily" src/   # ≡ grep ItemSoundFamily --kind def
+# note: searched 'ItemSoundFamily' as a definition (stripped leading 'enum')
+```
+
+The recognized keywords are owned by each language adapter
+(`class` / `struct` / `enum` / `interface` / `trait` / `record` /
+`def` / `fn` / `func` / `function` / `type` / `impl` / `mod` /
+`namespace` / `protocol` / `extension` / `object` / `union` / …); the
+union across adapters is what `grep` matches against, so a new adapter
+extends it for free. Only the single-pattern form is handled — with
+multiple `-e` patterns the auto narrow-to-`def` would be ambiguous.
+
+**`--kind` mismatch breakdown.** When a `--kind` narrow yields zero but
+the pattern *did* match under other kinds, the kinds that were excluded
+are reported so the retry is exact instead of a guess:
+
+```bash
+ast-outline grep EditorPrefs src/ --kind call
+# note: no matches for 'EditorPrefs'
+# hint: --kind call excluded 3 matches (3 ref) — retry with --kind call,ref or drop --kind
+```
+
+(`EditorPrefs.GetString(...)` is a `ref` — the dot after the name — not
+a `call`; the bare "no matches" used to hide that.)
+
+**Did-you-mean by edit distance.** On a true no-match for a plain
+identifier, `grep` collects the declaration names in scope and surfaces
+the closest real symbol(s) — catching plural/singular slips and typos
+that otherwise drive a chain of blind retries:
+
+```bash
+ast-outline grep MissSortPiles src/
+# note: no matches for 'MissSortPiles'
+# hint: did you mean: MissSortPile (class), MissSortPileGroup (class)?
+```
+
+Names that share no structure with any real symbol produce no
+suggestion (no false leads), and the lookup is bounded so it never
+turns a no-match into a long stall.
+
 ### Other flags
 
 | Flag | Behavior |
