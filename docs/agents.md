@@ -107,7 +107,7 @@ control over file edits.
        `.btn-primary` finds the rule even when it carries `:hover` or
        nests in `.modal`.
        For html, the symbol is a CSS-selector token (`#hero`, `.site-nav`,
-       `form`, `section#hero`, `[rel=stylesheet]`) — same syntax as
+       `form`, `section#hero`, `[rel=stylesheet]`) — same vocabulary as
        css/scss; pseudo-classes and descendant combinators aren't
        supported (use the tag/id/class/attribute form the outline shows).
        For sql, the symbol is a table or column name (`users`,
@@ -136,6 +136,12 @@ control over file edits.
     directories, mixed languages OK) — batch instead of looping. Type
     headers in both renderers carry inheritance as `: Base, Trait`, so the
     shape of class hierarchies is visible without a separate query.
+
+    The renderers emit a compact skeleton (signatures + line ranges, no
+    bodies), so output is usually small — narrow with the tool's own flags
+    before piping to `head`. A `grep | head` cut is the costly one: it
+    hides matches the header still counts in `(N matches)`, so results look
+    complete but aren't — cap per file with `-m N` instead.
 
     Narrow the walk with repeatable `--exclude <glob>`
     (`.gitignore`-syntax, anchored at the project root) on `outline` /
