@@ -12,6 +12,12 @@ the [GitHub release page](https://github.com/ast-outline/ast-outline/releases).
 
 ## 2026
 
+### June
+
+| Date | Event |
+| --- | --- |
+| **2026-06-03** | **v1.3.4**: **`help` now lists every supported language — the table no longer drifts.** The "SUPPORTED LANGUAGES" block in `ast-outline help` and the "SUPPORTED" line in `ast-outline help outline` were hand-maintained and had fallen behind: 7 of 19 adapters (C++, Rust, PHP, Ruby, CSS, SCSS, SQL) shipped without ever appearing in the help, and the two sections had also diverged from each other. Both are now generated from the adapter registry at import, so a newly added adapter shows up automatically and the listing can't go stale again. Each adapter carries a `display_name` (e.g. `C#`, `TypeScript/JavaScript`) — a per-language fact that lives on the adapter, consistent with how keywords and extensions already do. A new test asserts every adapter appears in both help sections by name and extension. Help text only — no change to parsing or output. |
+
 ### May
 
 | Date | Event |
