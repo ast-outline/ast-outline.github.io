@@ -378,10 +378,12 @@ counts and file lists exclude docstring noise:
 ### Regex auto-detect
 
 Patterns containing unambiguous regex syntax (`\|`, `\d`, `\w`, `\s`,
-`\b`, `(?:`, bare `|`) auto-promote to regex with a `# note:`
-documenting the promotion. `\|` is normalized to `|` before compile
-(BRE → ERE — Python's `re` reads `\|` as a literal pipe, opposite of
-grep). Ambiguous metachars (`.`, `*`, `+`, `?`, `[`, `^`, `$`) never
+`\b`, `(?:`, bare `|`) auto-promote to regex. `\|` is normalized to `|`
+before compile (BRE → ERE — Python's `re` reads `\|` as a literal pipe,
+opposite of grep). The promotion is silent in text output (since
+**v1.3.5** — agents reliably ignored the advisory and it only cost
+tokens); it is recorded in the `--json` `notes` array for machine
+consumers. Ambiguous metachars (`.`, `*`, `+`, `?`, `[`, `^`, `$`) never
 auto-promote — they have legitimate literal interpretations in code
 — but emit a `# hint:` on zero matches suggesting `--regex`.
 
@@ -406,8 +408,11 @@ to `def`:
 
 ```bash
 ast-outline grep "enum ItemSoundFamily" src/   # ≡ grep ItemSoundFamily --kind def
-# note: searched 'ItemSoundFamily' as a definition (stripped leading 'enum')
 ```
+
+The rewrite is silent in text output (since **v1.3.5** — the advisory
+was token noise agents ignored); it rides the `--json` `notes` array so
+machine consumers still see which identifier was searched.
 
 The recognized keywords are owned by each language adapter
 (`class` / `struct` / `enum` / `interface` / `trait` / `record` /

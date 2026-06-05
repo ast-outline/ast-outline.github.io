@@ -167,7 +167,7 @@ Anatomy:
 
 | Element | Meaning |
 | --- | --- |
-| `# <path> (<N> match[es])` | File header. One per file with at least one match. Singular `match` for `N=1`. |
+| `# <path> (<N> match[es])` | File header. One per file with at least one match. Singular `match` for `N=1`. `<path>` is shown relative to the current directory when the file lives under it (absolute otherwise, so it stays resolvable) — the absolute prefix isn't repeated on every file. |
 | `## imports` | Section header. Emitted only when imports contain a match. |
 | `## matches` | Section header. Emitted only when non-import code contains a match. |
 | `class …  L<a>-<b>` / `def …  L<a>-<b>` | Scope frame. Mirrors `outline` indentation — the enclosing class / function chain is reconstructed from the AST so the agent reads which class / method a match lives in without re-opening the file. |
@@ -241,9 +241,6 @@ the output stays scannable) to make the next call correct rather than
 a blind retry. All ride the same `rc=0` / stdout convention:
 
 ```text
-# searched a literal "<keyword> Identifier" → keyword stripped, narrowed to def
-# note: searched 'ItemSoundFamily' as a definition (stripped leading 'enum')
-
 # --kind narrowed to zero, but the pattern matched under other kinds
 # hint: --kind call excluded 3 matches (3 ref) — retry with --kind call,ref or drop --kind
 
@@ -254,10 +251,12 @@ a blind retry. All ride the same `rc=0` / stdout convention:
 # hint: did you mean: MissSortPile (class), MissSortPileGroup (class)?
 ```
 
-The `# note: searched … (stripped leading '<keyword>')` line is the one
-form that also rides the **JSON** `notes` array (it documents a query
-rewrite that applies in both modes); the `# hint:` follow-ups are
-interactive text-mode nudges and are omitted from JSON. See
+These `# hint:` lines are interactive text-mode nudges and are omitted
+from JSON. The query-rewrite advisories — keyword-stripping and regex
+auto-promotion — used to print a `# note:` line here too, but since
+**v1.3.5** they are silent in text output (agents reliably ignored them
+and they only cost tokens); they still ride the **JSON** `notes` array
+for machine consumers. See
 [Empty-result recovery](commands.md#empty-result-recovery) for the
 behavior behind each line.
 
@@ -267,7 +266,9 @@ behavior behind each line.
 
 `show <file> <symbol>` prints each match as a `#`-prefixed header line
 (`# <path>:<start>-<end>  <qualified-name>  (<kind>)`), an optional
-`# in:` breadcrumb of the enclosing scope, then the body.
+`# in:` breadcrumb of the enclosing scope, then the body. As in `grep`,
+`<path>` is relative to the current directory when the file lives under
+it (absolute otherwise).
 
 When `show` is pointed at a **directory** or a quoted **glob** it first
 locates the symbol's definition(s) under that scope (see
