@@ -159,8 +159,6 @@ class PythonAdapter  L41-93
     def parse(self, path: Path) -> ParseResult  L45-93 [def]
         > L47: tree = _PARSER.parse(src)
         > L88: error_count=count_parse_errors(tree.root_node),
-
-# 5 matches in comments/strings hidden — pass --include-noise to see
 ```
 
 Anatomy:
@@ -182,17 +180,26 @@ imports renders just the `## imports` block, no `## matches` header.
 
 ### Noise filter footer
 
-When the default filter swallows matches inside comments / strings, a
-trailer documents what was hidden so the agent never silently sees a
-partial result set:
+When a file's **only** hits are inside comments / strings — so it has
+zero visible matches and its header reads `(0 matches)` — a trailer
+documents what was hidden, so the agent doesn't read the empty header
+and wrongly conclude the symbol is absent:
 
 ```text
+# only_in_comments.py (0 matches)
+
 # 5 matches in comments/strings hidden — pass --include-noise to see
 ```
 
-Pass `--include-noise` to surface them with `[comment]` / `[string]`
-tags inline. With `--kind comment` / `--kind string` this happens
-automatically.
+When a file *does* have visible matches, this footer is suppressed (the
+"there are also N mentions in comments" line is noise agents reliably
+ignore) — the count still rides the JSON `filtered_count` field on every
+file. *(Changed in v1.3.6 — earlier versions printed the footer whenever
+any comment/string match was filtered, regardless of visible matches.)*
+
+Pass `--include-noise` to surface the hidden matches with `[comment]` /
+`[string]` tags inline. With `--kind comment` / `--kind string` this
+happens automatically.
 
 ### Truncation footer (`-m` / `--max-count`)
 

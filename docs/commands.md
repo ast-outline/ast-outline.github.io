@@ -796,15 +796,29 @@ us nor for git. That's intentional: git refuses to descend into a
 parent that was excluded, so descendant negations have no effect
 unless the parent is un-excluded first.
 
-### The `# note:` line
+### The ignored-dirs note
 
-When the walker prunes anything, the output starts with a one-line
-note listing the **unique basenames** of pruned dirs (sorted, deduped
-across nested occurrences, capped at 8 with a `… +N more` tail in
-deep monorepos), with a hint about the escape hatch:
+When the walker prunes directories, a note lists the **unique basenames**
+of pruned dirs (sorted, deduped across nested occurrences, capped at 8
+with a `… +N more` tail in deep monorepos), with a hint about the escape
+hatch:
 
 ```text
-# note: ignored 12 dirs (.git, .gradle, .idea, .next, .pytest_cache, .venv, __pycache__, node_modules) via .gitignore/.ignore + defaults — pass --no-ignore to disable
+ignored 12 dirs (.git, .gradle, .idea, .next, .pytest_cache, .venv, __pycache__, node_modules) via .gitignore/.ignore + defaults — pass --no-ignore to disable
+```
+
+**Where it appears (changed in v1.3.6):**
+
+- On a **successful** batch (files were found, some dirs pruned) the note
+  rides the `--json` `notes` array **only** — not the text output. Agents
+  act on it under 6% of the time and the pruned dirs are almost always
+  junk, so in text it was noise.
+- On an **empty result** (every candidate directory was filtered) it is
+  printed in text too, prefixed `# note:` — there it's the "your folder
+  was filtered, the path isn't empty" guard rather than noise:
+
+```text
+# note: ignored 2 dirs (.venv, node_modules) via .gitignore/.ignore + defaults — pass --no-ignore to disable
 ```
 
 A clean directory (nothing to ignore) emits no note. File-level
@@ -873,9 +887,11 @@ ast-outline grep User.save src/ --exclude tests/
   `# note: invalid --exclude pattern: …` with `rc=0`, honoring the
   LLM-friendly contract.
 
-When `--exclude` contributes to ignored-dir pruning, the existing
-`# note: ignored …` line widens its source list — so an agent
-debugging "where did my folder go" sees its own flag named:
+When `--exclude` contributes to ignored-dir pruning, the ignored-dirs
+note (above) widens its source list — so an agent debugging "where did
+my folder go" sees its own flag named. It follows the same placement as
+that note: the `--json` `notes` array on a successful batch, text on an
+empty result.
 
 ```text
 # note: ignored 3 dirs (__pycache__, generated, tests) via .gitignore/.ignore + defaults + --exclude — pass --no-ignore to disable
