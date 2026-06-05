@@ -914,6 +914,13 @@ One per parsed file, in `outline.files[]` and `digest.files[]`:
   `{query, matches: [{qualified_name, kind, start_line, end_line,
   ancestor_signatures, signature, source}...]}`. A not-found symbol is
   an entry with an empty `matches` list; an ambiguous name has several.
+  In **directory / glob** mode the locator is `directory` / `glob`
+  (exactly one non-empty) and each match carries its own **absolute**
+  `file`; for an ambiguous symbol the re-run guidance echoed in `notes`
+  uses that same absolute form, so a consumer can match the prose note to
+  the structured `file` (text mode renders these paths cwd-relative — JSON
+  keeps them absolute and self-contained). *(The JSON candidate note was
+  cwd-relative in v1.3.5–v1.3.6; aligned to absolute in v1.3.7.)*
 
 `notes` carries non-fatal advisories (an ignored-directory note, a
 regex auto-promotion) — the JSON equivalent of the `# note:` lines the
