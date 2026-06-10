@@ -533,6 +533,73 @@ code view; `--include-noise` brings them back.
 
 ---
 
+## GDScript adapter quirks
+
+The only adapter with a **hand-written parser** instead of
+tree-sitter — no maintained `tree-sitter-gdscript` wheel exists on
+PyPI. Grammar ground truth is the Godot 4 tokenizer/parser sources;
+Godot 3 compatibility shapes are cross-checked against the
+tree-sitter-gdscript grammar. The scanner keeps every logical line in
+two aligned copies — source text and a "shadow" with string contents
+blanked — and all structural decisions read the shadow, so a
+`func fake():` inside a string literal or comment can never produce a
+declaration. Validated against ~1.9k `.gd` files from seven
+open-source Godot projects; a differential run against
+tree-sitter-gdscript agrees on 1891 of 1895 comparable files (the
+four disagreements are a tree-sitter indentation quirk around
+comment-only lines, where this parser matches Godot's tokenizer).
+
+| Source shape | Kind | Notes |
+| --- | --- | --- |
+| `class_name X` + `extends Y` *(either order, or one line)* | `class` | merged into ONE node — the script's implicit class; `Y` lands in `bases` |
+| bare `extends Y` *(no `class_name`)* | `class` | node named after the base — symbol search answers "which scripts extend `Y`" |
+| `signal damaged(amount)` | **`event`** | C# events are the closest canonical kind |
+| `enum State { IDLE, RUNNING }` | `enum` + `enum_member` children | members share the enum's line range — `show` on a member prints the whole enum |
+| `const MAX: float = 1.0` | `field` | `const X = preload("...")` keeps the full value in the signature |
+| `var health: int` | `field` | type from `: T`; `:=` inferred declarations show no type |
+| `var health: int:` + `get:`/`set(v):` block | **`property`** | body folds into the var's line range |
+| `var x: int: get = _g, set = _s` / Godot 3 `setget` | **`property`** | reference forms, inline and block |
+| `func take_damage(n: int) -> void:` | `function` / `method` *(inner class)* | `_init` → `ctor`; `@abstract` funcs are bodyless |
+| `var cb = func(x): ...` | `field` | lambdas are never captured; a block lambda's body still folds into the var's range |
+| `@export var hp := 10` | attrs | annotations ride in `Declaration.attrs`, same- or previous-line |
+
+**Visibility.** Leading `_` → private (GDScript convention), EXCEPT
+engine virtual callbacks (`_ready`, `_process`, `_physics_process`,
+`_input`, `_draw`, `_notification`, …) — they are the script's primary
+API surface and stay public so digest's default private filter doesn't
+hide them. `_on_*` signal handlers and `_helper` names stay private.
+
+**Imports.** `const X = preload("res://...")` and
+`extends "res://path.gd"` register as imports (their byte ranges go
+into `import_regions`, so grep classifies matches inside them as
+`[import]`). `load(` / `preload(` inside function bodies bump
+`[+ N conditional includes]` — runtime deps, not load-on-parse.
+
+**Strings.** Godot allows raw newlines in ANY string literal — not
+just triple-quoted ones (real projects ship multiline plain `"`
+strings). Strings that span lines, and all triple-quoted strings,
+ride in `noise_regions`, so grep matches inside them classify as
+`[string]` and disappear from the default view; `--include-noise`
+brings them back. All of `r"raw"`, `&"StringName"`, `^"NodePath"`,
+`$Node/Path` and `%UniqueNode` scan correctly.
+
+**Godot 3 compatibility.** `export var` / `export(int, 0, 10) var` /
+`onready var` / rpc keywords (`remote`, `master`, `puppet`, …) are
+kept in signatures as source-true text; `setget` makes the var a
+`property`.
+
+**What's NOT done in v1:**
+
+- **Scene / resource files (`.tscn`, `.tres`)** — a separate
+  INI-like text format, would be its own adapter.
+- **Standalone inspector-layout annotations** (`@export_group`,
+  `@export_category`, …) are dropped, not attached to the next
+  declaration — they describe the inspector, not the member.
+- **Per-member line ranges inside `enum { ... }`** — members share
+  the enum's range (see table above).
+
+---
+
 ## TypeScript / JavaScript callback blocks
 
 Modern TS/JS expresses a lot of structure through *function calls that

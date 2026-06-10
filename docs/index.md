@@ -659,6 +659,33 @@ highlighted by Pygments. The italic line under the picker is context
 
     Notable rules: `function M.foo()` (dot) is `KIND_FUNCTION`; `function M:bar()` (colon) is `KIND_METHOD` — the colon is Lua's source-true marker for implicit `self`. Metamethods (`__add`, `__index`, `__tostring`, …) all classify as `KIND_OPERATOR` regardless of declaration shape, so `--kind operator` isolates every protocol declaration. `local function foo()` is private (`local` IS the language's private scope); names starting with `_` (and not `__name__` metamethods) are also private. Direct-return-table modules (`return { foo = function() end, V = 1 }`) walk the returned fields. `require "x"` / `require("x")` / `local Y = require("x")` register as imports — calls inside function bodies are conditional and bump `[+ N conditional includes]`. Long-bracket comments `--[[ ]]` / `--[==[ ]==]` and long strings `[[ ]]` / `[=[ ]=]` ride in `noise_regions` so grep filters matches inside them.
 
+=== ":simple-godotengine: GDScript"
+
+    *A Godot 4 player script — `class_name` + `extends` header with an `@icon` annotation, signals, an enum, a `preload` const, `@export` / `@onready` vars, a property with a `get`/`set` block, engine callbacks, a static factory and an inner class.*
+
+    ```gdscript title="$ ast-outline player.gd"
+    # player.gd [tiny] (74 lines, ~426 tokens, 4 types, 8 methods, 13 fields)
+    ## Player avatar — movement, health and inventory.
+    @icon("res://icons/player.svg") class_name Player extends CharacterBody2D  L3-5
+    signal died(cause)  L7
+    enum State  L10
+        IDLE  L10
+        RUNNING  L10
+    const BulletScene = preload("res://weapons/bullet.tscn")  L15
+    @export var max_health: int  L17
+    @onready var sprite: Sprite2D  L19
+    ## Current health. Clamped by the setter.
+    var health: int  L25-31
+    func _ready() -> void  L36-41
+    func _physics_process(delta: float) -> void  L43-45
+    func take_damage(amount: int, source: Node = null) -> void  L48-51
+    static func from_save(data: Dictionary) -> Player  L56-59
+    class Inventory  L65-73
+        func add(slot: int, item: Resource) -> void  L69-70
+    ```
+
+    Notable rules: the only adapter with a **hand-written parser** (no maintained `tree-sitter-gdscript` wheel exists on PyPI) — declarations are scanned from logical lines with string contents masked, so a `func fake():` inside a string literal can never produce a declaration. `class_name X` + `extends Y` merge into ONE class node (the script's implicit class); a bare `extends Y` becomes a class node named after the base, so symbol search answers "which scripts extend `CharacterBody2D`". `signal` → `KIND_EVENT`; `_init` → ctor; `var` with `get`/`set` blocks, `get = `/`set = ` references, or legacy Godot 3 `setget` → `KIND_PROPERTY`; lambdas are never captured. Engine virtual callbacks (`_ready`, `_process`, …) stay public so they survive digest's private filter; other `_name` members are private by convention. `const X = preload("res://...")` and `extends "res://..."` register as imports — `load(`/`preload(` inside function bodies bump `[+ N conditional includes]`. Godot 3 shapes (`export var` / `onready var` / rpc keywords) are kept in signatures. Strings spanning lines (Godot allows raw newlines in ANY string literal) ride in `noise_regions` so grep filters matches inside them.
+
 === ":simple-swift: Swift"
 
     *A typical service file — a `Codable` struct, a raw-valued `enum`, a `protocol`, a `@MainActor` class conforming to it, and an `extension` adding publisher-based API.*
@@ -1010,8 +1037,8 @@ answer *"what methods exist here?"*.
 
     C#, C++ (incl. Unreal Engine), Python, TypeScript, JavaScript,
     Java, Kotlin, Scala, Go, Rust, PHP, Ruby (incl. Rails), Lua,
-    Swift, CSS, SCSS, SQL (PostgreSQL primary), Markdown, YAML — same
-    digest format, same legend.
+    GDScript (Godot 4 + 3), Swift, CSS, SCSS, SQL (PostgreSQL
+    primary), Markdown, YAML — same digest format, same legend.
 
 </div>
 
@@ -1279,6 +1306,7 @@ but it's a separate add-on, not a redesign.
 | PHP        | `.php`, `.phtml`, `.phps`, `.php8` |
 | Ruby       | `.rb`, `.rake`, `.gemspec`, `.ru`, `Rakefile`, `Gemfile` *(Rails associations recognised)* |
 | Lua        | `.lua`, `.wlua` *(vanilla 5.1–5.4; `function M:foo` → method, metamethods → operator; covers Neovim configs, LÖVE games, OpenResty / Nginx, Redis scripts)* |
+| GDScript   | `.gd` *(Godot 4 + Godot 3; hand-written parser — no tree-sitter wheel exists; `class_name`/`extends` merged into the script's implicit class, signals → events, properties with `get`/`set`/`setget`, `preload` → imports, engine callbacks stay public)* |
 | Swift      | `.swift` *(structs, enums, protocols, extensions, actors; generics & protocol conformance)* |
 | CSS        | `.css` |
 | SCSS       | `.scss` *(mixins, functions, variables, placeholders; `&` resolves against parent)* |
