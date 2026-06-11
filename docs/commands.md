@@ -212,7 +212,7 @@ The outcome depends on how many definitions carry that name:
   you to re-run against one file:
 
   ```text
-  # note: 3 definitions of 'MailSpec' — re-run with one of: Mail/MailSpec.cs:10 (class), Admin/MailSpec.cs:22 (class), Tests/MailSpec.cs:5 (class)
+  # note: 3 definitions of 'MailSpec' — re-run with one of: Mail/MailSpec.cs:10-42 (class), Admin/MailSpec.cs:22-31 (class), Tests/MailSpec.cs:5-19 (class)
   ```
 
   This matches how agents disambiguate in practice — pick one definition
@@ -221,9 +221,22 @@ The outcome depends on how many definitions carry that name:
   you want. *(Changed in v1.3.2 — v1.3.0/v1.3.1 dumped every body under
   an `… all shown below` note.)*
 
-- **No match** → a `# note: symbol not found` line, plus a
-  `# hint: did you mean: …?` suggestion when a close name exists (the
-  same edit-distance recovery `grep` uses). Exit code is still **0**.
+- **No match** → a `# note: symbol not found` line. For a **file**
+  target, the file's own directory is then scanned (one level, no
+  recursion) and a hint points to the definition when a sibling file
+  has it *(added in v1.6.0 — the dominant real-world miss is a
+  right-class-wrong-file guess)*:
+
+  ```text
+  # note: symbol not found: ThingIdGenerator in ThingData.cs
+  # hint: defined in the same directory: ThingIdGenerator.cs:27-58 (class) — re-run show against it
+  ```
+
+  The rescue only ever **points** — it never prints a body from a file
+  you didn't ask for. When nothing nearby matches either, a
+  `# hint: did you mean: …?` suggestion fires when a close name exists
+  (the same edit-distance recovery `grep` uses, with the pool built
+  from the file and its siblings). Exit code is still **0**.
 - **A glob that matches no files** → `# note: no files match glob: …`
   (exit 0). A plain non-glob path that doesn't exist still gets the
   precise `# note: file not found` — the glob branch only triggers on a
@@ -284,9 +297,13 @@ docstrings live inside the method body).
 
 A code-search command that returns matches **annotated with their
 enclosing class/function** and a **kind classification** (`[def]`,
-`[import]`; calls and refs render untagged because the line shape —
-identifier-followed-by-`(` or not — makes them obvious). Comments and
-string literals are filtered out by default.
+`[import]`, `[string]`; calls and refs render untagged because the
+line shape — identifier-followed-by-`(` or not — makes them obvious).
+Comments are filtered out by default. String literals are **searched
+and shown**, tagged `[string]` *(changed in v1.6.0)*: strings are
+program data — dict/config/translation keys, asset paths,
+`animator.Play("State")` reflection targets — and hiding a hit there
+hands the agent a silent false "not used".
 
 ```bash
 ast-outline grep User.save src/
@@ -357,14 +374,15 @@ ast-outline grep --kind import User src/             # where User is imported
 
 Accepts `def`, `call`, `ref`, `import`, `comment`, `string`. Both
 repeated (`--kind def --kind call`) and comma-separated
-(`--kind def,call`) forms work. `comment` / `string` auto-enable
-`--include-noise` — they'd otherwise be filtered out before the kind
-filter ever sees them.
+(`--kind def,call`) forms work. `comment` auto-enables
+`--include-noise` — it would otherwise be filtered out before the
+kind filter ever sees it (`string` needs no special casing: string
+matches are visible by default since v1.6.0).
 
 ### POSIX-style flags
 
 Familiar from `grep` / `rg`, all operate on the AST-aware base so
-counts and file lists exclude docstring noise:
+counts and file lists exclude comment noise:
 
 | Flag | Behavior |
 |------|----------|
@@ -454,7 +472,7 @@ turns a no-match into a long stall.
 
 | Flag | Behavior |
 |------|----------|
-| `--include-noise` | Include matches inside comments / strings (filtered by default) |
+| `--include-noise` | Include matches inside comments (hidden by default; string literals are always searched) |
 | `--no-ignore` | Disable `.gitignore` / `.ignore` filtering |
 | `--exclude GLOB` | Skip paths matching gitwildmatch GLOB (repeatable; `.gitignore` syntax; `!` negates; anchored at project root; applies even with `--no-ignore`). See the `--exclude` section under [Directory walks](#-exclude-glob-narrow-the-walk-inline). |
 
@@ -693,13 +711,34 @@ ast-outline help show
 ast-outline help digest
 ```
 
-### `--lang <name>`
+### Extensionless files — shebang detection
 
-Force a specific adapter when the file extension is ambiguous or
-non-standard. Mostly for fixtures and one-off pipelines:
+An **explicit file argument** with no extension is resolved by its
+`#!` line *(added in v1.6.0)*. Unix-convention CLI scripts — a
+single-file Python tool installed as `~/.local/bin/tool`, no `.py` —
+just work across all four commands:
 
 ```bash
-ast-outline --lang python README.legacy
+ast-outline outline ~/.local/bin/tool        # #!/usr/bin/env python3 → Python adapter
+ast-outline grep route ~/.local/bin/tool
+```
+
+`env` indirection is unwrapped (`-S`, flags with arguments like
+`-u VAR`, and `VAR=value` assignments are skipped) and version
+suffixes are normalized (`python3.13` → `python`, `lua5.4` → `lua`).
+Recognized interpreters: `python` / `pypy` / `uv` (the
+`#!/usr/bin/env -S uv run --script` single-file-script form runs
+Python), `node` / `deno` / `bun` / `ts-node` / `tsx`, `ruby`, `lua` /
+`luajit`, `php`, `swift`.
+
+Scoped to explicit file inputs only — **directory walks still filter
+by extension** and never open extensionless files to sniff them. When
+detection can't help (no shebang, or an unsupported interpreter like
+`bash`), the failure note says exactly that — including in `grep`,
+where "no matches" must never silently mean "file was skipped":
+
+```text
+# note: 'tool' is extensionless and its shebang interpreter 'bash' is not supported (recognized: bun, deno, lua, luajit, node, nodejs, php, pypy, python, ruby, swift, ts-node, tsx, uv)
 ```
 
 ---
@@ -918,3 +957,24 @@ ast-outline show Player.cs DoesNotExist
 This avoids the common failure mode where an agent treats `rc=1` as
 "empty result" or aborts the chain. Genuine internal bugs still exit
 non-zero.
+
+## Flag forgiveness — mistaken invocations that just run
+
+When a failed invocation has **exactly one sensible reading**, the CLI
+runs that reading and prefixes a `# note:` documenting the
+substitution, instead of bouncing the agent for a retry turn *(added
+in v1.6.0 — these four confusions were the most frequent in real
+agent usage)*:
+
+| You typed | What runs | Note |
+|-----------|-----------|------|
+| `outline … --format=names` / `--oneline` (incl. the bare `ast-outline FILE --format=…` form) | `digest` with that preset on the same paths | ``--format` / `--oneline` are `digest` flags — ran `digest` …` |
+| `outline … --signature` | the same `outline`, flag dropped | `outline output is already signature-level — flag ignored` |
+| `show FILE` (no symbol) | `outline FILE` | ``show` needs a symbol name — printed the file's outline instead …` |
+| `grep -r` / `-n` / `-rn` | the same `grep`, flags dropped | recursion and line numbers are always on — `ignored` |
+
+One repair attempt only — if the substituted invocation still fails to
+parse (extra unknown flags in the same call), the **original** error
+is reported. `--json` mode never repairs: a note line before a JSON
+document would break consumers parsing stdout, so it keeps the strict
+error envelope with the cross-command hint.

@@ -172,7 +172,8 @@ Anatomy:
 | `> L<n>: <code>` | A match line. Indented one level deeper than its scope frame. Whitespace inside `<code>` is preserved verbatim from the source. |
 | `[def]` | Trailing tag on the declaration line itself when the symbol is **defined** there (not just mentioned). |
 | `[import]` | Trailing tag on a match inside an `import` / `use` / `using` / `require` statement — including multi-line block forms (Python `from x import (\n  Y,\n)`, Go `import (...)`, Rust `use foo::{...}`, etc., classified via AST, not line-prefix). |
-| `[comment]` / `[string]` | Trailing tags for noise matches. **Only surface with `--include-noise`** (or `--kind comment` / `--kind string`, which auto-enables noise). |
+| `[string]` | Trailing tag on a match inside a string literal. **Visible by default** *(since v1.6.0)* — strings are program data (dict/config/translation keys, asset paths, reflection targets), and a hidden hit there reads as a false "not used". The tag keeps the hit easy to discount when it IS irrelevant. |
+| `[comment]` | Trailing tag for comment matches. **Only surfaces with `--include-noise`** (or `--kind comment`, which auto-enables it). |
 | *(no tag)* | Calls and bare references. The line shape — identifier-followed-by-`(` or not — distinguishes them, so an explicit `[call]` / `[ref]` tag would be redundant. |
 
 The empty-section rule keeps output dense: a file whose only hits are
@@ -180,15 +181,16 @@ imports renders just the `## imports` block, no `## matches` header.
 
 ### Noise filter footer
 
-When a file's **only** hits are inside comments / strings — so it has
-zero visible matches and its header reads `(0 matches)` — a trailer
+When a file's **only** hits are inside comments — so it has zero
+visible matches and its header reads `(0 matches)` — a trailer
 documents what was hidden, so the agent doesn't read the empty header
-and wrongly conclude the symbol is absent:
+and wrongly conclude the symbol is absent *(string matches are visible
+by default since v1.6.0, so only comments can be hidden)*:
 
 ```text
 # only_in_comments.py (0 matches)
 
-# 5 matches in comments/strings hidden — pass --include-noise to see
+# 5 matches in comments hidden — pass --include-noise to see
 ```
 
 When a file *does* have visible matches, this footer is suppressed (the
@@ -197,9 +199,8 @@ ignore) — the count still rides the JSON `filtered_count` field on every
 file. *(Changed in v1.3.6 — earlier versions printed the footer whenever
 any comment/string match was filtered, regardless of visible matches.)*
 
-Pass `--include-noise` to surface the hidden matches with `[comment]` /
-`[string]` tags inline. With `--kind comment` / `--kind string` this
-happens automatically.
+Pass `--include-noise` to surface the hidden matches with `[comment]`
+tags inline. With `--kind comment` this happens automatically.
 
 ### Truncation footer (`-m` / `--max-count`)
 
@@ -228,7 +229,7 @@ src/ast_outline/adapters/typescript.py:6
 ```
 
 Both operate on the AST-aware base, so counts and file lists exclude
-docstring / comment noise (unless `--include-noise` is set).
+comment noise (unless `--include-noise` is set).
 
 ### Empty result
 
@@ -287,7 +288,7 @@ and emits a leading `# note:` that says where it landed:
 # note: found 'MailSpec' (class) in Assets/Scripts/App/Mail/MailSpec.cs
 
 # several definitions — NO body; the note lists candidates to re-run against
-# note: 3 definitions of 'MailSpec' — re-run with one of: Mail/MailSpec.cs:10 (class), Admin/MailSpec.cs:22 (class), Tests/MailSpec.cs:5 (class)
+# note: 3 definitions of 'MailSpec' — re-run with one of: Mail/MailSpec.cs:10-42 (class), Admin/MailSpec.cs:22-31 (class), Tests/MailSpec.cs:5-19 (class)
 
 # nothing matched — a close name in scope is offered (same did-you-mean as grep)
 # note: symbol not found: MailSpc in Assets/Scripts/App/Mail
@@ -295,6 +296,17 @@ and emits a leading `# note:` that says where it landed:
 
 # a glob that matched no files at all
 # note: no files match glob: Assets/Scripts/**/*.kt
+```
+
+A **file**-target miss gets the same-directory rescue *(added in
+v1.6.0)*: the file's own directory is scanned (one level, no
+recursion) and the hint points to where the symbol actually lives —
+the rescue only ever **points**, it never prints a body from a file
+you didn't ask for:
+
+```text
+# note: symbol not found: ThingIdGenerator in ThingData.cs
+# hint: defined in the same directory: ThingIdGenerator.cs:27-58 (class) — re-run show against it
 ```
 
 `show` keeps a **single-shape contract**: when it prints *content* that
@@ -512,10 +524,12 @@ bodies / `if` / loops bump the conditional counter.
 level) and **long-bracket strings** (`[[ ]]`, `[=[ ]=]`) span
 multiple lines, so the line-prefix heuristics in `grep` can't
 classify matches inside them. The adapter writes their byte ranges
-into `noise_regions`, where the same noise-filter path used for
+into `noise_regions`, where the same classification path used for
 Python docstrings / multi-line strings handles them. Matches inside
-classify as `[comment]` / `[string]` and disappear from the default
-code view; `--include-noise` brings them back.
+long-bracket comments classify as `[comment]` and stay hidden by
+default (`--include-noise` brings them back); matches inside
+long-bracket strings classify as `[string]` and are visible by
+default *(since v1.6.0)*.
 
 **What's NOT done in v1:**
 
@@ -579,8 +593,8 @@ into `import_regions`, so grep classifies matches inside them as
 just triple-quoted ones (real projects ship multiline plain `"`
 strings). Strings that span lines, and all triple-quoted strings,
 ride in `noise_regions`, so grep matches inside them classify as
-`[string]` and disappear from the default view; `--include-noise`
-brings them back. All of `r"raw"`, `&"StringName"`, `^"NodePath"`,
+`[string]` — visible by default *(since v1.6.0)*, exactly tagged even
+across line boundaries. All of `r"raw"`, `&"StringName"`, `^"NodePath"`,
 `$Node/Path` and `%UniqueNode` scan correctly.
 
 **Godot 3 compatibility.** `export var` / `export(int, 0, 10) var` /
@@ -812,8 +826,9 @@ surface as imports — three ways:
 
 Inline `<script>` (no `src`) — including `<script type="module">` with
 import statements — is **content**, not an import. The body lands in
-`noise_regions` (kind `"string"`); `grep --include-noise` surfaces
-matches inside it.
+`noise_regions` (kind `"string"`), so `grep` shows matches inside it
+tagged `[string]` *(visible by default since v1.6.0 — inline JS is
+code)*.
 
 `<base href="…">` is **not** classified as an import — it sets the
 document base URL for relative URLs, semantically different from
@@ -822,10 +837,10 @@ pulling an external resource.
 ### Noise / grep filtering
 
 - `<script>` and `<style>` element bodies → `noise_regions` (kind
-  `"string"`). `grep` filters matches inside them by default.
-- HTML comments `<!-- … -->` → `noise_regions` (kind `"comment"`).
-
-Pass `--include-noise` to `grep` to surface filtered matches.
+  `"string"`). `grep` shows matches inside them tagged `[string]`
+  *(visible by default since v1.6.0)*.
+- HTML comments `<!-- … -->` → `noise_regions` (kind `"comment"`) —
+  hidden by default; pass `--include-noise` to surface them.
 
 ### Templated HTML recovery
 
