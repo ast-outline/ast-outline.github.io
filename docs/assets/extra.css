@@ -824,3 +824,39 @@ pre.ast-console__out code {
 .ast-compare .yes { color: #2ea043; font-weight: 700; }
 .ast-compare .no  { color: #cf222e; }
 .ast-compare .meh { color: #8b949e; }
+
+/* ─── Content tabs beyond 20 ──────────────────────────────────
+   Material for MkDocs only generates content-tab CSS for the first
+   20 tabs in a group. The "See it live" language picker on the home
+   page has more than that, so every tab past the 20th (Vue, SQL, …)
+   selected a radio with no matching `display:block` rule and rendered
+   a BLANK panel. These rules continue the theme's alternate-style
+   mechanism — active-block display, flex `order`, and active-label
+   highlight — for indices 21–26 (a little headroom for future
+   languages). Drop this block if the picker ever falls back under 20
+   tabs, or if the theme raises its own limit. */
+.md-typeset .tabbed-set > input:nth-child(21):checked ~ .tabbed-content > :nth-child(21),
+.md-typeset .tabbed-set > input:nth-child(22):checked ~ .tabbed-content > :nth-child(22),
+.md-typeset .tabbed-set > input:nth-child(23):checked ~ .tabbed-content > :nth-child(23),
+.md-typeset .tabbed-set > input:nth-child(24):checked ~ .tabbed-content > :nth-child(24),
+.md-typeset .tabbed-set > input:nth-child(25):checked ~ .tabbed-content > :nth-child(25),
+.md-typeset .tabbed-set > input:nth-child(26):checked ~ .tabbed-content > :nth-child(26) {
+  display: block;
+}
+
+.md-typeset .tabbed-block:nth-child(21) { order: 21; }
+.md-typeset .tabbed-block:nth-child(22) { order: 22; }
+.md-typeset .tabbed-block:nth-child(23) { order: 23; }
+.md-typeset .tabbed-block:nth-child(24) { order: 24; }
+.md-typeset .tabbed-block:nth-child(25) { order: 25; }
+.md-typeset .tabbed-block:nth-child(26) { order: 26; }
+
+.md-typeset .tabbed-set > input:nth-child(21):checked ~ .tabbed-labels > :nth-child(21),
+.md-typeset .tabbed-set > input:nth-child(22):checked ~ .tabbed-labels > :nth-child(22),
+.md-typeset .tabbed-set > input:nth-child(23):checked ~ .tabbed-labels > :nth-child(23),
+.md-typeset .tabbed-set > input:nth-child(24):checked ~ .tabbed-labels > :nth-child(24),
+.md-typeset .tabbed-set > input:nth-child(25):checked ~ .tabbed-labels > :nth-child(25),
+.md-typeset .tabbed-set > input:nth-child(26):checked ~ .tabbed-labels > :nth-child(26) {
+  color: var(--md-default-fg-color);
+  border-color: var(--md-default-fg-color);
+}
