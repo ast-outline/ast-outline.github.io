@@ -893,6 +893,54 @@ tokens and won't match.
 
 ---
 
+## Vue (`.vue`) adapter format
+
+Vue Single-File Components hold up to three top-level sections in three
+different languages, so the adapter is **composite**: it parses the
+`.vue` file once with tree-sitter-html to find the `<template>`,
+`<script>`, and `<style>` blocks, then delegates each block to the
+grammar that already ships for its language. Nothing new is added to
+the dependency set — the HTML, TypeScript, and CSS parsers are reused.
+
+| Section | Parsed as | Renders like |
+| --- | --- | --- |
+| `<template>` | HTML | CSS-selector tokens, heading previews, bare-container drop/lift (see above) |
+| `<script>` / `<script setup>` | TypeScript | class / interface / enum / function / type alias / lexical declarations / imports |
+| `<style>` | CSS | rule sets, at-rule wrappers, `@import` → imports |
+
+Declarations from all three sections merge into one flat outline in
+document order. Each declaration's byte offsets and line numbers are
+rewritten from section-relative to **file-relative**, so `show` and
+`grep` address the original `.vue` line numbers with no remapping:
+
+```text
+# counter.vue [tiny] (44 lines, ~166 tokens, 2 methods, 2 fields)
+div.counter  L2-6
+    h2: Counter: {{ count }}  L3
+    button  L4
+    button  L5
+
+const count = ref(0)  L12
+
+function increment(): void  L15-17
+
+.counter  L25-28
+```
+
+The `<template>` inherits HTML's ERROR-node recovery, so Vue directives
+that tree-sitter-html can't parse (`v-for`, `v-if`, `@click`, `:key`)
+don't blank the outline — the structural skeleton still renders. Both
+Composition-API (`<script setup>`) and Options-API components work, and
+multiple `<script>` blocks in one file are each parsed.
+
+**Deliberate exclusions** (may revisit): `<script lang="tsx">` /
+`lang="jsx">` use the plain TypeScript grammar (a safe superset);
+`<style lang="scss">` uses the CSS grammar (the common SCSS subset CSS
+also accepts — SCSS-only `@mixin` / `$variable` aren't surfaced); custom
+blocks (`<i18n>`, `<docs>`, …) are ignored.
+
+---
+
 ## Errors and broken outlines
 
 When tree-sitter recovers from syntax errors, the outline is kept
