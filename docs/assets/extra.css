@@ -546,7 +546,7 @@ pre.ast-console__out code {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.2rem;
+  gap: 0.18rem;
   border: 0;
   border-bottom: 0;
   box-shadow: none;
@@ -573,16 +573,18 @@ pre.ast-console__out code {
 
   display: inline-flex;
   align-items: center;
-  gap: 0.3em;
-  padding: 0.18em 0.6em;
+  gap: 0.25em;
+  /* Compact enough that the full language set fits in ~2 rows at a
+     typical content width — bump back up if the picker ever shrinks. */
+  padding: 0.12em 0.46em;
   margin: 0;
   border: 1px solid var(--md-default-fg-color--lightest);
   border-radius: 999px;
   font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-weight: 500;
   letter-spacing: 0.01em;
-  line-height: 1.45;
+  line-height: 1.4;
   color: var(--md-default-fg-color--light);
   background: var(--md-code-bg-color);
   cursor: pointer;
@@ -597,34 +599,46 @@ pre.ast-console__out code {
   font-size: 0.85em;
 }
 
-/* Per-language accent — drives icon color, hover, active. Order MUST
-   match the tab order of the `.ast-langs` tab-set in index.md:
+/* Per-language accent — the ONLY per-language thing you maintain. Each
+   line tints one tab's icon (default state) and its hover/active fill in
+   that language's brand color, in `index.md` tab order:
    1 Python, 2 TypeScript, 3 JavaScript, 4 Rust, 5 C#, 6 C++, 7 Java,
-   8 Kotlin, 9 Scala, 10 Go, 11 PHP, 12 Ruby, 13 Lua, 14 Swift,
-   15 CSS, 16 SCSS, 17 YAML, 18 Markdown, 19 SQL. Inserting a language
-   between existing tabs shifts every subsequent index — when you add
-   a tab, update this list AND the two :checked blocks below, in
-   lockstep, or the trailing tabs lose their accent and active fill
-   (this is what silently broke the SQL tab when Lua was added). */
-.ast-langs .tabbed-labels > label:nth-child(1)  { --ast-lang-accent: #3776ab; }
-.ast-langs .tabbed-labels > label:nth-child(2)  { --ast-lang-accent: #2b7489; }
-.ast-langs .tabbed-labels > label:nth-child(3)  { --ast-lang-accent: #ca8a04; }
-.ast-langs .tabbed-labels > label:nth-child(4)  { --ast-lang-accent: #ce422b; }
-.ast-langs .tabbed-labels > label:nth-child(5)  { --ast-lang-accent: #9b4f96; }
-.ast-langs .tabbed-labels > label:nth-child(6)  { --ast-lang-accent: #f34b7d; }
-.ast-langs .tabbed-labels > label:nth-child(7)  { --ast-lang-accent: #d9701f; }
-.ast-langs .tabbed-labels > label:nth-child(8)  { --ast-lang-accent: #7f52ff; }
-.ast-langs .tabbed-labels > label:nth-child(9)  { --ast-lang-accent: #dc322f; }
-.ast-langs .tabbed-labels > label:nth-child(10) { --ast-lang-accent: #00add8; }
-.ast-langs .tabbed-labels > label:nth-child(11) { --ast-lang-accent: #777bb4; }
-.ast-langs .tabbed-labels > label:nth-child(12) { --ast-lang-accent: #cc342d; }
-.ast-langs .tabbed-labels > label:nth-child(13) { --ast-lang-accent: #000080; }
-.ast-langs .tabbed-labels > label:nth-child(14) { --ast-lang-accent: #f05138; }
-.ast-langs .tabbed-labels > label:nth-child(15) { --ast-lang-accent: #1572b6; }
-.ast-langs .tabbed-labels > label:nth-child(16) { --ast-lang-accent: #cf649a; }
-.ast-langs .tabbed-labels > label:nth-child(17) { --ast-lang-accent: #6e7681; }
-.ast-langs .tabbed-labels > label:nth-child(18) { --ast-lang-accent: #4a90e2; }
-.ast-langs .tabbed-labels > label:nth-child(19) { --ast-lang-accent: #336791; }
+   8 Kotlin, 9 Scala, 10 Go, 11 PHP, 12 Ruby, 13 Lua, 14 GDScript,
+   15 Swift, 16 CSS, 17 SCSS, 18 YAML, 19 Markdown, 20 HTML, 21 Vue,
+   22 SQL.
+
+   Adding a language: append ONE line here at its tab ordinal (and if you
+   insert mid-list, the brand colors below it shift by one — re-pair
+   them). That's it. The active-fill / icon / content-display machinery
+   below is generated generically up to nth-child(30) and reads this
+   variable, so a new tab still highlights and shows its panel even with
+   NO accent line — it just falls back to the default gray accent until
+   you add its color. (Previously these three blocks were hand-listed to
+   19, so every new language past 19 silently lost its active fill — the
+   SQL/Lua/Vue breakages. No longer.) Bump the `30`s if the picker ever
+   exceeds 30 languages. */
+.ast-langs .tabbed-labels > label:nth-child(1) { --ast-lang-accent: #3776ab; }  /* Python */
+.ast-langs .tabbed-labels > label:nth-child(2) { --ast-lang-accent: #2b7489; }  /* TypeScript */
+.ast-langs .tabbed-labels > label:nth-child(3) { --ast-lang-accent: #ca8a04; }  /* JavaScript */
+.ast-langs .tabbed-labels > label:nth-child(4) { --ast-lang-accent: #ce422b; }  /* Rust */
+.ast-langs .tabbed-labels > label:nth-child(5) { --ast-lang-accent: #9b4f96; }  /* C# */
+.ast-langs .tabbed-labels > label:nth-child(6) { --ast-lang-accent: #f34b7d; }  /* C++ */
+.ast-langs .tabbed-labels > label:nth-child(7) { --ast-lang-accent: #d9701f; }  /* Java */
+.ast-langs .tabbed-labels > label:nth-child(8) { --ast-lang-accent: #7f52ff; }  /* Kotlin */
+.ast-langs .tabbed-labels > label:nth-child(9) { --ast-lang-accent: #dc322f; }  /* Scala */
+.ast-langs .tabbed-labels > label:nth-child(10) { --ast-lang-accent: #00add8; }  /* Go */
+.ast-langs .tabbed-labels > label:nth-child(11) { --ast-lang-accent: #777bb4; }  /* PHP */
+.ast-langs .tabbed-labels > label:nth-child(12) { --ast-lang-accent: #cc342d; }  /* Ruby */
+.ast-langs .tabbed-labels > label:nth-child(13) { --ast-lang-accent: #000080; }  /* Lua */
+.ast-langs .tabbed-labels > label:nth-child(14) { --ast-lang-accent: #478cbf; }  /* GDScript */
+.ast-langs .tabbed-labels > label:nth-child(15) { --ast-lang-accent: #f05138; }  /* Swift */
+.ast-langs .tabbed-labels > label:nth-child(16) { --ast-lang-accent: #1572b6; }  /* CSS */
+.ast-langs .tabbed-labels > label:nth-child(17) { --ast-lang-accent: #cf649a; }  /* SCSS */
+.ast-langs .tabbed-labels > label:nth-child(18) { --ast-lang-accent: #6e7681; }  /* YAML */
+.ast-langs .tabbed-labels > label:nth-child(19) { --ast-lang-accent: #4a90e2; }  /* Markdown */
+.ast-langs .tabbed-labels > label:nth-child(20) { --ast-lang-accent: #e34c26; }  /* HTML */
+.ast-langs .tabbed-labels > label:nth-child(21) { --ast-lang-accent: #42b883; }  /* Vue */
+.ast-langs .tabbed-labels > label:nth-child(22) { --ast-lang-accent: #336791; }  /* SQL */
 
 /* Icon picks up the language accent in the default state. mkdocs-material
    inlines the SVG without an explicit `fill` attribute, so without the
@@ -658,7 +672,11 @@ pre.ast-console__out code {
    label isn't a direct sibling of any input). Instead we count the
    `:checked` input by `:nth-child` and reach across to the label at
    the same ordinal inside `.tabbed-labels` via `~`. One rule per
-   ordinal — N=19 today, expand the list when adding more languages. */
+   ordinal, generated up to 30 so it covers far more tabs than exist —
+   you do NOT touch this list when adding a language (see the accent
+   note above). The fill color is `var(--ast-lang-accent)`, so each tab
+   self-colors from its accent line and degrades to the default gray if
+   none is set. */
 .md-typeset .ast-langs .tabbed-set > input:nth-child(1):checked ~ .tabbed-labels > label:nth-child(1),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > label:nth-child(2),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > label:nth-child(3),
@@ -677,7 +695,18 @@ pre.ast-console__out code {
 .md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17),
 .md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18),
-.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) {
+.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(20):checked ~ .tabbed-labels > label:nth-child(20),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(21):checked ~ .tabbed-labels > label:nth-child(21),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(22):checked ~ .tabbed-labels > label:nth-child(22),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(23):checked ~ .tabbed-labels > label:nth-child(23),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(24):checked ~ .tabbed-labels > label:nth-child(24),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(25):checked ~ .tabbed-labels > label:nth-child(25),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(26):checked ~ .tabbed-labels > label:nth-child(26),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(27):checked ~ .tabbed-labels > label:nth-child(27),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(28):checked ~ .tabbed-labels > label:nth-child(28),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(29):checked ~ .tabbed-labels > label:nth-child(29),
+.md-typeset .ast-langs .tabbed-set > input:nth-child(30):checked ~ .tabbed-labels > label:nth-child(30) {
   border-color: var(--ast-lang-accent);
   color: #fff;
   background: var(--ast-lang-accent);
@@ -690,62 +719,65 @@ pre.ast-console__out code {
    brand-colored glyph on a brand-colored fill loses all contrast,
    so we force white explicitly on every nested element. */
 .md-typeset .ast-langs .tabbed-set > input:nth-child(1):checked ~ .tabbed-labels > label:nth-child(1) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(1):checked ~ .tabbed-labels > label:nth-child(1) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(1):checked ~ .tabbed-labels > label:nth-child(1) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(1):checked ~ .tabbed-labels > label:nth-child(1) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > label:nth-child(2) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > label:nth-child(2) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > label:nth-child(2) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > label:nth-child(2) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > label:nth-child(3) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > label:nth-child(3) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > label:nth-child(3) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > label:nth-child(3) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(4):checked ~ .tabbed-labels > label:nth-child(4) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(4):checked ~ .tabbed-labels > label:nth-child(4) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(4):checked ~ .tabbed-labels > label:nth-child(4) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(4):checked ~ .tabbed-labels > label:nth-child(4) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(5):checked ~ .tabbed-labels > label:nth-child(5) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(5):checked ~ .tabbed-labels > label:nth-child(5) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(5):checked ~ .tabbed-labels > label:nth-child(5) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(5):checked ~ .tabbed-labels > label:nth-child(5) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(6):checked ~ .tabbed-labels > label:nth-child(6) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(6):checked ~ .tabbed-labels > label:nth-child(6) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(6):checked ~ .tabbed-labels > label:nth-child(6) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(6):checked ~ .tabbed-labels > label:nth-child(6) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(7):checked ~ .tabbed-labels > label:nth-child(7) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(7):checked ~ .tabbed-labels > label:nth-child(7) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(7):checked ~ .tabbed-labels > label:nth-child(7) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(7):checked ~ .tabbed-labels > label:nth-child(7) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(8):checked ~ .tabbed-labels > label:nth-child(8) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(8):checked ~ .tabbed-labels > label:nth-child(8) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(8):checked ~ .tabbed-labels > label:nth-child(8) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(8):checked ~ .tabbed-labels > label:nth-child(8) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(9):checked ~ .tabbed-labels > label:nth-child(9) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(9):checked ~ .tabbed-labels > label:nth-child(9) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(9):checked ~ .tabbed-labels > label:nth-child(9) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(9):checked ~ .tabbed-labels > label:nth-child(9) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(10):checked ~ .tabbed-labels > label:nth-child(10) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(10):checked ~ .tabbed-labels > label:nth-child(10) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(10):checked ~ .tabbed-labels > label:nth-child(10) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(10):checked ~ .tabbed-labels > label:nth-child(10) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(11):checked ~ .tabbed-labels > label:nth-child(11) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(11):checked ~ .tabbed-labels > label:nth-child(11) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(11):checked ~ .tabbed-labels > label:nth-child(11) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(11):checked ~ .tabbed-labels > label:nth-child(11) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(12):checked ~ .tabbed-labels > label:nth-child(12) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(12):checked ~ .tabbed-labels > label:nth-child(12) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(12):checked ~ .tabbed-labels > label:nth-child(12) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(12):checked ~ .tabbed-labels > label:nth-child(12) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(13):checked ~ .tabbed-labels > label:nth-child(13) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(13):checked ~ .tabbed-labels > label:nth-child(13) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(13):checked ~ .tabbed-labels > label:nth-child(13) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(13):checked ~ .tabbed-labels > label:nth-child(13) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(14):checked ~ .tabbed-labels > label:nth-child(14) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(14):checked ~ .tabbed-labels > label:nth-child(14) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(14):checked ~ .tabbed-labels > label:nth-child(14) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(14):checked ~ .tabbed-labels > label:nth-child(14) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(15):checked ~ .tabbed-labels > label:nth-child(15) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(15):checked ~ .tabbed-labels > label:nth-child(15) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(15):checked ~ .tabbed-labels > label:nth-child(15) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(15):checked ~ .tabbed-labels > label:nth-child(15) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > label:nth-child(16) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > label:nth-child(17) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18) .twemoji svg path,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > label:nth-child(18) .twemoji *,
 .md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) .twemoji,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) .twemoji svg,
-.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) .twemoji svg path {
+.md-typeset .ast-langs .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > label:nth-child(19) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(20):checked ~ .tabbed-labels > label:nth-child(20) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(20):checked ~ .tabbed-labels > label:nth-child(20) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(21):checked ~ .tabbed-labels > label:nth-child(21) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(21):checked ~ .tabbed-labels > label:nth-child(21) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(22):checked ~ .tabbed-labels > label:nth-child(22) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(22):checked ~ .tabbed-labels > label:nth-child(22) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(23):checked ~ .tabbed-labels > label:nth-child(23) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(23):checked ~ .tabbed-labels > label:nth-child(23) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(24):checked ~ .tabbed-labels > label:nth-child(24) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(24):checked ~ .tabbed-labels > label:nth-child(24) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(25):checked ~ .tabbed-labels > label:nth-child(25) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(25):checked ~ .tabbed-labels > label:nth-child(25) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(26):checked ~ .tabbed-labels > label:nth-child(26) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(26):checked ~ .tabbed-labels > label:nth-child(26) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(27):checked ~ .tabbed-labels > label:nth-child(27) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(27):checked ~ .tabbed-labels > label:nth-child(27) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(28):checked ~ .tabbed-labels > label:nth-child(28) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(28):checked ~ .tabbed-labels > label:nth-child(28) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(29):checked ~ .tabbed-labels > label:nth-child(29) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(29):checked ~ .tabbed-labels > label:nth-child(29) .twemoji *,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(30):checked ~ .tabbed-labels > label:nth-child(30) .twemoji,
+.md-typeset .ast-langs .tabbed-set > input:nth-child(30):checked ~ .tabbed-labels > label:nth-child(30) .twemoji * {
   color: #fff;
   fill: #fff;
 }
@@ -840,7 +872,11 @@ pre.ast-console__out code {
 .md-typeset .tabbed-set > input:nth-child(23):checked ~ .tabbed-content > :nth-child(23),
 .md-typeset .tabbed-set > input:nth-child(24):checked ~ .tabbed-content > :nth-child(24),
 .md-typeset .tabbed-set > input:nth-child(25):checked ~ .tabbed-content > :nth-child(25),
-.md-typeset .tabbed-set > input:nth-child(26):checked ~ .tabbed-content > :nth-child(26) {
+.md-typeset .tabbed-set > input:nth-child(26):checked ~ .tabbed-content > :nth-child(26),
+.md-typeset .tabbed-set > input:nth-child(27):checked ~ .tabbed-content > :nth-child(27),
+.md-typeset .tabbed-set > input:nth-child(28):checked ~ .tabbed-content > :nth-child(28),
+.md-typeset .tabbed-set > input:nth-child(29):checked ~ .tabbed-content > :nth-child(29),
+.md-typeset .tabbed-set > input:nth-child(30):checked ~ .tabbed-content > :nth-child(30) {
   display: block;
 }
 
@@ -850,13 +886,21 @@ pre.ast-console__out code {
 .md-typeset .tabbed-block:nth-child(24) { order: 24; }
 .md-typeset .tabbed-block:nth-child(25) { order: 25; }
 .md-typeset .tabbed-block:nth-child(26) { order: 26; }
+.md-typeset .tabbed-block:nth-child(27) { order: 27; }
+.md-typeset .tabbed-block:nth-child(28) { order: 28; }
+.md-typeset .tabbed-block:nth-child(29) { order: 29; }
+.md-typeset .tabbed-block:nth-child(30) { order: 30; }
 
 .md-typeset .tabbed-set > input:nth-child(21):checked ~ .tabbed-labels > :nth-child(21),
 .md-typeset .tabbed-set > input:nth-child(22):checked ~ .tabbed-labels > :nth-child(22),
 .md-typeset .tabbed-set > input:nth-child(23):checked ~ .tabbed-labels > :nth-child(23),
 .md-typeset .tabbed-set > input:nth-child(24):checked ~ .tabbed-labels > :nth-child(24),
 .md-typeset .tabbed-set > input:nth-child(25):checked ~ .tabbed-labels > :nth-child(25),
-.md-typeset .tabbed-set > input:nth-child(26):checked ~ .tabbed-labels > :nth-child(26) {
+.md-typeset .tabbed-set > input:nth-child(26):checked ~ .tabbed-labels > :nth-child(26),
+.md-typeset .tabbed-set > input:nth-child(27):checked ~ .tabbed-labels > :nth-child(27),
+.md-typeset .tabbed-set > input:nth-child(28):checked ~ .tabbed-labels > :nth-child(28),
+.md-typeset .tabbed-set > input:nth-child(29):checked ~ .tabbed-labels > :nth-child(29),
+.md-typeset .tabbed-set > input:nth-child(30):checked ~ .tabbed-labels > :nth-child(30) {
   color: var(--md-default-fg-color);
   border-color: var(--md-default-fg-color);
 }
